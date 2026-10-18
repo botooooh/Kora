@@ -1,4 +1,8 @@
-# Kora — La Dynamic Island Vivante pour Windows 🟢✨
+<p align="center">
+  <img src="./kora-logo.png" width="96" height="96" alt="Kora Logo" />
+</p>
+
+# Kora — La Dynamic Island Vivante pour Windows (par Mr Paul) 🟢✨
 
 **Kora** transforme le haut de votre écran Windows 10/11 en une **Dynamic Island** vivante, fluide et ultra-optimisée (~60 Mo RAM, 0% CPU au repos, conçu dès Intel Core i3 & 8 Go RAM).
 
@@ -15,5 +19,8 @@
 1. Exécutez **`Kora.exe`** (ou `npm install && npm start` depuis les sources).
 2. Passez votre souris tout en haut au centre de l'écran pour ouvrir **Kora**.
 
-## 🌐 Landing Page
-Le site web de présentation et de téléchargement se trouve dans le dossier [`website/`](./website/index.html) (et [`docs/`](./docs/index.html) pour GitHub Pages).
+## 👨‍💻 Créateur & Contacts — Mr Paul
+- **Nom** : Mr Paul
+- **Communauté WhatsApp** : [Rejoindre la chaîne WhatsApp](https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k)
+- **WhatsApp Direct** : [+225 01 51 19 10 73](https://wa.me/2250151191073)
+- **Email** : [ivannguessan09@gmail.com](mailto:ivannguessan09@gmail.com)

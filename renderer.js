@@ -682,6 +682,16 @@ stAutoStart.addEventListener('click', () => {
   window.nusa.updateSettings({ autoStart: next });
 });
 
+document.querySelectorAll('.js-ext-link').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const url = btn.dataset.url;
+    if (url && window.nusa.openExternal) {
+      window.nusa.openExternal(url);
+    }
+  });
+});
+
 // ==================== 1. PRESSE-PAPIERS (CLIPBOARD) ====================
 const clipSearchInput = document.getElementById('clipSearch');
 clipSearchInput.addEventListener('input', () => renderClipboard());

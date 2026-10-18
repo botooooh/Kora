@@ -33,6 +33,7 @@ contextBridge.exposeInMainWorld('nusa', {
   addTodo: (text, time) => ipcRenderer.send('todo-add', { text, time }),
   toggleTodo: id => ipcRenderer.send('todo-toggle', id),
   deleteTodo: id => ipcRenderer.send('todo-delete', id),
+  openExternal: url => ipcRenderer.send('open-external-url', url),
 
   // Listeners from main process
   onSystemState: cb => ipcRenderer.on('system-state', (_e, state) => cb(state)),

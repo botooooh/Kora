@@ -3,19 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kora — La Dynamic Island Vivante pour Windows</title>
+  <title>Kora — La Dynamic Island Vivante pour Windows (par Mr Paul)</title>
+  <link rel="icon" type="image/png" href="kora-logo.png">
   <style>
     :root {
       color-scheme: dark;
       --bg: #030805;
-      --bg-card: rgba(10, 22, 15, 0.72);
+      --bg-card: rgba(10, 22, 15, 0.75);
       --emerald: #00e676;
       --lime: #a3ff12;
       --gold: #ffd000;
       --grad: linear-gradient(135deg, #00e676 0%, #a3ff12 52%, #ffd000 100%);
-      --border: rgba(163, 255, 18, 0.14);
+      --border: rgba(163, 255, 18, 0.16);
       --text: #f3fff7;
-      --muted: rgba(230, 255, 238, 0.62);
+      --muted: rgba(230, 255, 238, 0.65);
       --spring: cubic-bezier(0.34, 1.35, 0.5, 1);
       --ui: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif;
     }
@@ -48,17 +49,18 @@
       position: sticky;
       top: 16px;
       z-index: 100;
-      max-width: 1120px;
+      max-width: 1140px;
       margin: 0 auto;
-      padding: 12px 22px;
+      padding: 11px 22px;
       border-radius: 999px;
-      background: rgba(5, 14, 9, 0.78);
+      background: rgba(5, 14, 9, 0.82);
       backdrop-filter: blur(18px);
       border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      gap: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
     }
 
     .brand {
@@ -68,35 +70,23 @@
       text-decoration: none;
       color: #fff;
       font-weight: 800;
-      font-size: 20px;
+      font-size: 21px;
       letter-spacing: -0.5px;
     }
 
-    .brand-logo {
-      width: 36px;
-      height: 24px;
-      border-radius: 7px 7px 12px 12px;
-      background: #000;
-      border: 1.5px solid rgba(163, 255, 18, 0.45);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      box-shadow: 0 0 16px rgba(0, 230, 118, 0.35);
-    }
-
-    .brand-logo i {
-      width: 6px;
-      height: 4.5px;
-      border-radius: 2px;
-      background: var(--lime);
-      box-shadow: 0 0 6px var(--emerald);
+    .brand-img {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      object-fit: cover;
+      box-shadow: 0 0 18px rgba(0, 230, 118, 0.45);
     }
 
     .nav-links {
       display: flex;
-      gap: 26px;
+      gap: 24px;
       list-style: none;
+      flex-wrap: wrap;
     }
 
     .nav-links a {
@@ -109,6 +99,32 @@
 
     .nav-links a:hover {
       color: var(--lime);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-wa-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 15px;
+      border-radius: 999px;
+      background: rgba(0, 230, 118, 0.14);
+      border: 1px solid rgba(163, 255, 18, 0.35);
+      color: var(--lime);
+      font-weight: 700;
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-wa-nav:hover {
+      background: rgba(0, 230, 118, 0.26);
+      transform: translateY(-1px);
     }
 
     .btn-dl-small {
@@ -134,9 +150,30 @@
     /* HERO SECTION */
     .hero {
       max-width: 1180px;
-      margin: 54px auto 40px;
+      margin: 48px auto 40px;
       padding: 0 24px;
       text-align: center;
+    }
+
+    .hero-logo-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .hero-logo {
+      width: 78px;
+      height: 78px;
+      border-radius: 20px;
+      box-shadow:
+        0 14px 36px rgba(0, 0, 0, 0.7),
+        0 0 28px rgba(0, 230, 118, 0.45);
+      animation: floatLogo 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatLogo {
+      from { transform: translateY(0px); }
+      to { transform: translateY(-6px); }
     }
 
     .badge-pill {
@@ -150,7 +187,7 @@
       color: var(--lime);
       font-size: 13px;
       font-weight: 700;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     .badge-pill span.dot {
@@ -176,7 +213,7 @@
     }
 
     .hero-sub {
-      max-width: 670px;
+      max-width: 680px;
       margin: 0 auto 32px;
       font-size: clamp(16px, 2vw, 19px);
       line-height: 1.55;
@@ -188,7 +225,7 @@
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       margin-bottom: 18px;
     }
 
@@ -219,33 +256,28 @@
       padding: 15px 26px;
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(163, 255, 18, 0.28);
       color: #fff;
       font-weight: 700;
       font-size: 15.5px;
       text-decoration: none;
-      transition: background 0.2s, border-color 0.2s;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
     }
 
     .btn-secondary:hover {
-      background: rgba(0, 230, 118, 0.12);
+      background: rgba(0, 230, 118, 0.14);
       border-color: var(--lime);
+      transform: translateY(-2px);
     }
 
     .meta-specs {
       font-size: 13px;
-      color: rgba(255, 255, 255, 0.48);
+      color: rgba(255, 255, 255, 0.52);
       display: flex;
       justify-content: center;
       gap: 20px;
       flex-wrap: wrap;
-      margin-bottom: 40px;
-    }
-
-    .meta-specs span {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      margin-bottom: 38px;
     }
 
     /* INTERACTIVE DEMO CONTROLS */
@@ -307,7 +339,6 @@
       align-items: center;
     }
 
-    /* Simulated Desktop Wallpaper inside Laptop */
     .desktop-bg {
       position: absolute;
       inset: 0;
@@ -384,7 +415,6 @@
       pointer-events: auto;
     }
 
-    /* Sim Visor Eyes */
     .visor-eyes {
       display: flex;
       align-items: center;
@@ -419,7 +449,6 @@
       display: grid;
     }
 
-    /* Desktop Hint card inside Laptop */
     .laptop-caption {
       margin-top: auto;
       margin-bottom: 34px;
@@ -547,13 +576,94 @@
       font-weight: 600;
     }
 
+    /* COMMUNITY & CONTACT SECTION (MR PAUL) */
+    .contact-box {
+      border-radius: 30px;
+      padding: 48px 36px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(0, 230, 118, 0.22), transparent 60%),
+        rgba(9, 22, 14, 0.88);
+      border: 1px solid rgba(163, 255, 18, 0.35);
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    }
+
+    .contact-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+      margin-top: 32px;
+    }
+
+    .contact-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 24px 20px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(163, 255, 18, 0.22);
+      text-decoration: none;
+      color: #fff;
+      transition: transform 0.22s, background 0.22s, border-color 0.22s;
+    }
+
+    .contact-item:hover {
+      transform: translateY(-4px);
+      background: rgba(0, 230, 118, 0.13);
+      border-color: var(--lime);
+    }
+
+    .contact-item .c-badge {
+      font-size: 26px;
+    }
+
+    .contact-item strong {
+      font-size: 16px;
+      color: var(--lime);
+    }
+
+    .contact-item span {
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
     /* FOOTER */
     footer {
-      border-top: 1px solid rgba(163, 255, 18, 0.12);
-      padding: 44px 24px;
+      border-top: 1px solid rgba(163, 255, 18, 0.14);
+      padding: 48px 24px;
       text-align: center;
-      color: rgba(255, 255, 255, 0.45);
+      color: rgba(255, 255, 255, 0.55);
       font-size: 14px;
+    }
+
+    .footer-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .footer-links a {
+      color: var(--lime);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -562,24 +672,34 @@
   <!-- NAVIGATION -->
   <nav>
     <a href="#" class="brand">
-      <span class="brand-logo"><i></i><i></i></span>
+      <img src="kora-logo.png" alt="Logo Kora" class="brand-img">
       <span>Kora</span>
     </a>
     <ul class="nav-links">
       <li><a href="#demo">Démo interactive</a></li>
       <li><a href="#features">Fonctionnalités</a></li>
       <li><a href="#performance">Optimisation i3 / 8 Go</a></li>
+      <li><a href="#contact">Communauté & Contact</a></li>
     </ul>
-    <a href="downloads/Kora-Setup.exe" download="Kora-Setup.exe" class="btn-dl-small">
-      <span>⬇ Télécharger (.exe)</span>
-    </a>
+    <div class="nav-actions">
+      <a href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener" class="btn-wa-nav">
+        <span>📢 Communauté WhatsApp</span>
+      </a>
+      <a href="downloads/Kora-Setup.exe" download="Kora-Setup.exe" class="btn-dl-small">
+        <span>⬇ Télécharger (.exe)</span>
+      </a>
+    </div>
   </nav>
 
   <!-- HERO -->
   <section class="hero" id="demo">
+    <div class="hero-logo-wrap">
+      <img src="kora-logo.png" alt="Kora Logo" class="hero-logo">
+    </div>
+
     <div class="badge-pill">
       <span class="dot"></span>
-      <span>Kora v1.2 pour Windows 10 & 11 — Prêt en 1 clic</span>
+      <span>Kora v1.2 par Mr Paul — Pour Windows 10 & 11</span>
     </div>
 
     <h1>
@@ -588,7 +708,7 @@
     </h1>
 
     <p class="hero-sub">
-      Transformez le haut de votre écran Windows en une île dynamique intelligente, fluide et ultra-légère.
+      Transformez le haut de votre écran Windows en une île dynamique intelligente, fluide et ultra-légère conçue par <b>Mr Paul</b>.
       Musique & paroles synchronisées, captures d'écran instantanées, étagère Drag & Drop, animations de volume, luminosité et micro.
     </p>
 
@@ -599,14 +719,16 @@
         </svg>
         <span>Télécharger Kora pour Windows (.exe)</span>
       </a>
-      <a href="#features" class="btn-secondary">Découvrir toutes les fonctions</a>
+      <a href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener" class="btn-secondary">
+        <span>📢 Rejoindre la Communauté WhatsApp</span>
+      </a>
     </div>
 
     <div class="meta-specs">
       <span>⚡ Exécution en 1 clic (Aucune config requise)</span>
       <span>🟢 ~60 Mo RAM (0% CPU au repos)</span>
       <span>💻 Optimisé dès Intel Core i3 & 8 Go RAM</span>
-      <span>🕵️ Invisible sur vos captures d'écran</span>
+      <span>👨‍💻 Créé par <b>Mr Paul</b></span>
     </div>
 
     <!-- INTERACTIVE SIMULATOR BUTTONS -->
@@ -639,7 +761,7 @@
         <!-- 2. MUSIC -->
         <div class="sim-view v-music" style="flex-direction:column;justify-content:space-between;align-items:stretch">
           <div style="display:flex;align-items:center;gap:14px;margin-top:8px">
-            <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#00e676,#ffd000);display:grid;place-items:center;font-size:24px;color:#031409;font-weight:900">♪</div>
+            <img src="kora-logo.png" alt="Kora" style="width:48px;height:48px;border-radius:12px">
             <div style="text-align:left;flex:1">
               <div style="font-weight:800;font-size:15px;color:#fff">Starboy (Live Sync)</div>
               <div style="font-size:12px;color:rgba(255,255,255,0.6)">Apple Music · Spotify · Paroles actives</div>
@@ -803,8 +925,51 @@
     </div>
   </section>
 
+  <!-- COMMUNAUTÉ & CONTACTS MR PAUL -->
+  <section class="section" id="contact">
+    <div class="contact-box">
+      <img src="kora-logo.png" alt="Logo Kora" style="width:60px;height:60px;border-radius:16px;margin-bottom:14px;box-shadow:0 0 24px rgba(0,230,118,0.4)">
+      <h2 style="font-size:clamp(26px,3.6vw,38px);font-weight:900;margin-bottom:10px">
+        Créé par <span style="color:var(--lime)">Mr Paul</span> — Rejoignez la Communauté !
+      </h2>
+      <p style="color:var(--muted);max-width:600px;margin:0 auto;font-size:16px">
+        Suivez les mises à jour de Kora, découvrez les prochains projets ou contactez directement Mr Paul sur WhatsApp et par mail.
+      </p>
+
+      <div class="contact-cards">
+        <a href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener" class="contact-item">
+          <span class="c-badge">📢</span>
+          <strong>Communauté WhatsApp</strong>
+          <span>Rejoindre la chaîne officielle de Mr Paul</span>
+        </a>
+
+        <a href="https://wa.me/2250151191073" target="_blank" rel="noopener" class="contact-item">
+          <span class="c-badge">💬</span>
+          <strong>WhatsApp Direct</strong>
+          <span>+225 01 51 19 10 73 (wa.me/+2250151191073)</span>
+        </a>
+
+        <a href="mailto:ivannguessan09@gmail.com" class="contact-item">
+          <span class="c-badge">✉️</span>
+          <strong>Email Direct</strong>
+          <span>ivannguessan09@gmail.com</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <footer>
-    <p><b>Kora — Living Notch for Windows</b> · Design Vert Émeraude & Or Solaire · Téléchargement direct sans configuration</p>
+    <div class="footer-brand">
+      <img src="kora-logo.png" alt="Kora" style="width:28px;height:28px;border-radius:7px">
+      <span>Kora — par Mr Paul</span>
+    </div>
+    <p>La Dynamic Island vivante et ultra-optimisée pour Windows · Design Vert Émeraude & Or Solaire</p>
+    <div class="footer-links">
+      <a href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener">📢 Communauté WhatsApp</a>
+      <a href="https://wa.me/2250151191073" target="_blank" rel="noopener">💬 WhatsApp : +225 01 51 19 10 73</a>
+      <a href="mailto:ivannguessan09@gmail.com">✉️ ivannguessan09@gmail.com</a>
+      <a href="downloads/Kora-Setup.exe" download="Kora-Setup.exe">⬇ Télécharger Kora (.exe)</a>
+    </div>
   </footer>
 
   <script>

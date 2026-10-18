@@ -101,19 +101,24 @@ function saveStore() {
   }, 250);
 }
 
-// Kora Emerald & Gold Icon
+// Official Kora Logo Icon
 function getKoraIcon() {
+  const logoPath = path.join(__dirname, 'kora-logo.png');
+  if (fs.existsSync(logoPath)) {
+    try {
+      const img = nativeImage.createFromPath(logoPath);
+      if (!img.isEmpty()) {
+        return img.resize({ width: 32, height: 32 });
+      }
+    } catch (e) {}
+  }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#00e676"/>
-        <stop offset="55%" stop-color="#a3ff12"/>
-        <stop offset="100%" stop-color="#ffd000"/>
-      </linearGradient>
-    </defs>
-    <rect x="4" y="10" width="56" height="44" rx="20" fill="#050806" stroke="url(#g)" stroke-width="4"/>
-    <rect x="17" y="26" width="11" height="12" rx="4" fill="#d9ff66"/>
-    <rect x="36" y="26" width="11" height="12" rx="4" fill="#d9ff66"/>
+    <rect x="4" y="4" width="56" height="56" rx="16" fill="#ffffff"/>
+    <rect x="20" y="20" width="8" height="8" fill="#111"/>
+    <rect x="36" y="20" width="8" height="8" fill="#111"/>
+    <rect x="13" y="36" width="7" height="7" fill="#111"/>
+    <rect x="20" y="43" width="24" height="7" fill="#111"/>
+    <rect x="44" y="36" width="7" height="7" fill="#111"/>
   </svg>`;
   return nativeImage.createFromDataURL(
     'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64')
@@ -167,7 +172,8 @@ function createWindow() {
     y: 0,
     width: WIN_WIDTH,
     height: WIN_HEIGHT,
-    title: 'Kora Notch',
+    title: 'Kora — par Mr Paul',
+    icon: getKoraIcon(),
     frame: false,
     transparent: true,
     resizable: false,
@@ -802,6 +808,12 @@ function setupIpc() {
     saveStore();
     mainWindow.webContents.send('store-updated', appStore);
   });
+
+  ipcMain.on('open-external-url', (_event, url) => {
+    if (url && typeof url === 'string' && (url.startsWith('https://') || url.startsWith('mailto:'))) {
+      shell.openExternal(url);
+    }
+  });
 }
 
 function formatBytes(bytes) {
@@ -812,11 +824,11 @@ function formatBytes(bytes) {
 
 function createTray() {
   tray = new Tray(getKoraIcon());
-  tray.setToolTip('Kora — L\'encoche vivante pour Windows');
+  tray.setToolTip('Kora — par Mr Paul');
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Kora Notch (Ultra-Léger)',
+      label: 'Kora — créé par Mr Paul',
       enabled: false
     },
     { type: 'separator' },
@@ -837,8 +849,21 @@ function createTray() {
       click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'todo')
     },
     {
-      label: '⚙️ Ouvrir Paramètres',
+      label: '⚙️ Ouvrir Paramètres & Contacts',
       click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'settings')
+    },
+    { type: 'separator' },
+    {
+      label: '📢 Rejoindre la Communauté WhatsApp (Mr Paul)',
+      click: () => shell.openExternal('https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k')
+    },
+    {
+      label: '💬 WhatsApp Direct : +225 01 51 19 10 73',
+      click: () => shell.openExternal('https://wa.me/2250151191073')
+    },
+    {
+      label: '✉️ Email : ivannguessan09@gmail.com',
+      click: () => shell.openExternal('mailto:ivannguessan09@gmail.com')
     },
     { type: 'separator' },
     {
