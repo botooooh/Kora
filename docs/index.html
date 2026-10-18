@@ -2308,6 +2308,7 @@
       }
     }
 
+    /* ================= RESPONSIVE MOBILE & TABLET ULTRA-COMPLET ================= */
     @media (max-width: 860px) {
       .nav-links a:not(.nav-cta) {
         display: none;
@@ -2346,19 +2347,93 @@
 
     @media (max-width: 720px) {
       .wrap {
-        padding: 0 20px;
+        padding: 0 16px;
       }
 
       section {
-        padding: 96px 0;
+        padding: 64px 0;
       }
 
       .hero {
-        padding: 140px 0 40px;
+        padding: 108px 0 28px;
+      }
+
+      h1 {
+        font-size: clamp(30px, 9vw, 46px);
+        margin: 0 auto 18px;
+        letter-spacing: -0.03em;
+      }
+
+      .lede {
+        font-size: 16px;
+        line-height: 1.5;
+        margin: 0 auto 28px;
+        padding: 0 4px;
+      }
+
+      .hero-cta-group,
+      .cta {
+        gap: 12px;
+      }
+
+      .hero-btn-row,
+      .cta-row {
+        flex-direction: column;
+        width: 100%;
+        max-width: 380px;
+        gap: 10px;
+      }
+
+      .btn-download-pill,
+      .dl-btn,
+      .btn-learn-pill,
+      .sec-btn {
+        width: 100%;
+        padding: 14px 20px;
+        font-size: 16px;
+      }
+
+      .stage {
+        padding: 24px 0 16px;
+      }
+
+      .laptop {
+        padding: 8px 8px 0;
+        border-radius: 16px 16px 0 0;
+      }
+
+      .screen {
+        border-radius: 9px 9px 0 0;
+      }
+
+      .try-shell {
+        margin-top: 20px;
+      }
+
+      .try {
+        gap: 6px;
+        padding: 6px;
+        border-radius: 16px;
+      }
+
+      .try button {
+        padding: 7px 12px;
+        font-size: 12px;
+      }
+
+      .cap {
+        font-size: 13.5px;
+        line-height: 1.45;
+        padding: 0 8px;
       }
 
       .features {
         grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .card {
+        padding: 24px 20px;
       }
 
       .card.wide {
@@ -2370,20 +2445,105 @@
       }
 
       .sec-head {
-        margin-bottom: 44px;
+        margin-bottom: 32px;
+        text-align: center;
+      }
+
+      .sec-title {
+        font-size: clamp(26px, 7.5vw, 36px);
+        margin-bottom: 12px;
+      }
+
+      .sec-lede {
+        font-size: 15px;
+      }
+
+      .stat {
+        padding: 22px 14px;
+      }
+
+      .stat .num {
+        font-size: 32px;
+      }
+
+      .stat span:last-child {
+        font-size: 12px;
       }
 
       .dl-card {
-        padding: 64px 22px 52px;
-        border-radius: 24px;
+        padding: 48px 18px 40px;
+        border-radius: 22px;
+      }
+
+      .dl-card .icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+      }
+
+      .dl-card>p {
+        font-size: 15px;
+        margin-bottom: 24px;
       }
 
       .ans p {
         padding-right: 4px;
+        font-size: 14.5px;
+      }
+
+      .contact-card {
+        padding: 18px 16px;
+      }
+
+      .foot-top {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding-bottom: 36px;
       }
 
       .foot-word {
-        margin-bottom: -20px;
+        font-size: 72px;
+        margin-top: 24px;
+        margin-bottom: -12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .brand span {
+        font-size: 17px;
+      }
+
+      .nav-links .nav-cta {
+        padding: 6px 14px;
+        font-size: 13px;
+      }
+
+      .try {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 6px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+
+      .try::-webkit-scrollbar {
+        display: none;
+      }
+
+      .try button {
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .stat:nth-child(n+2) {
+        border-left: 0;
+        border-top: 1px solid var(--line);
       }
     }
 
@@ -2409,7 +2569,7 @@
     html {
       scroll-behavior: smooth;
       scroll-padding-top: 24px;
-      scroll-snap-type: y proximity;
+      overflow-x: hidden;
       overflow-y: scroll;
     }
 
@@ -2417,11 +2577,14 @@
       html {
         scroll-snap-type: y mandatory;
       }
+
+      .snap-section {
+        scroll-snap-align: start;
+        scroll-snap-stop: normal;
+      }
     }
 
     .snap-section {
-      scroll-snap-align: start;
-      scroll-snap-stop: normal;
       position: relative;
     }
 
@@ -3287,7 +3450,7 @@
     // Adaptation de l'échelle de l'aperçu à la largeur de l'écran
     function fit() {
       const w = document.getElementById("laptop").clientWidth;
-      const u = Math.max(0.55, Math.min(1.3, (w - 30) / 570));
+      const u = Math.max(0.38, Math.min(1.3, (w - 20) / 580));
       document.documentElement.style.setProperty("--u", u.toFixed(3));
     }
     fit(); addEventListener("resize", fit);
