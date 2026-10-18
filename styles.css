@@ -1,9 +1,9 @@
 :root {
   color-scheme: dark;
-  --emerald: #00e676;
-  --lime: #a3ff12;
-  --gold: #ffd000;
-  --glow: linear-gradient(90deg, var(--emerald), var(--lime) 55%, var(--gold));
+  --cyan: #19b8ff;
+  --sky: #70d6ff;
+  --blue: #2d5bff;
+  --glow: linear-gradient(90deg, #0052ff, #19b8ff 55%, #70d6ff);
   --ui: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
   --spring: cubic-bezier(0.34, 1.32, 0.5, 1);
   --scale: 1;
@@ -62,8 +62,8 @@ html, body {
   font-size: 13px;
   line-height: 1;
   box-shadow:
-    0 12px 32px -10px rgba(0, 0, 0, 0.92),
-    0 0 0 1px rgba(163, 255, 18, 0.09);
+    0 12px 32px -10px rgba(0, 0, 0, 0.94),
+    0 0 0 1px rgba(25, 184, 255, 0.14);
   pointer-events: auto;
   cursor: pointer;
 }
@@ -71,7 +71,7 @@ html, body {
 /* Retracted into the top bezel when an app is open */
 .mn[data-retracted="true"] {
   transform: translateY(calc(-100% + var(--lip, 4px)));
-  box-shadow: 0 2px 10px rgba(0, 230, 118, 0.28);
+  box-shadow: 0 2px 12px rgba(25, 184, 255, 0.35);
 }
 .mn[data-retracted="true"] .eyes,
 .mn[data-retracted="true"] .l-idle {
@@ -157,7 +157,6 @@ html, body {
 .mn[data-s="charge"],
 .mn[data-s="volume"],
 .mn[data-s="brightness"],
-.mn[data-s="mic"],
 .mn[data-s="screenshot"],
 .mn[data-s="clip-peek"],
 .mn[data-s="capslock"] {
@@ -167,7 +166,15 @@ html, body {
   --e: 14px;
 }
 
-/* Ambient Emerald & Gold glow inside notch */
+/* Compact Windows Notification Peek (short & discreet) */
+.mn[data-s="notif"] {
+  --w: 318px;
+  --h: 56px;
+  --r: 20px;
+  --e: 14px;
+}
+
+/* Ambient Fluid Blue glow inside notch */
 .ambient {
   position: absolute;
   inset: auto 0 0 0;
@@ -179,7 +186,7 @@ html, body {
           mask: linear-gradient(to top, #000, rgba(0,0,0,0.55) 32%, rgba(0,0,0,0.12) 72%, transparent);
 }
 
-/* Kora Distinctive Cyber-Visor Eyes */
+/* Kora Fluid Blue Eyes */
 .eyes {
   position: absolute;
   inset: 0;
@@ -191,57 +198,19 @@ html, body {
   transition: opacity 0.2s ease, transform 0.15s ease;
 }
 .eye {
-  width: 12px;
-  height: 8.5px;
-  border-radius: 3.5px 3.5px 5px 5px;
-  background: #eaff99;
+  width: 6.5px;
+  height: 11px;
+  border-radius: 4px;
+  background: #ffffff;
   box-shadow:
-    0 0 7px 1px rgba(163, 255, 18, 0.8),
-    0 0 16px 4px rgba(0, 230, 118, 0.35);
-  animation: koraBlink 4.5s infinite;
+    0 0 6px 1px rgba(255, 255, 255, 0.75),
+    0 0 14px 3px rgba(25, 184, 255, 0.55);
+  animation: koraBlink 4.2s infinite;
   transition: background 0.25s, box-shadow 0.25s, transform 0.2s;
 }
-.eye:first-child {
-  transform: rotate(4deg);
-}
-.eye:last-child {
-  transform: rotate(-4deg);
-}
 @keyframes koraBlink {
-  0%, 91%, 100% { transform: scaleY(1); }
-  94% { transform: scaleY(0.1); }
-}
-
-/* Mic Muted indicator right on the Kora Visor Eyes */
-.mic-eye-badge {
-  display: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #ff3b47;
-  box-shadow: 0 0 10px rgba(255, 59, 71, 0.85);
-  place-items: center;
-  animation: pulseMic 1.4s ease-in-out infinite alternate;
-}
-.mic-eye-badge svg {
-  width: 10px;
-  height: 10px;
-  stroke: #fff;
-  stroke-width: 2.3;
-  fill: none;
-}
-.mn[data-mic-muted="true"] .mic-eye-badge {
-  display: grid;
-}
-.mn[data-mic-muted="true"] .eye {
-  background: #ffd27d;
-  box-shadow:
-    0 0 7px 1px rgba(255, 120, 70, 0.8),
-    0 0 14px 3px rgba(255, 59, 71, 0.4);
-}
-@keyframes pulseMic {
-  from { transform: scale(0.92); opacity: 0.85; }
-  to { transform: scale(1.08); opacity: 1; }
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
 }
 
 /* Layers */
@@ -267,18 +236,18 @@ html, body {
 .mn[data-s="charge"] .l-charge,
 .mn[data-s="volume"] .l-volume,
 .mn[data-s="brightness"] .l-brightness,
-.mn[data-s="mic"] .l-mic,
+.mn[data-s="notif"] .l-notif,
 .mn[data-s="screenshot"] .l-screenshot,
 .mn[data-s="clip-peek"] .l-clip-peek,
 .mn[data-s="capslock"] .l-capslock {
   opacity: 1;
-  transition: opacity 0.26s ease 0.12s;
+  transition: opacity 0.26s ease 0.1s;
   pointer-events: auto;
 }
 
 .mn:is([data-s="music"], [data-s="lyrics"], [data-s="clipboard"], [data-s="shelf"], [data-s="todo"], [data-s="settings"]) :is(.l-hdr, .l-dots) {
   opacity: 1;
-  transition: opacity 0.26s ease 0.12s;
+  transition: opacity 0.26s ease 0.1s;
   pointer-events: auto;
 }
 
@@ -296,7 +265,7 @@ html, body {
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  background: conic-gradient(var(--emerald) 0 var(--p, 72%), rgba(0, 230, 118, 0.22) 0);
+  background: conic-gradient(var(--cyan) 0 var(--p, 72%), rgba(25, 184, 255, 0.22) 0);
   -webkit-mask: radial-gradient(circle, transparent 4.5px, #000 5px);
           mask: radial-gradient(circle, transparent 4.5px, #000 5px);
 }
@@ -310,7 +279,7 @@ html, body {
 .bars i {
   width: 2.2px;
   border-radius: 2px;
-  background: var(--lime);
+  background: var(--cyan);
   height: 30%;
   animation: eq 0.85s ease-in-out infinite alternate;
 }
@@ -345,7 +314,7 @@ html, body {
 .hdr-tab {
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.48);
+  color: rgba(255, 255, 255, 0.5);
   font: 600 11px/1 var(--ui);
   padding: 5px 8px;
   border-radius: 99px;
@@ -360,8 +329,8 @@ html, body {
   background: rgba(255, 255, 255, 0.1);
 }
 .hdr-tab.active {
-  color: #06140b;
-  background: linear-gradient(90deg, var(--emerald), var(--lime));
+  color: #030816;
+  background: linear-gradient(90deg, var(--cyan), #ffffff);
 }
 .hdr-tab svg {
   width: 12px;
@@ -402,12 +371,8 @@ html, body {
   color: #fff;
 }
 .pin-btn.pinned {
-  background: var(--emerald);
-  color: #04140a;
-}
-.pin-btn.mic-muted {
-  background: #ff3b47;
-  color: #fff;
+  background: var(--cyan);
+  color: #020814;
 }
 .pin-btn svg {
   width: 11px;
@@ -445,7 +410,7 @@ html, body {
 }
 .dots button.active {
   width: 16px;
-  background: var(--lime);
+  background: var(--cyan);
 }
 
 /* Side Navigation Arrows */
@@ -482,10 +447,10 @@ html, body {
   overflow: hidden;
   background:
     linear-gradient(115deg, transparent 0 46%, rgba(255,255,255,.65) 46% 48%, transparent 48%),
-    radial-gradient(circle at 34% 58%, #00b862 0 22%, transparent 23%),
-    radial-gradient(circle at 34% 58%, transparent 0 30%, #a3ff12 31% 33%, transparent 34%),
-    repeating-linear-gradient(0deg, rgba(0,230,118,.18) 0 2px, transparent 2px 7px),
-    linear-gradient(160deg, #0d2b1a, #1d4d1f);
+    radial-gradient(circle at 34% 58%, #0066ff 0 22%, transparent 23%),
+    radial-gradient(circle at 34% 58%, transparent 0 30%, #19b8ff 31% 33%, transparent 34%),
+    repeating-linear-gradient(0deg, rgba(25,184,255,.18) 0 2px, transparent 2px 7px),
+    linear-gradient(160deg, #071228, #0f2c59);
   background-size: cover;
   background-position: center;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
@@ -511,7 +476,7 @@ html, body {
 .prog i {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--emerald), var(--gold));
+  background: linear-gradient(90deg, var(--blue), var(--cyan), #ffffff);
   border-radius: 3px;
   width: 0%;
   transition: width 0.3s linear;
@@ -544,7 +509,7 @@ html, body {
 }
 
 .l-lyrics .ambient {
-  background: linear-gradient(90deg, #0a6b3a, #2c8c1f 50%, #7d6b08);
+  background: linear-gradient(90deg, #06215c, #094ca3 50%, #0d6cb5);
   height: 85%;
   opacity: 0.9;
 }
@@ -581,9 +546,9 @@ html, body {
   color: rgba(255, 255, 255, 0.65);
 }
 .lyr li.on {
-  color: #eaff99;
+  color: #ffffff;
   transform: scale(1);
-  text-shadow: 0 0 12px rgba(163, 255, 18, 0.4);
+  text-shadow: 0 0 12px rgba(25, 184, 255, 0.55);
 }
 
 /* ==================== PRESSE-PAPIERS (CLIPBOARD) ==================== */
@@ -610,7 +575,7 @@ html, body {
   user-select: text;
 }
 .clip-search:focus {
-  border-color: var(--emerald);
+  border-color: var(--cyan);
   background: rgba(255, 255, 255, 0.13);
 }
 .clip-search::placeholder {
@@ -669,8 +634,8 @@ html, body {
   border-color: rgba(255, 255, 255, 0.18);
 }
 .clip-item.copied {
-  background: rgba(0, 230, 118, 0.25);
-  border-color: var(--emerald);
+  background: rgba(25, 184, 255, 0.25);
+  border-color: var(--cyan);
 }
 .clip-badge {
   font-size: 9px;
@@ -678,13 +643,13 @@ html, body {
   text-transform: uppercase;
   padding: 2.5px 5px;
   border-radius: 5px;
-  background: rgba(0, 230, 118, 0.2);
-  color: #69f0ae;
+  background: rgba(25, 184, 255, 0.2);
+  color: #70d6ff;
   flex-shrink: 0;
 }
-.clip-badge.link { background: rgba(255, 208, 0, 0.22); color: #ffe066; }
-.clip-badge.code { background: rgba(163, 255, 18, 0.22); color: #ccff66; }
-.clip-badge.image { background: rgba(0, 230, 118, 0.28); color: #a3ff12; }
+.clip-badge.link { background: rgba(45, 91, 255, 0.28); color: #9eb5ff; }
+.clip-badge.code { background: rgba(255, 255, 255, 0.18); color: #ffffff; }
+.clip-badge.image { background: rgba(25, 184, 255, 0.28); color: #70d6ff; }
 
 .clip-text {
   flex: 1;
@@ -729,7 +694,7 @@ html, body {
   color: #fff;
 }
 .clip-act.pinned {
-  color: var(--gold);
+  color: var(--cyan);
 }
 
 /* ==================== FILE SHELF (ÉTAGÈRE À FICHIERS) ==================== */
@@ -759,8 +724,8 @@ html, body {
   transition: border-color 0.25s, background 0.25s, transform 0.3s var(--spring), opacity 0.25s;
 }
 .l-shelf.drag-over .sh-zone {
-  border-color: var(--lime);
-  background: rgba(0, 230, 118, 0.14);
+  border-color: var(--cyan);
+  background: rgba(25, 184, 255, 0.14);
   transform: scale(1.02);
   opacity: 1 !important;
   z-index: 4;
@@ -771,7 +736,7 @@ html, body {
 }
 .l-shelf.has-files.drag-over .sh-zone {
   opacity: 1;
-  background: rgba(6, 16, 10, 0.88);
+  background: rgba(4, 10, 22, 0.88);
 }
 
 .sh-cards {
@@ -795,7 +760,6 @@ html, body {
   border-radius: 3px;
 }
 
-/* CRITICAL FIX: Enable native HTML5 dragstart on file cards so they can be dragged out! */
 .sh-card {
   position: relative;
   width: 68px;
@@ -815,8 +779,8 @@ html, body {
   transition: background 0.2s, transform 0.2s, border-color 0.2s;
 }
 .sh-card:hover {
-  background: rgba(0, 230, 118, 0.14);
-  border-color: rgba(163, 255, 18, 0.4);
+  background: rgba(25, 184, 255, 0.14);
+  border-color: rgba(25, 184, 255, 0.45);
   transform: translateY(-2px);
 }
 .sh-card:active {
@@ -911,7 +875,7 @@ html, body {
   user-select: text;
 }
 .todo-input:focus {
-  border-color: var(--emerald);
+  border-color: var(--cyan);
 }
 .todo-row-inputs {
   display: flex;
@@ -933,13 +897,13 @@ html, body {
   padding: 0 10px;
   border-radius: 7px;
   border: none;
-  background: linear-gradient(90deg, var(--emerald), var(--lime));
-  color: #04140a;
+  background: linear-gradient(90deg, var(--cyan), #ffffff);
+  color: #030816;
   font: 700 11px var(--ui);
   cursor: pointer;
 }
 .todo-add-btn:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.08);
 }
 
 .todo-list {
@@ -974,7 +938,7 @@ html, body {
   background: rgba(255, 255, 255, 0.14);
 }
 .trow.done {
-  background: rgba(0, 180, 90, 0.28);
+  background: rgba(25, 184, 255, 0.22);
   color: rgba(255, 255, 255, 0.68);
 }
 .trow.done .trow-txt {
@@ -990,13 +954,13 @@ html, body {
   flex-shrink: 0;
 }
 .trow.done .chk {
-  background: var(--emerald);
-  border-color: var(--emerald);
+  background: var(--cyan);
+  border-color: var(--cyan);
 }
 .chk svg {
   width: 9px;
   height: 9px;
-  stroke: #04140a;
+  stroke: #030816;
   stroke-width: 2.8;
   fill: none;
   stroke-linecap: round;
@@ -1014,8 +978,8 @@ html, body {
 }
 .trow-time {
   font-size: 9.5px;
-  color: var(--lime);
-  background: rgba(0, 230, 118, 0.16);
+  color: var(--sky);
+  background: rgba(25, 184, 255, 0.16);
   padding: 2px 5px;
   border-radius: 4px;
 }
@@ -1085,14 +1049,14 @@ html, body {
 .st-val {
   font-size: 11px;
   font-weight: 700;
-  color: var(--lime);
+  color: var(--sky);
   min-width: 42px;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 .st-range {
   width: 110px;
-  accent-color: var(--emerald);
+  accent-color: var(--cyan);
   cursor: pointer;
   height: 4px;
 }
@@ -1108,7 +1072,7 @@ html, body {
   cursor: pointer;
 }
 .st-select option {
-  background: #08120c;
+  background: #060b16;
   color: #fff;
 }
 .st-toggle {
@@ -1123,7 +1087,7 @@ html, body {
   transition: background 0.2s;
 }
 .st-toggle.on {
-  background: var(--emerald);
+  background: var(--cyan);
 }
 .st-toggle::after {
   content: "";
@@ -1157,14 +1121,36 @@ html, body {
   transition: stroke-dashoffset 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* Compact Windows Notification Peek */
+.notif-app-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: rgba(25, 184, 255, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(25, 184, 255, 0.4);
+  display: grid;
+  place-items: center;
+}
+.notif-app-badge svg {
+  width: 16px;
+  height: 16px;
+}
+.notif-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+}
+
 /* Screenshot Fly-In Animation */
 .shot-fly {
   width: 38px;
   height: 38px;
   border-radius: 9px;
   overflow: hidden;
-  border: 1.5px solid var(--lime);
-  box-shadow: 0 0 14px rgba(163, 255, 18, 0.5);
+  border: 1.5px solid var(--cyan);
+  box-shadow: 0 0 14px rgba(25, 184, 255, 0.5);
   animation: shotFlyIn 0.65s var(--spring) both;
 }
 .shot-fly img {

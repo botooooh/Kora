@@ -1,1027 +1,1335 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kora — La Dynamic Island Vivante pour Windows (par Mr Paul)</title>
-  <link rel="icon" type="image/png" href="kora-logo.png">
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #030805;
-      --bg-card: rgba(10, 22, 15, 0.75);
-      --emerald: #00e676;
-      --lime: #a3ff12;
-      --gold: #ffd000;
-      --grad: linear-gradient(135deg, #00e676 0%, #a3ff12 52%, #ffd000 100%);
-      --border: rgba(163, 255, 18, 0.16);
-      --text: #f3fff7;
-      --muted: rgba(230, 255, 238, 0.65);
-      --spring: cubic-bezier(0.34, 1.35, 0.5, 1);
-      --ui: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-      font-family: var(--ui);
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    body {
-      min-height: 100vh;
-      overflow-x: hidden;
-      background:
-        radial-gradient(circle at 50% -10%, rgba(0, 230, 118, 0.22), transparent 52%),
-        radial-gradient(circle at 85% 25%, rgba(255, 208, 0, 0.11), transparent 40%),
-        radial-gradient(circle at 15% 60%, rgba(163, 255, 18, 0.09), transparent 45%),
-        var(--bg);
-    }
-
-    /* NAVBAR */
-    nav {
-      position: sticky;
-      top: 16px;
-      z-index: 100;
-      max-width: 1140px;
-      margin: 0 auto;
-      padding: 11px 22px;
-      border-radius: 999px;
-      background: rgba(5, 14, 9, 0.82);
-      backdrop-filter: blur(18px);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: #fff;
-      font-weight: 800;
-      font-size: 21px;
-      letter-spacing: -0.5px;
-    }
-
-    .brand-img {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      object-fit: cover;
-      box-shadow: 0 0 18px rgba(0, 230, 118, 0.45);
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 24px;
-      list-style: none;
-      flex-wrap: wrap;
-    }
-
-    .nav-links a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover {
-      color: var(--lime);
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn-wa-nav {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 15px;
-      border-radius: 999px;
-      background: rgba(0, 230, 118, 0.14);
-      border: 1px solid rgba(163, 255, 18, 0.35);
-      color: var(--lime);
-      font-weight: 700;
-      font-size: 13px;
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-
-    .btn-wa-nav:hover {
-      background: rgba(0, 230, 118, 0.26);
-      transform: translateY(-1px);
-    }
-
-    .btn-dl-small {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 18px;
-      border-radius: 999px;
-      background: var(--grad);
-      color: #021208;
-      font-weight: 800;
-      font-size: 13.5px;
-      text-decoration: none;
-      box-shadow: 0 0 24px rgba(0, 230, 118, 0.38);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .btn-dl-small:hover {
-      transform: translateY(-1px) scale(1.03);
-      box-shadow: 0 0 32px rgba(163, 255, 18, 0.65);
-    }
-
-    /* HERO SECTION */
-    .hero {
-      max-width: 1180px;
-      margin: 48px auto 40px;
-      padding: 0 24px;
-      text-align: center;
-    }
-
-    .hero-logo-wrap {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 18px;
-    }
-
-    .hero-logo {
-      width: 78px;
-      height: 78px;
-      border-radius: 20px;
-      box-shadow:
-        0 14px 36px rgba(0, 0, 0, 0.7),
-        0 0 28px rgba(0, 230, 118, 0.45);
-      animation: floatLogo 4s ease-in-out infinite alternate;
-    }
-
-    @keyframes floatLogo {
-      from { transform: translateY(0px); }
-      to { transform: translateY(-6px); }
-    }
-
-    .badge-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 16px;
-      border-radius: 999px;
-      background: rgba(0, 230, 118, 0.1);
-      border: 1px solid rgba(163, 255, 18, 0.3);
-      color: var(--lime);
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 20px;
-    }
-
-    .badge-pill span.dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--emerald);
-      box-shadow: 0 0 10px var(--emerald);
-    }
-
-    h1 {
-      font-size: clamp(38px, 6vw, 68px);
-      font-weight: 900;
-      line-height: 1.04;
-      letter-spacing: -2px;
-      margin-bottom: 20px;
-    }
-
-    h1 .grad-txt {
-      background: var(--grad);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-sub {
-      max-width: 680px;
-      margin: 0 auto 32px;
-      font-size: clamp(16px, 2vw, 19px);
-      line-height: 1.55;
-      color: var(--muted);
-    }
-
-    .cta-group {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 32px;
-      border-radius: 999px;
-      background: var(--grad);
-      color: #021208;
-      font-weight: 800;
-      font-size: 16.5px;
-      text-decoration: none;
-      box-shadow: 0 12px 38px rgba(0, 230, 118, 0.42);
-      transition: transform 0.22s var(--spring), box-shadow 0.22s;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-3px) scale(1.03);
-      box-shadow: 0 16px 48px rgba(163, 255, 18, 0.65);
-    }
-
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 15px 26px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(163, 255, 18, 0.28);
-      color: #fff;
-      font-weight: 700;
-      font-size: 15.5px;
-      text-decoration: none;
-      transition: background 0.2s, border-color 0.2s, transform 0.2s;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(0, 230, 118, 0.14);
-      border-color: var(--lime);
-      transform: translateY(-2px);
-    }
-
-    .meta-specs {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.52);
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-bottom: 38px;
-    }
-
-    /* INTERACTIVE DEMO CONTROLS */
-    .demo-bar {
-      display: inline-flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      padding: 8px;
-      border-radius: 20px;
-      background: rgba(8, 20, 13, 0.85);
-      border: 1px solid var(--border);
-      margin-bottom: 24px;
-    }
-
-    .demo-btn {
-      padding: 8px 15px;
-      border-radius: 13px;
-      border: 1px solid transparent;
-      background: rgba(255, 255, 255, 0.05);
-      color: rgba(255, 255, 255, 0.78);
-      font: 600 13px var(--ui);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      transition: all 0.2s;
-    }
-
-    .demo-btn:hover {
-      background: rgba(0, 230, 118, 0.14);
-      color: #fff;
-    }
-
-    .demo-btn.active {
-      background: linear-gradient(135deg, rgba(0, 230, 118, 0.28), rgba(255, 208, 0, 0.22));
-      border-color: var(--lime);
-      color: var(--lime);
-      box-shadow: 0 0 18px rgba(0, 230, 118, 0.25);
-    }
-
-    /* LAPTOP SCREEN SIMULATOR */
-    .laptop-frame {
-      position: relative;
-      max-width: 960px;
-      height: 500px;
-      margin: 0 auto;
-      border-radius: 28px 28px 16px 16px;
-      border: 10px solid #121c16;
-      background:
-        radial-gradient(circle at 50% 0%, rgba(0, 230, 118, 0.28), transparent 58%),
-        linear-gradient(180deg, #071910 0%, #040d08 100%);
-      box-shadow:
-        0 30px 90px rgba(0, 0, 0, 0.85),
-        0 0 0 1px rgba(163, 255, 18, 0.22);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .desktop-bg {
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 20% 80%, rgba(0, 230, 118, 0.15), transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(255, 208, 0, 0.12), transparent 40%);
-      pointer-events: none;
-    }
-
-    /* LIVE INTERACTIVE KORA NOTCH INSIDE LAPTOP */
-    .sim-notch {
-      position: relative;
-      z-index: 20;
-      width: 196px;
-      height: 38px;
-      background: #000;
-      border-radius: 0 0 19px 19px;
-      transition: all 0.52s var(--spring);
-      box-shadow:
-        0 14px 35px rgba(0, 0, 0, 0.9),
-        0 0 0 1px rgba(163, 255, 18, 0.16);
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .sim-notch .sim-glow {
-      position: absolute;
-      inset: auto 0 0 0;
-      height: 90%;
-      background: var(--grad);
-      opacity: 0.85;
-      -webkit-mask: linear-gradient(to top, #000, rgba(0,0,0,0.4) 40%, transparent);
-              mask: linear-gradient(to top, #000, rgba(0,0,0,0.4) 40%, transparent);
-      pointer-events: none;
-    }
-
-    .sim-notch[data-mode="music"],
-    .sim-notch[data-mode="shelf"],
-    .sim-notch[data-mode="clipboard"] {
-      width: 460px;
-      height: 168px;
-      border-radius: 0 0 30px 30px;
-    }
-
-    .sim-notch[data-mode="volume"],
-    .sim-notch[data-mode="brightness"],
-    .sim-notch[data-mode="mic"],
-    .sim-notch[data-mode="screenshot"] {
-      width: 356px;
-      height: 68px;
-      border-radius: 0 0 22px 22px;
-    }
-
-    .sim-view {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 14px 22px;
-    }
-
-    .sim-notch[data-mode="eyes"] .v-eyes,
-    .sim-notch[data-mode="music"] .v-music,
-    .sim-notch[data-mode="volume"] .v-volume,
-    .sim-notch[data-mode="brightness"] .v-brightness,
-    .sim-notch[data-mode="mic"] .v-mic,
-    .sim-notch[data-mode="screenshot"] .v-screenshot,
-    .sim-notch[data-mode="shelf"] .v-shelf {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .visor-eyes {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    .visor-eye {
-      width: 13px;
-      height: 9px;
-      border-radius: 3.5px 3.5px 5px 5px;
-      background: #eaff99;
-      box-shadow: 0 0 8px var(--lime), 0 0 18px var(--emerald);
-      animation: blink 4s infinite;
-    }
-    .visor-eye:first-child { transform: rotate(4deg); }
-    .visor-eye:last-child { transform: rotate(-4deg); }
-    @keyframes blink {
-      0%, 92%, 100% { transform: scaleY(1); }
-      95% { transform: scaleY(0.1); }
-    }
-
-    .visor-mic-dot {
-      display: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #ff3b47;
-      box-shadow: 0 0 12px #ff3b47;
-      place-items: center;
-      font-size: 9px;
-    }
-    .sim-notch.mic-off .visor-mic-dot {
-      display: grid;
-    }
-
-    .laptop-caption {
-      margin-top: auto;
-      margin-bottom: 34px;
-      padding: 14px 24px;
-      border-radius: 16px;
-      background: rgba(4, 14, 9, 0.78);
-      border: 1px solid rgba(163, 255, 18, 0.2);
-      backdrop-filter: blur(12px);
-      max-width: 560px;
-      text-align: center;
-      z-index: 10;
-    }
-
-    .laptop-caption h4 {
-      color: var(--lime);
-      font-size: 15px;
-      margin-bottom: 4px;
-    }
-
-    .laptop-caption p {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    /* FEATURES BENTO GRID */
-    .section {
-      max-width: 1140px;
-      margin: 90px auto;
-      padding: 0 24px;
-    }
-
-    .sec-head {
-      text-align: center;
-      margin-bottom: 52px;
-    }
-
-    .sec-head h2 {
-      font-size: clamp(28px, 4vw, 44px);
-      font-weight: 900;
-      letter-spacing: -1px;
-      margin-bottom: 12px;
-    }
-
-    .sec-head p {
-      color: var(--muted);
-      font-size: 17px;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .bento {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 22px;
-    }
-
-    .card {
-      padding: 28px;
-      border-radius: 24px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(163, 255, 18, 0.42);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
-    }
-
-    .card-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, rgba(0, 230, 118, 0.22), rgba(255, 208, 0, 0.18));
-      border: 1px solid rgba(163, 255, 18, 0.35);
-      display: grid;
-      place-items: center;
-      font-size: 22px;
-      margin-bottom: 18px;
-    }
-
-    .card h3 {
-      font-size: 19px;
-      font-weight: 800;
-      margin-bottom: 10px;
-      color: #fff;
-    }
-
-    .card p {
-      font-size: 14.5px;
-      line-height: 1.6;
-      color: var(--muted);
-    }
-
-    /* PERFORMANCE BANNER */
-    .perf-banner {
-      border-radius: 28px;
-      padding: 44px;
-      background:
-        radial-gradient(circle at 90% 20%, rgba(255, 208, 0, 0.18), transparent 45%),
-        radial-gradient(circle at 10% 80%, rgba(0, 230, 118, 0.2), transparent 50%),
-        rgba(8, 20, 13, 0.9);
-      border: 1px solid rgba(163, 255, 18, 0.3);
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 28px;
-      text-align: center;
-    }
-
-    .stat-num {
-      font-size: 40px;
-      font-weight: 900;
-      background: var(--grad);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 6px;
-    }
-
-    .stat-lbl {
-      font-size: 14px;
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    /* COMMUNITY & CONTACT SECTION (MR PAUL) */
-    .contact-box {
-      border-radius: 30px;
-      padding: 48px 36px;
-      background:
-        radial-gradient(circle at 50% 0%, rgba(0, 230, 118, 0.22), transparent 60%),
-        rgba(9, 22, 14, 0.88);
-      border: 1px solid rgba(163, 255, 18, 0.35);
-      text-align: center;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
-    }
-
-    .contact-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 18px;
-      margin-top: 32px;
-    }
-
-    .contact-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      padding: 24px 20px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(163, 255, 18, 0.22);
-      text-decoration: none;
-      color: #fff;
-      transition: transform 0.22s, background 0.22s, border-color 0.22s;
-    }
-
-    .contact-item:hover {
-      transform: translateY(-4px);
-      background: rgba(0, 230, 118, 0.13);
-      border-color: var(--lime);
-    }
-
-    .contact-item .c-badge {
-      font-size: 26px;
-    }
-
-    .contact-item strong {
-      font-size: 16px;
-      color: var(--lime);
-    }
-
-    .contact-item span {
-      font-size: 13.5px;
-      color: var(--muted);
-    }
-
-    /* FOOTER */
-    footer {
-      border-top: 1px solid rgba(163, 255, 18, 0.14);
-      padding: 48px 24px;
-      text-align: center;
-      color: rgba(255, 255, 255, 0.55);
-      font-size: 14px;
-    }
-
-    .footer-brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
-      color: #fff;
-      font-weight: 800;
-      font-size: 18px;
-    }
-
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: 22px;
-      flex-wrap: wrap;
-      margin-top: 14px;
-    }
-
-    .footer-links a {
-      color: var(--lime);
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .footer-links a:hover {
-      text-decoration: underline;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kora — Une encoche vivante pour Windows · par Mr Paul</title>
+<meta name="description" content="Kora place une encoche vivante en haut de votre écran Windows pour la musique, les paroles synchronisées, le presse-papiers, les fichiers drag & drop, les notifications PC et vos rappels. Créé par Mr Paul.">
+<meta name="theme-color" content="#03040a">
+<link rel="icon" type="image/png" href="kora-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #03040a;
+  --text: #eceff7;
+  --muted: #8a92a6;
+  --dim: #555c70;
+  --line: rgba(255, 255, 255, 0.08);
+  --cyan: #19b8ff;
+  --indigo: #2d5bff;
+  --purple: #0066ff;
+  --glow: linear-gradient(90deg, var(--purple), var(--indigo) 50%, var(--cyan));
+  --display: "Bricolage Grotesque", "Segoe UI Variable Display", system-ui, sans-serif;
+  --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --spring: cubic-bezier(0.34, 1.35, 0.5, 1);
+  --u: 1;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.6 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  left: 50%; top: -220px;
+  width: 980px; height: 460px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center,
+    rgba(25, 184, 255, 0.18),
+    rgba(45, 91, 255, 0.14) 40%,
+    rgba(0, 102, 255, 0.08) 65%,
+    transparent 78%);
+  filter: blur(28px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+a { color: inherit; text-decoration: none; }
+main, footer { position: relative; z-index: 1; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+/* ---- Encoche vivante tout en haut de la page ---- */
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.mascot {
+  --e: 13px;
+  pointer-events: auto;
+  position: relative;
+  width: 184px;
+  height: 36px;
+  background: #000;
+  border-radius: 0 0 18px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+  transition: width 0.45s var(--spring), height 0.45s var(--spring);
+}
+.mascot:hover { width: 206px; height: 40px; }
+.mascot::before, .mascot::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: var(--e); height: var(--e);
+}
+.mascot::before {
+  right: 100%;
+  background: radial-gradient(circle at 0 100%, transparent calc(var(--e) - 0.5px), #000 var(--e));
+}
+.mascot::after {
+  left: 100%;
+  background: radial-gradient(circle at 100% 100%, transparent calc(var(--e) - 0.5px), #000 var(--e));
+}
+.mascot .glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--glow);
+  -webkit-mask: linear-gradient(to top, #000, rgba(0,0,0,0.45) 35%, transparent 78%);
+          mask: linear-gradient(to top, #000, rgba(0,0,0,0.45) 35%, transparent 78%);
+  pointer-events: none;
+}
+.eye {
+  position: relative;
+  width: 6.5px; height: 11px;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 0 6px 1px rgba(255,255,255,0.7), 0 0 14px 3px rgba(25,184,255,0.55);
+  animation: blink 4.2s infinite;
+}
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+/* ---- Barre de navigation ---- */
+nav.bar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  margin-top: -22px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+.brand img {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+nav.bar .links { display: flex; gap: 24px; align-items: center; }
+nav.bar a:hover { color: var(--text); }
+
+/* ---- Hero ---- */
+.hero {
+  text-align: center;
+  padding: 58px 0 36px;
+}
+h1 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(38px, 6vw, 66px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  margin: 0 auto 18px;
+  max-width: 780px;
+}
+.lede {
+  color: var(--muted);
+  font-size: clamp(16px, 2vw, 19px);
+  max-width: 580px;
+  margin: 0 auto 30px;
+}
+.cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.dl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 26px;
+  border-radius: 99px;
+  border: 0;
+  background: #ffffff;
+  color: #05070f;
+  font: 700 15px/1 var(--sans);
+  cursor: pointer;
+  box-shadow:
+    0 12px 34px -8px rgba(25, 184, 255, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
+  transition: transform 0.18s var(--spring), background 0.15s, box-shadow 0.2s;
+}
+.dl-btn:hover {
+  background: #e6f4ff;
+  transform: translateY(-2px);
+  box-shadow:
+    0 16px 40px -8px rgba(25, 184, 255, 0.65),
+    0 0 0 1px rgba(25, 184, 255, 0.4);
+}
+.dl-btn svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  stroke-width: 2.3;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sec-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 22px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font: 600 14.5px/1 var(--sans);
+  transition: background 0.15s, border-color 0.15s;
+}
+.sec-btn:hover {
+  background: rgba(25, 184, 255, 0.12);
+  border-color: rgba(25, 184, 255, 0.4);
+}
+.sub { font-size: 13px; color: var(--dim); }
+.sub b { color: var(--cyan); font-weight: 600; }
+
+/* ---- Aperçu Écran Windows 11 + Kora Notch ---- */
+.stage { padding: 30px 0 28px; }
+.laptop {
+  position: relative;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 12px 12px 0;
+  border-radius: 22px 22px 0 0;
+  background: linear-gradient(180deg, #1b2030, #0c0f18);
+  box-shadow:
+    0 30px 90px -20px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.screen {
+  position: relative;
+  height: calc(355px * var(--u));
+  min-height: 250px;
+  border-radius: 13px 13px 0 0;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #102a56 0%, #091836 42%, #050a18 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+/* Fond d'écran Windows 11 Bloom (pétales bleus fluides) */
+.screen::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: 58%;
+  width: 560px; height: 420px;
+  transform: translate(-50%, -42%);
+  background:
+    radial-gradient(38% 48% at 36% 42%, rgba(92, 200, 255, 0.72) 0%, rgba(28, 110, 232, 0.55) 48%, transparent 72%),
+    radial-gradient(40% 50% at 64% 44%, rgba(68, 170, 255, 0.68) 0%, rgba(20, 82, 210, 0.5) 50%, transparent 74%),
+    radial-gradient(46% 36% at 50% 28%, rgba(150, 224, 255, 0.65) 0%, rgba(44, 128, 240, 0.42) 54%, transparent 76%),
+    radial-gradient(52% 40% at 48% 68%, rgba(18, 66, 184, 0.75) 0%, rgba(10, 34, 110, 0.4) 58%, transparent 80%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+.screen::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 90px;
+  background: linear-gradient(to top, var(--bg), transparent);
+  pointer-events: none;
+  z-index: 3;
+}
+/* Plis lumineux des pétales Windows 11 */
+.bloom {
+  position: absolute;
+  left: 50%; top: 58%;
+  width: 340px; height: 240px;
+  transform: translate(-50%, -38%);
+  pointer-events: none;
+  opacity: 0.55;
+}
+.bloom i {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%,
+    rgba(210, 242, 255, 0.55),
+    rgba(48, 138, 245, 0.35) 45%,
+    rgba(12, 48, 140, 0.05) 75%,
+    transparent 78%);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.35);
+}
+.bloom .p1 { width: 170px; height: 150px; left: 28px; top: 30px; transform: rotate(-22deg); }
+.bloom .p2 { width: 175px; height: 150px; right: 24px; top: 34px; transform: rotate(24deg); }
+.bloom .p3 { width: 150px; height: 135px; left: 95px; top: 4px; transform: rotate(6deg); }
+.bloom .p4 { width: 190px; height: 120px; left: 75px; top: 96px; transform: rotate(-4deg); }
+
+/* Coins d'écran Windows */
+.desk-corner {
+  position: absolute;
+  top: 14px;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  user-select: none;
+}
+.desk-corner.l { left: 18px; }
+.desk-corner.r { right: 18px; }
+
+/* ---- Aperçu fidèle de la Kora Notch (échelle --u) ---- */
+.mn-holder {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%) scale(var(--u));
+  transform-origin: top center;
+  z-index: 2;
+}
+.mn {
+  --w: 180px; --h: 35px; --r: 17px; --e: 12px;
+  position: relative;
+  width: var(--w); height: var(--h);
+  transform-origin: 50% 0;
+  background: #000;
+  border-radius: 0 0 var(--r) var(--r);
+  transition:
+    width 0.55s var(--spring),
+    height 0.55s var(--spring),
+    border-radius 0.4s ease;
+  color: #fff;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1;
+  user-select: none;
+  box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(25, 184, 255, 0.14);
+}
+.mn::before, .mn::after {
+  content: "";
+  position: absolute; top: 0;
+  width: var(--e); height: var(--e);
+  transition: width 0.45s ease, height 0.45s ease;
+  pointer-events: none;
+}
+.mn::before { right: 100%; background: radial-gradient(circle at 0 100%, transparent calc(var(--e) - 0.5px), #000 var(--e)); }
+.mn::after  { left: 100%;  background: radial-gradient(circle at 100% 100%, transparent calc(var(--e) - 0.5px), #000 var(--e)); }
+
+.mn[data-s="pet"],
+.mn[data-s="idle"]   { --w: 180px; --h: 35px;  --r: 17px; --e: 12px; }
+.mn[data-s="music"],
+.mn[data-s="clip"],
+.mn[data-s="shelf"],
+.mn[data-s="todo"]   { --w: 420px; --h: 140px; --r: 30px; --e: 20px; }
+.mn[data-s="lyrics"] { --w: 520px; --h: 140px; --r: 30px; --e: 20px; }
+.mn[data-s="notif"]  { --w: 318px; --h: 56px;  --r: 20px; --e: 14px; }
+.mn[data-s="vol"],
+.mn[data-s="charge"] { --w: 330px; --h: 60px;  --r: 20px; --e: 14px; }
+
+.mn .ambient {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 92%;
+  pointer-events: none;
+  background: linear-gradient(90deg, #0052ff, #19b8ff 50%, #70d6ff);
+  border-radius: inherit;
+  -webkit-mask: linear-gradient(to top, #000, rgba(0,0,0,.55) 32%, rgba(0,0,0,.12) 72%, transparent);
+          mask: linear-gradient(to top, #000, rgba(0,0,0,.55) 32%, rgba(0,0,0,.12) 72%, transparent);
+}
+.mn .eyes {
+  position: absolute; inset: 0;
+  display: flex; justify-content: center; align-items: center;
+  gap: 14px; pointer-events: none;
+}
+
+.ly {
+  position: absolute; inset: 0;
+  overflow: hidden; border-radius: inherit;
+  opacity: 0; transition: opacity 0.16s ease;
+  pointer-events: none;
+}
+.mn[data-s="pet"]    .l-pet,
+.mn[data-s="idle"]   .l-idle,
+.mn[data-s="music"]  .l-music,
+.mn[data-s="lyrics"] .l-lyrics,
+.mn[data-s="clip"]   .l-clip,
+.mn[data-s="shelf"]  .l-shelf,
+.mn[data-s="todo"]   .l-todo,
+.mn[data-s="notif"]  .l-notif,
+.mn[data-s="vol"]    .l-vol,
+.mn[data-s="charge"] .l-charge {
+  opacity: 1;
+  transition: opacity 0.28s ease 0.14s;
+}
+.mn:is([data-s="music"],[data-s="lyrics"],[data-s="clip"],[data-s="shelf"],[data-s="todo"]) :is(.l-hdr,.l-dots) {
+  opacity: 1;
+  transition: opacity 0.28s ease 0.14s;
+}
+
+.a { position: absolute; }
+.vc { transform: translateY(-50%); }
+.hc { transform: translateX(-50%); }
+.c  { transform: translate(-50%, -50%); }
+.dim { color: rgba(255, 255, 255, 0.5); }
+.sb { font-weight: 600; }
+.b  { font-weight: 700; }
+
+.ring {
+  width: 15px; height: 15px; border-radius: 50%;
+  background: conic-gradient(#19b8ff 0 76%, rgba(25, 184, 255, 0.22) 0);
+  -webkit-mask: radial-gradient(circle, transparent 4.5px, #000 5px);
+          mask: radial-gradient(circle, transparent 4.5px, #000 5px);
+}
+.bars { display: flex; gap: 2.2px; align-items: center; height: 14px; }
+.bars i {
+  width: 2.2px; border-radius: 2px;
+  background: #19b8ff;
+  height: 30%;
+  animation: eq 0.85s ease-in-out infinite alternate;
+}
+.bars i:nth-child(2) { animation-delay: -0.3s; }
+.bars i:nth-child(3) { animation-delay: -0.6s; }
+.bars i:nth-child(4) { animation-delay: -0.15s; }
+.bars i:nth-child(5) { animation-delay: -0.45s; }
+@keyframes eq { to { height: 100%; } }
+
+.hdr-r {
+  right: 22px; top: 18px;
+  transform: translateY(-50%);
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px;
+}
+.hdr-r .cam { width: 12px; height: 12px; border-radius: 50%; background: #14161e; border: 1px solid #2b2f3c; }
+.hdr-r .dot { width: 5px; height: 5px; border-radius: 50%; background: #19b8ff; box-shadow: 0 0 6px #19b8ff; }
+
+.dots {
+  left: 50%; bottom: 7px;
+  transform: translateX(-50%);
+  display: flex; gap: 5px; align-items: center;
+}
+.dots i { width: 4px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.4); transition: width 0.35s var(--spring), background 0.25s; }
+.mn[data-s="music"]  .dots i:nth-child(1),
+.mn[data-s="lyrics"] .dots i:nth-child(1),
+.mn[data-s="clip"]   .dots i:nth-child(2),
+.mn[data-s="shelf"]  .dots i:nth-child(3),
+.mn[data-s="todo"]   .dots i:nth-child(4) { width: 15px; background: #19b8ff; }
+
+.arw {
+  width: 21px; height: 21px; border-radius: 50%;
+  background: rgba(255,255,255,0.16);
+  display: grid; place-items: center;
+}
+.arw svg { width: 9px; height: 9px; stroke: #fff; stroke-width: 2.3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+.ttl { left: 25px; top: 18px; font-weight: 700; font-size: 13px; }
+
+/* Musique & Paroles */
+.art {
+  border-radius: 12px; overflow: hidden;
+  background:
+    linear-gradient(115deg, transparent 0 46%, rgba(255,255,255,.75) 46% 47.5%, transparent 47.5%),
+    radial-gradient(circle at 34% 58%, #0066ff 0 22%, transparent 23%),
+    radial-gradient(circle at 34% 58%, transparent 0 30%, #19b8ff 31% 33%, transparent 34%),
+    repeating-linear-gradient(0deg, rgba(25,184,255,.22) 0 2px, transparent 2px 7px),
+    linear-gradient(160deg, #06142e, #0e387a);
+}
+.prog { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.22); overflow: hidden; }
+.prog i { display: block; height: 100%; background: linear-gradient(90deg, #2d5bff, #19b8ff, #fff); border-radius: 2px; animation: prg 9s linear infinite; }
+@keyframes prg { from { width: 35%; } to { width: 88%; } }
+.ctl { width: 20px; height: 20px; fill: #fff; }
+.bub { width: 17px; height: 15px; }
+
+.l-lyrics .ambient {
+  background: linear-gradient(90deg, #051d4d, #0a4999 50%, #106db8);
+  height: 85%;
+  opacity: 0.9;
+}
+.lyr {
+  left: 262px; width: 244px; top: 22px; height: 102px;
+  overflow: hidden;
+  -webkit-mask: linear-gradient(transparent, #000 22%, #000 78%, transparent);
+          mask: linear-gradient(transparent, #000 22%, #000 78%, transparent);
+}
+.lyr ol { list-style: none; margin: 0; padding: 0; transition: transform 0.65s var(--spring); }
+.lyr li {
+  font-weight: 700; font-size: 15px; line-height: 1.28;
+  padding: 5px 0;
+  color: rgba(255,255,255,0.32);
+  transform: scale(0.93);
+  transform-origin: left center;
+  transition: color 0.4s, transform 0.45s ease;
+}
+.lyr li.on { color: #fff; transform: scale(1); text-shadow: 0 0 12px rgba(25,184,255,0.55); }
+
+/* Presse-papiers preview */
+.cp-row {
+  left: 44px; width: 332px; height: 26px; border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.07);
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 9px; font-size: 11.5px;
+}
+.cp-tag {
+  font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 4px;
+  background: rgba(25,184,255,0.22); color: #70d6ff;
+}
+
+/* Étagère à fichiers (Shelf) */
+.sh-clear {
+  left: 74px; top: 18px;
+  padding: 2px 7px; border-radius: 7px;
+  background: rgba(255,255,255,0.12);
+  font-size: 10px; color: rgba(255,255,255,0.75);
+  opacity: 0; transition: opacity 0.25s;
+}
+.l-shelf.has .sh-clear { opacity: 1; }
+.sh-zone {
+  left: 42px; top: 34px; width: 336px; height: 92px;
+  transition: opacity 0.25s ease, transform 0.35s var(--spring);
+}
+.sh-zone .zone {
+  inset: 0; border-radius: 16px;
+  border: 1.5px dashed rgba(255,255,255,0.32);
+  background: rgba(255,255,255,0.03);
+  transition: border-color 0.25s, background 0.25s;
+}
+.l-shelf.has .sh-zone { opacity: 0; }
+.l-shelf.hover .sh-zone { opacity: 1; transform: scale(1.018); }
+.l-shelf.hover .sh-zone .zone {
+  border-color: rgba(25,184,255,0.85);
+  background: rgba(8,18,38,0.82);
+}
+.l-shelf .sh-t2 { opacity: 0; }
+.l-shelf.hover .sh-t1 { opacity: 0; }
+.l-shelf.hover .sh-t2 { opacity: 1; }
+.l-shelf.hover .sh-icon { animation: bob 0.55s ease-in-out infinite alternate; }
+@keyframes bob { to { transform: translate(-50%, calc(-50% + 3px)); } }
+
+.sh-card {
+  top: 38px; width: 62px; height: 84px;
+  border-radius: 11px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.08);
+  opacity: 0; transform: translateY(-22px) scale(0.72);
+}
+.sh-card.in {
+  opacity: 1; transform: none;
+  animation: fall 0.55s var(--spring) both;
+}
+@keyframes fall {
+  0%   { opacity: 0; transform: translateY(-26px) scale(0.68); }
+  65%  { opacity: 1; transform: translateY(3px) scale(1.03, 0.96); }
+  100% { opacity: 1; transform: none; }
+}
+.sh-thumb {
+  position: absolute; left: 11px; top: 7px;
+  width: 40px; height: 40px; border-radius: 8px;
+  overflow: hidden;
+}
+.t-img {
+  background:
+    radial-gradient(circle at 72% 28%, #fff 0 11%, transparent 13%),
+    linear-gradient(180deg, #19b8ff 0 56%, #0052ff 56% 74%, #70d6ff 74%);
+}
+.t-folder { display: grid; place-items: center; }
+.t-folder svg { width: 34px; height: 34px; }
+.sh-name {
+  position: absolute; left: 4px; right: 4px; top: 53px;
+  text-align: center; font-size: 9.5px; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sh-size {
+  position: absolute; left: 0; right: 0; top: 67px;
+  text-align: center; font-size: 8px; color: rgba(255,255,255,0.5);
+}
+
+/* Curseur animé qui glisse un fichier dans l'encoche */
+.ghost {
+  position: absolute;
+  left: 30%; top: 72%;
+  width: 58px; height: 70px;
+  margin-left: -29px; margin-top: -35px;
+  border-radius: 12px;
+  background: rgba(16, 24, 42, 0.86);
+  border: 1px solid rgba(25, 184, 255, 0.45);
+  box-shadow: 0 18px 36px rgba(0,0,0,0.6);
+  display: grid; place-items: center;
+  padding-bottom: 10px;
+  opacity: 0;
+  transform: scale(0.85) rotate(-6deg);
+  transition:
+    left 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease,
+    transform 0.35s var(--spring);
+  pointer-events: none;
+  z-index: 4;
+}
+.ghost.in   { opacity: 1; transform: scale(1) rotate(-4deg); }
+.ghost.drop { opacity: 0; transform: scale(0.45) translateY(-18px); }
+.ghost .g-thumb { width: 38px; height: 38px; border-radius: 8px; overflow: hidden; }
+.ghost .g-cur {
+  position: absolute; right: -8px; bottom: -10px;
+  width: 18px; height: 22px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.65));
+}
+
+/* To-do */
+.pill {
+  height: 24px; border-radius: 12px;
+  background: rgba(255,255,255,0.12);
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  font-size: 11px; color: #fff;
+}
+.pill svg { width: 13px; height: 13px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+.trow {
+  left: 196px; width: 180px; height: 27px; border-radius: 8px;
+  background: rgba(25, 184, 255, 0.22);
+  display: flex; align-items: center; gap: 7px;
+  padding: 0 8px; font-size: 12px; color: rgba(255,255,255,0.78);
+}
+.chk {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #19b8ff; display: grid; place-items: center; flex-shrink: 0;
+}
+.chk svg { width: 9px; height: 9px; stroke: #020814; stroke-width: 2.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Quick Peeks (Notification PC, Volume, En charge) */
+.pk-ring { left: 35px; top: 30px; width: 34px; height: 34px; transform: translate(-50%,-50%); }
+.pk-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.pk-ring .arc { transition: stroke-dashoffset 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.18s; }
+.mn[data-s="vol"]    .l-vol    .arc { stroke-dashoffset: 16; }
+.mn[data-s="charge"] .l-charge .arc { stroke-dashoffset: 14; }
+
+/* Boutons d'essai sous l'écran */
+.try {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 22px;
+}
+.try button {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 7px 14px;
+  border-radius: 99px;
+  font: 500 13px/1 var(--sans);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.try button:hover { color: var(--text); }
+.try button[aria-pressed="true"] {
+  background: #fff;
+  color: #05060b;
+  border-color: #fff;
+}
+.cap {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  min-height: 22px;
+  margin: 12px 0 0;
+}
+
+/* ---- Sections ---- */
+section { padding: 72px 0; }
+.sec-title {
+  font-family: var(--display);
+  font-size: clamp(26px, 3.6vw, 38px);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  margin: 0 0 10px;
+}
+.sec-lede {
+  color: var(--muted);
+  max-width: 560px;
+  margin: 0 0 40px;
+}
+
+/* Grille de fonctionnalités (style icônes macOS/Windows squircle) */
+.features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px 48px;
+  border-top: 1px solid var(--line);
+  padding-top: 36px;
+}
+.feature {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.app {
+  position: relative;
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 90% at 30% 15%, rgba(255,255,255,0.35), transparent 55%),
+    linear-gradient(160deg, var(--c1), var(--c2));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.42),
+    inset 0 -1px 0 rgba(0,0,0,0.28),
+    0 8px 20px -6px rgba(0,0,0,0.65);
+  display: grid;
+  place-items: center;
+  color: var(--g, #fff);
+}
+.app svg {
+  width: 23px; height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.28));
+}
+.app svg .fill { fill: currentColor; stroke: none; }
+.feature h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--text);
+}
+.feature p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14.5px;
+}
+
+/* ---- Section "Léger & Discret" ---- */
+.quiet {
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 36px;
+  padding-top: 36px;
+}
+.quiet h3 { font-size: 16px; margin: 0 0 6px; }
+.quiet p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+/* ---- Téléchargement direct ---- */
+.download {
+  text-align: center;
+  border-top: 1px solid var(--line);
+}
+.download .icon {
+  width: 84px; height: 84px;
+  border-radius: 20px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65), 0 0 28px rgba(25, 184, 255, 0.25);
+  margin-bottom: 18px;
+}
+.download p { color: var(--muted); margin: 0 auto 24px; max-width: 500px; }
+
+/* ---- FAQ ---- */
+.faq { border-top: 1px solid var(--line); }
+details {
+  border-bottom: 1px solid var(--line);
+  padding: 18px 0;
+}
+summary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+summary::-webkit-details-marker { display: none; }
+summary::after {
+  content: "+";
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 20px;
+  transition: transform 0.2s;
+}
+details[open] summary::after { transform: rotate(45deg); }
+details p {
+  color: var(--muted);
+  margin: 10px 0 0;
+  max-width: 680px;
+  font-size: 15px;
+}
+
+/* ---- Créateur & Contacts (Mr Paul) ---- */
+#contact {
+  border-top: 1px solid var(--line);
+}
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 28px;
+}
+.contact-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.contact-card:hover {
+  border-color: rgba(25, 184, 255, 0.45);
+  background: rgba(25, 184, 255, 0.06);
+  transform: translateY(-2px);
+}
+.contact-card small {
+  display: block;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.contact-card strong {
+  font-size: 14.5px;
+  color: var(--text);
+}
+
+/* ---- Pied de page ---- */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 32px 0 48px;
+  color: var(--dim);
+  font-size: 13.5px;
+}
+footer .wrap {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+footer a { color: var(--muted); }
+footer a:hover { color: var(--text); }
+
+@media (max-width: 720px) {
+  nav.bar .links { gap: 16px; }
+  .features, .quiet, .contact-grid { grid-template-columns: 1fr; gap: 22px; }
+  .desk-corner { display: none; }
+}
+</style>
 </head>
 <body>
 
-  <!-- NAVIGATION -->
-  <nav>
-    <a href="#" class="brand">
-      <img src="kora-logo.png" alt="Logo Kora" class="brand-img">
-      <span>Kora</span>
-    </a>
-    <ul class="nav-links">
-      <li><a href="#demo">Démo interactive</a></li>
-      <li><a href="#features">Fonctionnalités</a></li>
-      <li><a href="#performance">Optimisation i3 / 8 Go</a></li>
-      <li><a href="#contact">Communauté & Contact</a></li>
-    </ul>
-    <div class="nav-actions">
-      <a href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener" class="btn-wa-nav">
-        <span>📢 Communauté WhatsApp</span>
-      </a>
-      <a href="downloads/Kora-Setup.exe" download="Kora-Setup.exe" class="btn-dl-small">
-        <span>⬇ Télécharger (.exe)</span>
-      </a>
-    </div>
-  </nav>
+<div class="top" aria-hidden="true">
+  <div class="mascot">
+    <div class="glow"></div>
+    <span class="eye"></span>
+    <span class="eye"></span>
+  </div>
+</div>
 
-  <!-- HERO -->
-  <section class="hero" id="demo">
-    <div class="hero-logo-wrap">
-      <img src="kora-logo.png" alt="Kora Logo" class="hero-logo">
-    </div>
+<nav class="bar wrap">
+  <a href="#" class="brand">
+    <img src="kora-logo.png" alt="Logo Kora">
+    <span>Kora</span>
+  </a>
+  <div class="links">
+    <a href="#features">Fonctionnalités</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact">Mr Paul</a>
+    <a href="#download">Télécharger</a>
+  </div>
+</nav>
 
-    <div class="badge-pill">
-      <span class="dot"></span>
-      <span>Kora v1.2 par Mr Paul — Pour Windows 10 & 11</span>
-    </div>
-
-    <h1>
-      Votre haut d'écran prend vie.<br>
-      <span class="grad-txt">Voici Kora Dynamic Island.</span>
-    </h1>
-
-    <p class="hero-sub">
-      Transformez le haut de votre écran Windows en une île dynamique intelligente, fluide et ultra-légère conçue par <b>Mr Paul</b>.
-      Musique & paroles synchronisées, captures d'écran instantanées, étagère Drag & Drop, animations de volume, luminosité et micro.
-    </p>
-
-    <div class="cta-group">
-      <a href="downloads/Kora-Setup.exe" download="Kora-Setup.exe" class="btn-primary">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        <span>Télécharger Kora pour Windows (.exe)</span>
-      </a>
-      <a href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener" class="btn-secondary">
-        <span>📢 Rejoindre la Communauté WhatsApp</span>
-      </a>
-    </div>
-
-    <div class="meta-specs">
-      <span>⚡ Exécution en 1 clic (Aucune config requise)</span>
-      <span>🟢 ~60 Mo RAM (0% CPU au repos)</span>
-      <span>💻 Optimisé dès Intel Core i3 & 8 Go RAM</span>
-      <span>👨‍💻 Créé par <b>Mr Paul</b></span>
-    </div>
-
-    <!-- INTERACTIVE SIMULATOR BUTTONS -->
-    <div class="demo-bar">
-      <button class="demo-btn active" data-sim="eyes">👀 Yeux Kora</button>
-      <button class="demo-btn" data-sim="music">🎵 Musique & Paroles</button>
-      <button class="demo-btn" data-sim="volume">🔊 Volume Clavier</button>
-      <button class="demo-btn" data-sim="brightness">☀️ Luminosité</button>
-      <button class="demo-btn" data-sim="mic">🎙️ Micro Coupé (Yeux)</button>
-      <button class="demo-btn" data-sim="screenshot">📸 Capture → Fichiers</button>
-      <button class="demo-btn" data-sim="shelf">📂 Drag & Drop</button>
-    </div>
-
-    <!-- LAPTOP MOCKUP WITH LIVE KORA NOTCH -->
-    <div class="laptop-frame">
-      <div class="desktop-bg"></div>
-
-      <div class="sim-notch" id="simNotch" data-mode="eyes">
-        <div class="sim-glow"></div>
-
-        <!-- 1. EYES -->
-        <div class="sim-view v-eyes">
-          <div class="visor-eyes">
-            <i class="visor-eye"></i>
-            <span class="visor-mic-dot" title="Micro désactivé">🎙️</span>
-            <i class="visor-eye"></i>
-          </div>
-        </div>
-
-        <!-- 2. MUSIC -->
-        <div class="sim-view v-music" style="flex-direction:column;justify-content:space-between;align-items:stretch">
-          <div style="display:flex;align-items:center;gap:14px;margin-top:8px">
-            <img src="kora-logo.png" alt="Kora" style="width:48px;height:48px;border-radius:12px">
-            <div style="text-align:left;flex:1">
-              <div style="font-weight:800;font-size:15px;color:#fff">Starboy (Live Sync)</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.6)">Apple Music · Spotify · Paroles actives</div>
-            </div>
-            <div style="color:var(--lime);font-weight:800;font-size:12px">▮▮▮</div>
-          </div>
-          <div style="height:5px;border-radius:3px;background:rgba(255,255,255,0.18);overflow:hidden">
-            <div style="width:64%;height:100%;background:var(--grad)"></div>
-          </div>
-          <div style="display:flex;justify-content:center;gap:28px;font-size:16px;color:#fff;margin-bottom:4px">
-            <span>⏮</span><span>⏸</span><span>⏭</span><span style="color:var(--lime)">💬 Paroles</span>
-          </div>
-        </div>
-
-        <!-- 3. VOLUME -->
-        <div class="sim-view v-volume" style="justify-content:space-between;gap:14px">
-          <span style="font-size:20px">🔊</span>
-          <div style="flex:1;text-align:left">
-            <div style="font-size:13px;font-weight:700;margin-bottom:6px">Volume système</div>
-            <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.18);overflow:hidden">
-              <div style="width:78%;height:100%;background:var(--grad)"></div>
-            </div>
-          </div>
-          <span style="font-weight:800;font-size:18px;color:var(--lime)">78%</span>
-        </div>
-
-        <!-- 4. BRIGHTNESS -->
-        <div class="sim-view v-brightness" style="justify-content:space-between;gap:14px">
-          <span style="font-size:20px">☀️</span>
-          <div style="flex:1;text-align:left">
-            <div style="font-size:13px;font-weight:700;margin-bottom:6px">Luminosité écran</div>
-            <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.18);overflow:hidden">
-              <div style="width:90%;height:100%;background:linear-gradient(90deg,#a3ff12,#ffd000)"></div>
-            </div>
-          </div>
-          <span style="font-weight:800;font-size:18px;color:var(--gold)">90%</span>
-        </div>
-
-        <!-- 5. MIC MUTE -->
-        <div class="sim-view v-mic" style="justify-content:space-between;gap:12px">
-          <span style="width:34px;height:34px;border-radius:50%;background:rgba(255,59,71,0.22);border:1.5px solid #ff3b47;display:grid;place-items:center">🔇</span>
-          <div style="flex:1;text-align:left">
-            <div style="font-size:13.5px;font-weight:700">Microphone désactivé</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.6)">Témoin rouge affiché sur les yeux Kora</div>
-          </div>
-          <span style="font-size:11px;font-weight:800;color:#ff4b55;background:rgba(255,59,71,0.18);padding:4px 9px;border-radius:99px">MUET</span>
-        </div>
-
-        <!-- 6. SCREENSHOT -->
-        <div class="sim-view v-screenshot" style="justify-content:space-between;gap:12px">
-          <div style="width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#00e676,#ffd000);border:1.5px solid var(--lime);display:grid;place-items:center;color:#000;font-weight:900">PNG</div>
-          <div style="flex:1;text-align:left">
-            <div style="font-size:13.5px;font-weight:700;color:var(--lime)">Capture aspirée dans Kora !</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.65)">Ajoutée automatiquement aux Fichiers Drag & Drop</div>
-          </div>
-        </div>
-
-        <!-- 7. FILE SHELF -->
-        <div class="sim-view v-shelf" style="gap:12px">
-          <div style="width:74px;height:100px;border-radius:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(163,255,18,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
-            <span style="font-size:24px">🖼️</span>
-            <span style="font-size:10px;font-weight:700">Capture.png</span>
-            <span style="font-size:8.5px;color:var(--lime)">Glisser ailleurs</span>
-          </div>
-          <div style="width:74px;height:100px;border-radius:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
-            <span style="font-size:24px">📄</span>
-            <span style="font-size:10px;font-weight:700">Projet.pdf</span>
-            <span style="font-size:8.5px;color:var(--muted)">1.4 Mo</span>
-          </div>
-          <div style="flex:1;height:100px;border-radius:14px;border:1.5px dashed rgba(163,255,18,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
-            <span style="font-size:12px;font-weight:700;color:var(--lime)">Glissez dedans ou dehors</span>
-            <span style="font-size:10.5px;color:var(--muted)">Vers WhatsApp, Discord, Bureau…</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="laptop-caption">
-        <h4 id="simCaptionTitle">👀 Yeux Cyber-Visor Kora (Vert Émeraude & Or)</h4>
-        <p id="simCaptionDesc">Au repos, Kora veille discrètement en haut de votre écran et suit subtilement votre souris.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURES BENTO -->
-  <section class="section" id="features">
-    <div class="sec-head">
-      <h2>Tout ce dont vous avez besoin, tout là-haut.</h2>
-      <p>Conçu pour accélérer votre quotidien sur Windows sans jamais encombrer votre écran.</p>
-    </div>
-
-    <div class="bento">
-      <div class="card">
-        <div class="card-icon">📸</div>
-        <h3>Capture d'écran Furtive → Drag & Drop</h3>
-        <p>
-          Prenez une capture d'écran (<b>Win+Shift+S</b>) : Kora est <b>100% invisible</b> sur l'image capturée, aspire la capture avec une animation fluide et la range directement dans votre étagère <b>Fichiers</b> prête à être glissée vers WhatsApp ou Discord.
-        </p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">🔊</div>
-        <h3>Animations Volume, Luminosité & Micro</h3>
-        <p>
-          Augmentez le son ou la luminosité au clavier : Kora s'anime instantanément. Coupez votre micro : une animation s'affiche et un témoin lumineux reste visible directement sur les yeux de Kora.
-        </p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">📂</div>
-        <h3>Étagère Fichiers Bidirectionnelle</h3>
-        <p>
-          Glissez n'importe quel fichier dans Kora pour le garder sous la main, puis <b>reglissez-le hors de Kora</b> vers n'importe quelle application, dossier ou fenêtre en un mouvement.
-        </p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">📋</div>
-        <h3>Presse-papiers Intelligent Instantané</h3>
-        <p>
-          Chaque <b>Ctrl+C</b> (texte, lien, code couleur HEX ou image) est capturé automatiquement et disponible en un clic avec recherche instantanée et épinglage.
-        </p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">🎵</div>
-        <h3>Apple Music, Spotify & Paroles Live</h3>
-        <p>
-          Détection native via Windows Media Control : pochette HD automatique, contrôle de lecture et paroles synchronisées ligne par ligne en temps réel.
-        </p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">🖥️</div>
-        <h3>Rétractation & Plein Écran Intelligent</h3>
-        <p>
-          Se rétracte automatiquement dans la bordure supérieure ou disparaît totalement dès que WhatsApp, une vidéo ou un jeu passe en plein écran / fenêtre maximisée.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- PERFORMANCE -->
-  <section class="section" id="performance">
-    <div class="perf-banner">
-      <div>
-        <div class="stat-num">~60 Mo</div>
-        <div class="stat-lbl">Empreinte RAM ultra-légère</div>
-      </div>
-      <div>
-        <div class="stat-num">0% CPU</div>
-        <div class="stat-lbl">Au repos ou rétractée</div>
-      </div>
-      <div>
-        <div class="stat-num">Core i3+</div>
-        <div class="stat-lbl">Fluide dès 8 Go de RAM</div>
-      </div>
-      <div>
-        <div class="stat-num">1 Clic</div>
-        <div class="stat-lbl">Téléchargez, lancez, c'est prêt</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- COMMUNAUTÉ & CONTACTS MR PAUL -->
-  <section class="section" id="contact">
-    <div class="contact-box">
-      <img src="kora-logo.png" alt="Logo Kora" style="width:60px;height:60px;border-radius:16px;margin-bottom:14px;box-shadow:0 0 24px rgba(0,230,118,0.4)">
-      <h2 style="font-size:clamp(26px,3.6vw,38px);font-weight:900;margin-bottom:10px">
-        Créé par <span style="color:var(--lime)">Mr Paul</span> — Rejoignez la Communauté !
-      </h2>
-      <p style="color:var(--muted);max-width:600px;margin:0 auto;font-size:16px">
-        Suivez les mises à jour de Kora, découvrez les prochains projets ou contactez directement Mr Paul sur WhatsApp et par mail.
-      </p>
-
-      <div class="contact-cards">
-        <a href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener" class="contact-item">
-          <span class="c-badge">📢</span>
-          <strong>Communauté WhatsApp</strong>
-          <span>Rejoindre la chaîne officielle de Mr Paul</span>
+<main>
+  <section class="hero wrap">
+    <h1>Une encoche vivante en haut de votre Windows.</h1>
+    <p class="lede">Kora repose discrètement en haut de votre écran et s'ouvre au survol : musique, paroles synchronisées, presse-papiers, fichiers drag &amp; drop, notifications PC et rappels.</p>
+    <div class="cta">
+      <div class="cta-row">
+        <a class="dl-btn" href="downloads/Kora-Setup.exe" download="Kora-Setup.exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Télécharger Kora (.exe)
         </a>
-
-        <a href="https://wa.me/2250151191073" target="_blank" rel="noopener" class="contact-item">
-          <span class="c-badge">💬</span>
-          <strong>WhatsApp Direct</strong>
-          <span>+225 01 51 19 10 73 (wa.me/+2250151191073)</span>
-        </a>
-
-        <a href="mailto:ivannguessan09@gmail.com" class="contact-item">
-          <span class="c-badge">✉️</span>
-          <strong>Email Direct</strong>
-          <span>ivannguessan09@gmail.com</span>
+        <a class="sec-btn" href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener">
+          Rejoindre la Communauté WhatsApp
         </a>
       </div>
+      <span class="sub">Pour Windows 10 et 11 (64-bit) · <b>Gratuit</b> · Optimisé dès Intel Core i3 &amp; 8 Go RAM · Créé par <b>Mr Paul</b></span>
     </div>
   </section>
 
-  <footer>
-    <div class="footer-brand">
-      <img src="kora-logo.png" alt="Kora" style="width:28px;height:28px;border-radius:7px">
-      <span>Kora — par Mr Paul</span>
+  <!-- ================= Aperçu interactif ================= -->
+  <section class="stage">
+    <div class="wrap">
+      <div class="laptop" id="laptop"><div class="screen">
+        <div class="bloom" aria-hidden="true"><i class="p1"></i><i class="p2"></i><i class="p3"></i><i class="p4"></i></div>
+        <div class="desk-corner l"><span class="js-date">Sam 18 Oct</span></div>
+        <div class="desk-corner r"><span class="js-time">12:00</span></div>
+
+        <!-- Fichier glissé vers l'encoche pendant la démo Fichiers -->
+        <div class="ghost" id="ghost" aria-hidden="true">
+          <span class="g-thumb"></span>
+          <svg class="g-cur" viewBox="0 0 18 22"><path d="M2 1.5v16l4.2-3.6 2.7 5.6 2.3-1.1-2.7-5.5 5.5-.4z" fill="#fff" stroke="#000" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        </div>
+
+        <div class="mn-holder" id="mnHolder">
+          <div>
+            <div class="mn" id="mn" data-s="pet">
+              <!-- Au repos (Yeux Kora) -->
+              <div class="ly l-pet">
+                <div class="ambient"></div>
+                <div class="eyes"><i class="eye"></i><i class="eye"></i></div>
+              </div>
+
+              <!-- Fermée (Horloge + Égaliseur) -->
+              <div class="ly l-idle">
+                <span class="a ring c" style="left:21.5px;top:17.5px"></span>
+                <span class="a b c js-time" style="left:90px;top:17.5px;font-size:15px">12:00</span>
+                <span class="a bars c" style="left:154px;top:17.5px"><i></i><i></i><i></i><i></i><i></i></span>
+              </div>
+
+              <!-- Barre d'en-tête & points de navigation -->
+              <div class="ly l-hdr">
+                <div class="a hdr-r">
+                  <span class="ring"></span>
+                  <span class="cam"></span>
+                  <span class="dot"></span>
+                  <b class="js-time">12:00</b>
+                </div>
+              </div>
+              <div class="ly l-dots"><span class="a dots"><i></i><i></i><i></i><i></i></span></div>
+
+              <!-- Musique -->
+              <div class="ly l-music">
+                <span class="a art" style="left:22px;top:12px;width:62px;height:62px"></span>
+                <span class="a vc sb" style="left:100px;top:47px;font-size:15px">Midnight Flow</span>
+                <span class="a vc dim" style="left:100px;top:63px;font-size:11.5px">Kora Sound · Apple Music &amp; Spotify</span>
+                <span class="a arw c" style="left:395px;top:70px"><svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg></span>
+                <span class="a vc" style="left:25px;top:91px">02:18</span>
+                <span class="a prog vc" style="left:77px;top:91px;width:260px"><i></i></span>
+                <span class="a vc" style="right:25px;top:91px">-01:12</span>
+                <svg class="a bub c" style="left:53px;top:118px" viewBox="0 0 18 16"><path d="M4 .8h10a3.2 3.2 0 0 1 3.2 3.2v4.6a3.2 3.2 0 0 1-3.2 3.2H8.4L4.6 15l.5-3.2H4A3.2 3.2 0 0 1 .8 8.6V4A3.2 3.2 0 0 1 4 .8z" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.3"/><circle cx="6.3" cy="5.4" r="1.3" fill="#19b8ff"/><circle cx="11.3" cy="5.4" r="1.3" fill="#fff"/></svg>
+                <svg class="a ctl c" style="left:162.5px;top:118px" viewBox="0 0 24 24"><path d="M11 6 3 12l8 6zM21 6l-8 6 8 6z"/></svg>
+                <svg class="a ctl c" style="left:210px;top:118px" viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+                <svg class="a ctl c" style="left:257.5px;top:118px" viewBox="0 0 24 24"><path d="m13 6 8 6-8 6zM3 6l8 6-8 6z"/></svg>
+              </div>
+
+              <!-- Paroles synchronisées -->
+              <div class="ly l-lyrics">
+                <div class="ambient"></div>
+                <span class="a art" style="left:22px;top:12px;width:62px;height:62px"></span>
+                <span class="a vc sb" style="left:100px;top:47px;font-size:15px">Midnight Flow</span>
+                <span class="a vc dim" style="left:100px;top:63px;font-size:11.5px">Kora Sound · Live…</span>
+                <span class="a vc" style="left:25px;top:91px">02:59</span>
+                <span class="a prog vc" style="left:76px;top:91px;width:108px"><i></i></span>
+                <span class="a vc" style="right:284px;top:91px">-01:17</span>
+                <svg class="a bub c" style="left:53px;top:118px" viewBox="0 0 18 16"><path d="M4 .8h10a3.2 3.2 0 0 1 3.2 3.2v4.6a3.2 3.2 0 0 1-3.2 3.2H8.4L4.6 15l.5-3.2H4A3.2 3.2 0 0 1 .8 8.6V4A3.2 3.2 0 0 1 4 .8z" fill="#19b8ff"/><circle cx="6.3" cy="5.4" r="1.3" fill="#000"/><circle cx="11.3" cy="5.4" r="1.3" fill="#000"/></svg>
+                <svg class="a ctl c" style="left:91px;top:118px" viewBox="0 0 24 24"><path d="M11 6 3 12l8 6zM21 6l-8 6 8 6z"/></svg>
+                <svg class="a ctl c" style="left:131px;top:118px" viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+                <svg class="a ctl c" style="left:171px;top:118px" viewBox="0 0 24 24"><path d="m13 6 8 6-8 6zM3 6l8 6-8 6z"/></svg>
+                <span class="a" style="left:252px;top:22px;width:1px;height:102px;background:rgba(255,255,255,.12)"></span>
+                <div class="a lyr"><ol id="lyr">
+                  <li>La lumière bleue glisse sur l'écran</li>
+                  <li>Kora s'anime tout doucement</li>
+                  <li>Chaque parole suit la mélodie</li>
+                  <li>Sans jamais quitter votre appli</li>
+                  <li>Fluide, rapide et silencieux</li>
+                  <li>Tout votre Windows sous les yeux</li>
+                </ol></div>
+              </div>
+
+              <!-- Presse-papiers -->
+              <div class="ly l-clip">
+                <span class="a ttl vc">Presse-<span style="color:#19b8ff">papiers</span></span>
+                <span class="a arw c" style="left:22px;top:70px"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
+                <span class="a arw c" style="left:395px;top:70px"><svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg></span>
+                <span class="a cp-row" style="top:36px"><span class="cp-tag">LIEN</span><span>https://github.com/botooooh/Kora</span></span>
+                <span class="a cp-row" style="top:66px"><span class="cp-tag">TXT</span><span>Contact Mr Paul : +225 01 51 19 10 73</span></span>
+                <span class="a cp-row" style="top:96px"><span class="cp-tag">HEX</span><span>#19B8FF · Bleu Fluide Kora</span></span>
+              </div>
+
+              <!-- Fichiers (Shelf) -->
+              <div class="ly l-shelf" id="shelf">
+                <canvas class="a" id="shCv" width="840" height="280" style="left:0;top:0;width:420px;height:140px" aria-hidden="true"></canvas>
+                <span class="a ttl vc">Fichiers</span>
+                <span class="a sh-clear vc">Vider</span>
+                <span class="a arw c" style="left:22px;top:70px"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
+                <span class="a arw c" style="left:395px;top:70px"><svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg></span>
+                <div class="a sh-card" style="left:44px"><span class="sh-thumb t-img"></span><span class="sh-name">Capture.png</span><span class="sh-size">1.8 MB</span></div>
+                <div class="a sh-card" style="left:112px"><span class="sh-thumb t-folder"><svg viewBox="0 0 44 44"><path d="M4 11a3 3 0 0 1 3-3h10l4 4h16a3 3 0 0 1 3 3v19a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="#1982ff"/><path d="M4 16h36v18a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="#59bfff"/></svg></span><span class="sh-name">Projet Kora</span><span class="sh-size">Dossier</span></div>
+                <div class="a sh-zone">
+                  <span class="a zone"></span>
+                  <svg class="a c sh-icon" style="left:168px;top:28px;width:30px;height:30px" viewBox="-15 -22 30 32"><path d="M-10.2-8h20.4l3.2 7.8h-26.8z" fill="rgba(25,184,255,.28)"/><path class="sh-arrow" d="M-1.7-21h3.4v6.5h3.5L0-8.5l-5.2-6H-1.7z" fill="#70d6ff"/><path d="M-14 1h8.8l1.6 3.2h7.2L5.2 1H14v8h-28z" fill="#19b8ff"/></svg>
+                  <span class="a c sh-t1" style="left:168px;top:58px;font-size:13px">Glissez vos fichiers ici</span>
+                  <span class="a c sh-t2" style="left:168px;top:58px;font-size:13px">Relâchez pour ajouter</span>
+                  <span class="a c dim sh-sub" style="left:168px;top:73px;font-size:9.5px">Glissez vers n'importe quelle appli · clic pour ouvrir</span>
+                </div>
+              </div>
+
+              <!-- To-do -->
+              <div class="ly l-todo">
+                <span class="a ttl vc">Todo<span style="color:#19b8ff">List</span></span>
+                <span class="a arw c" style="left:22px;top:70px"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
+                <span class="a b vc" style="left:44px;top:48px;font-size:32px;color:#19b8ff">3/3</span>
+                <span class="a vc dim" style="left:44px;top:76px;font-size:11.5px">Tâches terminées</span>
+                <span class="a pill" style="left:41px;top:93px;width:72px;font-size:11.5px;gap:5px"><svg viewBox="0 0 24 24" style="fill:#fff;stroke:none"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 5v4h4v2h-4v4h-2v-4H7v-2h4V7z"/></svg>Ajouter</span>
+                <span class="a pill" style="left:118px;top:93px;width:66px;font-size:11.5px;gap:5px"><svg viewBox="0 0 24 24"><path d="M4 20h7M14 5l5 5-9 9H5v-5z"/></svg>Éditer</span>
+                <span class="a trow" style="top:34px"><span class="chk"><svg viewBox="0 0 10 10"><path d="m2 5.2 2 2 4-4.4"/></svg></span><s>Tester Kora sur Windows</s></span>
+                <span class="a trow" style="top:65px"><span class="chk"><svg viewBox="0 0 10 10"><path d="m2 5.2 2 2 4-4.4"/></svg></span><s>Glisser une capture d'écran</s></span>
+                <span class="a trow" style="top:96px"><span class="chk"><svg viewBox="0 0 10 10"><path d="m2 5.2 2 2 4-4.4"/></svg></span><s>Rejoindre la chaîne Mr Paul</s></span>
+              </div>
+
+              <!-- Notification PC compacte -->
+              <div class="ly l-notif">
+                <span class="a c" style="left:32px;top:28px;width:30px;height:30px;border-radius:9px;background:rgba(25,184,255,.18);box-shadow:inset 0 0 0 1px rgba(25,184,255,.45);display:grid;place-items:center">
+                  <svg viewBox="0 0 24 24" style="width:16px;height:16px" fill="none" stroke="#25D366" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                </span>
+                <span class="a vc sb" style="left:58px;top:20px;font-size:13px">WhatsApp · Mr Paul</span>
+                <span class="a vc dim" style="left:58px;top:37px;font-size:11px">Nouveau message reçu…</span>
+                <span class="a vc" style="right:16px;top:28px;width:7px;height:7px;border-radius:50%;background:#19b8ff;box-shadow:0 0 8px #19b8ff"></span>
+              </div>
+
+              <!-- Volume / Luminosité -->
+              <div class="ly l-vol">
+                <span class="a pk-ring"><svg viewBox="0 0 30 30"><circle cx="15" cy="15" r="11" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="5"/><circle class="arc" cx="15" cy="15" r="11" fill="none" stroke="#19b8ff" stroke-width="5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="69.1"/></svg></span>
+                <svg class="a c" style="left:35px;top:30px;width:13px;height:13px" viewBox="0 0 24 24" fill="#fff"><path d="M3.5 9.5h3.8L12 5.5v13l-4.7-4H3.5z"/></svg>
+                <span class="a vc sb" style="left:64px;top:21px;font-size:13.5px">Volume système</span>
+                <span class="a vc" style="left:64px;top:40px;width:180px;height:5px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden"><i style="display:block;width:78%;height:100%;background:linear-gradient(90deg,#2d5bff,#19b8ff,#fff)"></i></span>
+                <span class="a vc b" style="right:20px;top:30px;font-size:18px;color:#70d6ff">78%</span>
+              </div>
+
+              <!-- En charge -->
+              <div class="ly l-charge">
+                <span class="a pk-ring"><svg viewBox="0 0 30 30"><circle cx="15" cy="15" r="11" fill="none" stroke="rgba(25,184,255,.28)" stroke-width="5"/><circle class="arc" cx="15" cy="15" r="11" fill="none" stroke="#19b8ff" stroke-width="5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="69.1"/></svg></span>
+                <svg class="a c" style="left:35px;top:30px;width:11px;height:13px" viewBox="0 0 10 14"><path d="M6 0 0 8h4l-1 6 6-8H5z" fill="#fff"/></svg>
+                <span class="a vc sb" style="left:64px;top:22px;font-size:15px">En charge</span>
+                <span class="a vc dim" style="left:64px;top:40px;font-size:11.5px">Chargeur branché</span>
+                <span class="a vc b" style="right:22px;top:30px;font-size:22px;color:#70d6ff">85%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
     </div>
-    <p>La Dynamic Island vivante et ultra-optimisée pour Windows · Design Vert Émeraude & Or Solaire</p>
-    <div class="footer-links">
-      <a href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener">📢 Communauté WhatsApp</a>
-      <a href="https://wa.me/2250151191073" target="_blank" rel="noopener">💬 WhatsApp : +225 01 51 19 10 73</a>
-      <a href="mailto:ivannguessan09@gmail.com">✉️ ivannguessan09@gmail.com</a>
-      <a href="downloads/Kora-Setup.exe" download="Kora-Setup.exe">⬇ Télécharger Kora (.exe)</a>
+
+    <div class="wrap">
+      <div class="try" role="group" aria-label="Tester l'encoche Kora">
+        <button type="button" data-s="pet" aria-pressed="true">Au repos</button>
+        <button type="button" data-s="idle" aria-pressed="false">Fermée</button>
+        <button type="button" data-s="music" aria-pressed="false">Musique</button>
+        <button type="button" data-s="lyrics" aria-pressed="false">Paroles</button>
+        <button type="button" data-s="clip" aria-pressed="false">Presse-papiers</button>
+        <button type="button" data-s="shelf" aria-pressed="false">Fichiers</button>
+        <button type="button" data-s="todo" aria-pressed="false">To-Do</button>
+        <button type="button" data-s="notif" aria-pressed="false">Notification PC</button>
+        <button type="button" data-s="vol" aria-pressed="false">Volume</button>
+        <button type="button" data-s="charge" aria-pressed="false">En charge</button>
+      </div>
+      <p class="cap" id="cap" aria-live="polite"></p>
     </div>
-  </footer>
+  </section>
 
-  <script>
-    const simNotch = document.getElementById('simNotch');
-    const simTitle = document.getElementById('simCaptionTitle');
-    const simDesc = document.getElementById('simCaptionDesc');
+  <!-- ================= Fonctionnalités ================= -->
+  <section id="features" class="wrap">
+    <h2 class="sec-title">Tout ce que vous consultez, au même endroit.</h2>
+    <p class="sec-lede">Survolez l'encoche pour l'ouvrir. Éloignez la souris et elle se rétracte immédiatement, même depuis les paramètres.</p>
+    <div class="features">
+      <div class="feature">
+        <span class="app" style="--c1:#38c8ff;--c2:#0052ff"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="17" r="2.6"/><circle cx="17" cy="15" r="2.6"/><path d="M10.1 17V6l9.5-2v11"/></svg></span>
+        <div><h3>Musique de tous vos lecteurs</h3><p>Apple Music, Spotify, YouTube ou votre navigateur : voyez le titre en cours, mettez en pause et changez de piste sans quitter votre fenêtre.</p></div>
+      </div>
+      <div class="feature">
+        <span class="app" style="--c1:#5fb2ff;--c2:#1f55d6"><svg viewBox="0 0 24 24"><path d="M6 4.5h12a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-7l-5 3.5.8-3.5H6a3 3 0 0 1-3-3v-6a3 3 0 0 1 3-3z"/><path class="fill" d="M9.4 8.6a1.6 1.6 0 1 1-1.3 2.6c0 1 .5 1.7 1.3 2.1-1.8-.3-2.6-1.5-2.6-3 0-1 .9-1.7 2.6-1.7zm5.2 0a1.6 1.6 0 1 1-1.3 2.6c0 1 .5 1.7 1.3 2.1-1.8-.3-2.6-1.5-2.6-3 0-1 .9-1.7 2.6-1.7z"/></svg></span>
+        <div><h3>Paroles synchronisées</h3><p>Cliquez sur l'icône des paroles et l'encoche se divise en deux : chaque ligne s'illumine en rythme avec la chanson.</p></div>
+      </div>
+      <div class="feature">
+        <span class="app" style="--c1:#7fe0ff;--c2:#1660e8"><svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></span>
+        <div><h3>Presse-papiers instantané</h3><p>Chaque texte, lien, couleur HEX ou capture copié (Ctrl+C) est mémorisé instantanément. Un clic suffit pour le recopier ou l'épingler.</p></div>
+      </div>
+      <div class="feature">
+        <span class="app" style="--c1:#b6bfd0;--c2:#47526b"><svg viewBox="0 0 24 24"><path class="fill" d="M6.5 6h11l2.3 5.5H4.2z" style="opacity:.55"/><path class="fill" d="M3 12.5h5.6l1.2 2.3h4.4l1.2-2.3H21V19a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19z"/><path d="M12 2v6M9.5 5.5 12 8l2.5-2.5"/></svg></span>
+        <div><h3>Étagère à fichiers &amp; Captures</h3><p>Glissez vos fichiers dans Kora ou prenez une capture (Win+Shift+S) : glissez-les ensuite directement vers WhatsApp, Discord, un mail ou un dossier.</p></div>
+      </div>
+      <div class="feature">
+        <span class="app" style="--c1:#38b6ff;--c2:#0044cc"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+        <div><h3>Notifications PC compactes</h3><p>Kora masque la grande bannière Windows en bas à droite et affiche un aperçu court et élégant avec l'icône de l'application concernée.</p></div>
+      </div>
+      <div class="feature">
+        <span class="app" style="--c1:#5ad2ff;--c2:#0a74b8"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m8 12.3 2.7 2.7L16.2 9.4"/></svg></span>
+        <div><h3>To-Do avec rappels</h3><p>Notez une tâche, choisissez une heure, et Kora s'ouvre avec un signal doux au moment prévu.</p></div>
+      </div>
+      <div class="feature">
+        <span class="app" style="--c1:#f2f4f8;--c2:#a7afbf;--g:#0f172a"><svg viewBox="0 0 24 24"><path class="fill" d="M3.5 9.5h3.8L12 5.5v13l-4.7-4H3.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18.2 6.5a7.6 7.6 0 0 1 0 11"/></svg></span>
+        <div><h3>Volume, luminosité et batterie</h3><p>Des animations fluides lorsque vous réglez le son ou la luminosité au clavier, ou lorsque vous branchez votre chargeur.</p></div>
+      </div>
+      <div class="feature">
+        <span class="app" style="--c1:#2d7eff;--c2:#082b7a"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span>
+        <div><h3>Contrôle sur vos captures d'écran</h3><p>Choisissez dans les paramètres si vous souhaitez que Kora apparaisse ou reste totalement invisible sur vos captures et enregistrements vidéo.</p></div>
+      </div>
+    </div>
+  </section>
 
-    const descriptions = {
-      eyes: [
-        '👀 Yeux Cyber-Visor Kora (Vert Émeraude & Or)',
-        'Au repos, Kora veille discrètement en haut de votre écran et suit subtilement votre souris.'
-      ],
-      music: [
-        '🎵 Lecteur Musical & Paroles Synchronisées',
-        'Compatible Apple Music, Spotify et YouTube avec pochette HD et paroles défilantes en temps réel.'
-      ],
-      volume: [
-        '🔊 Animation Volume Clavier',
-        'Appuyez sur Volume + / - sur votre clavier : la jauge Émeraude & Or s’anime instantanément.'
-      ],
-      brightness: [
-        '☀️ Animation Luminosité Écran',
-        'Ajustez la luminosité de votre PC portable et visualisez l’animation solaire directement dans Kora.'
-      ],
-      mic: [
-        '🎙️ Alerte Microphone Coupé + Témoin sur les Yeux',
-        'Coupez votre micro : Kora affiche une animation et garde un témoin rouge entre ses yeux.'
-      ],
-      screenshot: [
-        '📸 Capture d’Écran Furtive → Étagère Fichiers',
-        'Kora est invisible sur vos captures d’écran et range automatiquement l’image dans vos Fichiers.'
-      ],
-      shelf: [
-        '📂 Étagère Drag & Drop (Entrant & Sortant)',
-        'Déposez vos fichiers dans Kora, puis glissez-les hors de Kora vers WhatsApp, Discord ou le Bureau.'
-      ]
-    };
+  <section class="wrap">
+    <h2 class="sec-title">Un compagnon discret qui sait se faire oublier.</h2>
+    <p class="sec-lede">Quand rien ne se passe, l'horloge laisse place aux yeux lumineux de Kora. Dès que vous lancez une application ou un jeu en plein écran, elle s'efface.</p>
+    <div class="quiet">
+      <div><h3>Ultra-léger sur votre PC</h3><p>Kora ne dessine que lorsque quelque chose bouge. Au repos, elle consomme 0 % de CPU et fonctionne parfaitement dès un Intel Core i3 avec 8 Go de RAM.</p></div>
+      <div><h3>Vos données restent locales</h3><p>Vos tâches, votre presse-papiers, vos fichiers et vos paramètres sont enregistrés uniquement sur votre ordinateur. Aucun compte requis.</p></div>
+      <div><h3>Conçu nativement pour Windows</h3><p>Pensé pour Windows 10 et 11, net sur toutes les échelles d'écran, avec rétractation automatique dès que vous quittez la zone d'activation.</p></div>
+    </div>
+  </section>
 
-    document.querySelectorAll('.demo-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const mode = btn.dataset.sim;
-        simNotch.dataset.mode = mode;
-        if (mode === 'mic') {
-          simNotch.classList.add('mic-off');
-        }
-        const [t, d] = descriptions[mode] || descriptions.eyes;
-        simTitle.textContent = t;
-        simDesc.textContent = d;
-      });
-    });
-  </script>
+  <!-- ================= Téléchargement ================= -->
+  <section id="download" class="wrap download">
+    <img class="icon" src="kora-logo.png" alt="Icône de l'application Kora">
+    <h2 class="sec-title">Prêt à installer Kora ?</h2>
+    <p>Téléchargez l'exécutable en un clic, lancez-le et Kora apparaît immédiatement en haut de votre écran Windows.</p>
+    <div class="cta">
+      <a class="dl-btn" href="downloads/Kora-Setup.exe" download="Kora-Setup.exe">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Télécharger Kora pour Windows (.exe)
+      </a>
+      <span class="sub">Version 2.0 · Installation instantanée sans configuration · Windows 10 &amp; 11</span>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section id="faq" class="wrap faq">
+    <h2 class="sec-title">Questions fréquentes</h2>
+    <details><summary>Kora est-elle gratuite ?</summary><p>Oui, Kora est entièrement gratuite à télécharger et à utiliser sur Windows 10 et Windows 11.</p></details>
+    <details><summary>Quels lecteurs de musique fonctionnent avec Kora ?</summary><p>Tous les lecteurs reconnus par Windows : Apple Music, Spotify, Windows Media Player, ainsi que YouTube, Deezer ou SoundCloud dans Chrome, Edge, Brave et Firefox.</p></details>
+    <details><summary>Est-ce que Kora va ralentir mon PC ?</summary><p>Non. Kora a été spécifiquement optimisée pour tourner de manière fluide sur les PC à partir de 8 Go de RAM et processeur Intel Core i3, avec 0 % d'utilisation processeur au repos.</p></details>
+    <details><summary>Puis-je afficher ou masquer Kora sur mes captures d'écran ?</summary><p>Oui ! Dans l'onglet Paramètres de Kora, activez l'option « Afficher Kora sur mes captures / vidéos » si vous voulez qu'elle soit visible, ou désactivez-la pour qu'elle reste invisible.</p></details>
+    <details><summary>Comment fonctionnent les notifications PC dans Kora ?</summary><p>Lorsqu'une notification arrive sur votre PC, Kora masque automatiquement la grande fenêtre de notification Windows en bas à droite et affiche un court aperçu discret en haut avec l'icône de l'application.</p></details>
+    <details><summary>Comment quitter Kora ou régler le démarrage automatique ?</summary><p>Survolez Kora pour ouvrir l'onglet Paramètres, ou faites un clic droit sur l'icône Kora dans la barre des tâches Windows (près de l'horloge).</p></details>
+  </section>
+
+  <!-- ================= Contacts Mr Paul ================= -->
+  <section id="contact" class="wrap">
+    <h2 class="sec-title">Créateur &amp; Communauté</h2>
+    <p class="sec-lede" style="margin-bottom:24px">Kora est conçue et développée par <b>Mr Paul</b>. Rejoignez la communauté officielle ou contactez-le directement.</p>
+    <div class="contact-grid">
+      <a class="contact-card" href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener">
+        <span class="app" style="--c1:#38c8ff;--c2:#0052ff;width:40px;height:40px;border-radius:11px;flex-shrink:0">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
+        <div>
+          <small>Chaîne Officielle WhatsApp</small>
+          <strong>Communauté Mr Paul</strong>
+        </div>
+      </a>
+      <a class="contact-card" href="https://wa.me/2250151191073" target="_blank" rel="noopener">
+        <span class="app" style="--c1:#5ad2ff;--c2:#0a74b8;width:40px;height:40px;border-radius:11px;flex-shrink:0">
+          <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        </span>
+        <div>
+          <small>WhatsApp Direct · Mr Paul</small>
+          <strong>+225 01 51 19 10 73</strong>
+        </div>
+      </a>
+      <a class="contact-card" href="mailto:ivannguessan09@gmail.com">
+        <span class="app" style="--c1:#7fe0ff;--c2:#1660e8;width:40px;height:40px;border-radius:11px;flex-shrink:0">
+          <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        </span>
+        <div>
+          <small>Email Direct</small>
+          <strong>ivannguessan09@gmail.com</strong>
+        </div>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>&copy; 2026 Kora · Créé par <b>Mr Paul</b> (<a href="mailto:ivannguessan09@gmail.com">ivannguessan09@gmail.com</a> · <a href="https://wa.me/2250151191073">+225 01 51 19 10 73</a>).</span>
+    <span><a href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener">Communauté WhatsApp</a> &nbsp; <a href="#faq">FAQ</a> &nbsp; <a href="#download">Télécharger</a></span>
+  </div>
+</footer>
+
+<script>
+// ---- Aperçu interactif de la Kora Notch -------------------------------------------------
+const mn = document.getElementById("mn");
+const cap = document.getElementById("cap");
+const btns = document.querySelectorAll(".try button");
+const captions = {
+  pet: "Quand rien ne se passe, l'horloge laisse place aux yeux lumineux de Kora.",
+  idle: "Fermée : batterie, heure et égaliseur audio en direct pendant la musique.",
+  music: "Survolez pour ouvrir : contrôlez Apple Music, Spotify ou YouTube.",
+  lyrics: "Mode Paroles : l'encoche s'élargit et illumine chaque phrase chantée.",
+  clip: "Presse-papiers : tout ce que vous copiez (Ctrl+C) est sauvegardé ici.",
+  shelf: "Glissez vos fichiers ou vos captures d'écran dans Kora pour les garder sous la main.",
+  todo: "Vos tâches du jour avec rappels sonores à l'heure choisie.",
+  notif: "Notifications PC : remplace la grande bannière Windows par un aperçu court avec icône.",
+  vol: "Animation fluide lorsque vous changez le volume ou la luminosité au clavier.",
+  charge: "Branchez votre chargeur et Kora vous confirme la charge instantanément."
+};
+
+function show(s) {
+  const prev = mn.dataset.s;
+  mn.dataset.s = s;
+  if (s === "shelf" && prev !== "shelf") shelfDemo();
+  if (s !== "shelf") { shelfRun++; ghost.className = "ghost"; shStop(); }
+  cap.textContent = captions[s];
+  btns.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === s)));
+}
+btns.forEach(b => b.addEventListener("click", () => show(b.dataset.s)));
+
+// ---- Démo Fichiers : glisser-déposer animé vers l'encoche -------------------------------
+const shelf = document.getElementById("shelf");
+const cards = shelf.querySelectorAll(".sh-card");
+const ghost = document.getElementById("ghost");
+const gThumb = ghost.querySelector(".g-thumb");
+const IMG = '<span class="t-img" style="display:block;width:100%;height:100%"></span>';
+const FOLDER = cards[1].querySelector("svg").outerHTML;
+let shelfRun = 0;
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+async function shelfDemo() {
+  const run = ++shelfRun;
+  const alive = () => run === shelfRun && mn.dataset.s === "shelf";
+  const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--u"));
+  const drag = async (thumb, fromX, card) => {
+    gThumb.innerHTML = thumb;
+    ghost.style.transition = "none"; ghost.className = "ghost";
+    ghost.style.left = fromX + "%"; ghost.style.top = (205 * u) + "px";
+    void ghost.offsetWidth; ghost.style.transition = "";
+    ghost.classList.add("in");
+    await wait(250); if (!alive()) return false;
+    ghost.style.left = "50%"; ghost.style.top = (62 * u) + "px";
+    await wait(800); if (!alive()) return false;
+    shelf.classList.add("hover"); shSetHot(true);
+    await wait(900); if (!alive()) return false;
+    ghost.classList.add("drop"); shelf.classList.remove("hover");
+    shDropNow();
+    card.classList.add("in"); shelf.classList.add("has");
+    await wait(400);
+    return alive();
+  };
+  shelf.classList.remove("hover", "has"); cards.forEach(c => c.classList.remove("in"));
+  ghost.className = "ghost";
+  await wait(600); if (!alive()) return;
+  if (!(await drag(IMG, 28, cards[0]))) return;
+  await wait(900); if (!alive()) return;
+  if (!(await drag(FOLDER, 70, cards[1]))) return;
+  await wait(3200); if (!alive()) return;
+  shelfDemo();
+}
+
+// ---- Effet fluide "Island gulp" sur le canvas de l'étagère ------------------------------
+const shCv = document.getElementById("shCv"), sc = shCv.getContext("2d");
+const PAL = [[25, 184, 255], [45, 91, 255], [0, 102, 255]];
+const SH_SPEED = 0.7;
+let shHov = 0, shHv = 0, shDropT = -1, shDx = 210, shCx = 210, shG = 0, shGv = 0, shHot = false, shLast = 0, shRaf = 0;
+const shCl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const shSm = x => { x = shCl(x); return x * x * (3 - 2 * x); };
+function shMix(u) { u = shCl(u); const [a, b, k] = u < .5 ? [PAL[0], PAL[1], u * 2] : [PAL[1], PAL[2], (u - .5) * 2]; return a.map((v, i) => Math.round(v + (b[i] - v) * k)); }
+const shRgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+function shDraw() {
+  const W = 420, H = 140, c = sc;
+  c.setTransform(2, 0, 0, 2, 0, 0); c.clearRect(0, 0, W, H);
+  const d = shDropT, rise = d >= 0 && d < 1.1 ? Math.sin(shSm(d / 1.1) * Math.PI) : 0;
+  const fade = d >= 0 ? (d < .9 ? 1 : 1 - shSm((d - .9) / 1.1)) : 1;
+  const base = (.26 * shHov + .34 * rise) * fade, pool = (.42 * shHov + .28 * rise) * fade;
+  if (base > .004) { const g = c.createLinearGradient(0, 0, W, 0); g.addColorStop(0, shRgba(PAL[0], base)); g.addColorStop(.5, shRgba(PAL[1], base)); g.addColorStop(1, shRgba(PAL[2], base)); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+  const px = d >= 0 ? shDx : shCx;
+  if (pool > .004) { const col = shMix(px / W), R = 170 + 60 * rise, g = c.createRadialGradient(px, H + 18, 0, px, H + 18, R);
+    g.addColorStop(0, shRgba(col.map(v => Math.min(255, v + 51)), pool)); g.addColorStop(.55, shRgba(col, pool * .45)); g.addColorStop(1, shRgba(col, 0)); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+  if (d >= 0 && d < 1.4) { const q = 1 - Math.pow(1 - d / 1.4, 3), r = 24 + 430 * q, w = 30, a = .22 * (1 - q);
+    const g = c.createRadialGradient(px, H - 14, Math.max(0, r - w), px, H - 14, r + w);
+    g.addColorStop(0, "rgba(200,236,255,0)"); g.addColorStop(.5, `rgba(200,236,255,${a})`); g.addColorStop(1, "rgba(200,236,255,0)"); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+  c.globalCompositeOperation = "destination-in";
+  const m = c.createLinearGradient(0, H, 0, 0); m.addColorStop(0, "#000"); m.addColorStop(.42, "rgba(0,0,0,.55)"); m.addColorStop(.78, "rgba(0,0,0,.08)"); m.addColorStop(1, "rgba(0,0,0,0)");
+  c.fillStyle = m; c.fillRect(0, 0, W, H); c.globalCompositeOperation = "source-over";
+}
+function shFrame(now) {
+  const dt = Math.min(.05, (now - shLast) / 1000); shLast = now;
+  if (ghost.classList.contains("in") && !ghost.classList.contains("drop")) {
+    const g = ghost.getBoundingClientRect(), n = mn.getBoundingClientRect();
+    shCx = shCl((g.left - n.left) / (n.width / 420), 0, 420);
+  }
+  shHv += (50 * ((shHot ? 1 : 0) - shHov) - 14 * shHv) * dt; shHov = shCl(shHov + shHv * dt, 0, 1.04);
+  shGv += (-60 * shG - 6 * shGv) * dt; shG += shGv * dt;
+  if (shDropT >= 0) { shDropT += dt * SH_SPEED; if (shDropT >= 2) shDropT = -1; }
+  shDraw();
+  mn.style.transform = `scale(${1 + .018 * shHov + .035 * shG}, ${1 + .035 * shHov - .06 * shG})`;
+  const busy = shHot || shHov > .002 || shDropT >= 0 || Math.abs(shG) > .001 || Math.abs(shGv) > .01;
+  if (busy || mn.dataset.s === "shelf") shRaf = requestAnimationFrame(shFrame);
+  else { shRaf = 0; mn.style.transform = ""; }
+}
+function shRun() { if (!shRaf) { shLast = performance.now(); shRaf = requestAnimationFrame(shFrame); } }
+function shSetHot(on) { shHot = on; shRun(); }
+function shDropNow() { shHot = false; shDx = shCx; shDropT = 0; shGv = 7.7; shRun(); }
+function shStop() { shHot = false; shHov = 0; shHv = 0; shDropT = -1; shG = 0; shGv = 0; shDraw(); mn.style.transform = ""; }
+
+show("pet");
+
+// Date & heure en direct
+const D = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+const M = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
+function clock() {
+  const d = new Date();
+  const t = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  document.querySelectorAll(".js-time").forEach(e => e.textContent = t);
+  document.querySelectorAll(".js-date").forEach(e => e.textContent = `${D[d.getDay()]} ${d.getDate()} ${M[d.getMonth()]} ${d.getFullYear()}`);
+}
+clock(); setInterval(clock, 20000);
+
+// Défilement automatique des paroles synchronisées
+const lyr = document.getElementById("lyr"), lines = lyr.querySelectorAll("li");
+let cur = 2;
+function lyric() {
+  lines.forEach((li, i) => li.classList.toggle("on", i === cur));
+  const li = lines[cur];
+  lyr.style.transform = `translateY(${56 - li.offsetTop - li.offsetHeight / 2}px)`;
+  cur = (cur + 1) % lines.length;
+}
+lyric(); setInterval(() => { if (mn.dataset.s === "lyrics") lyric(); }, 2600);
+
+// Adaptation de l'échelle de l'aperçu à la largeur de l'écran
+function fit() {
+  const w = document.getElementById("laptop").clientWidth;
+  const u = Math.max(0.55, Math.min(1.3, (w - 30) / 570));
+  document.documentElement.style.setProperty("--u", u.toFixed(3));
+}
+fit(); addEventListener("resize", fit);
+</script>
 </body>
 </html>

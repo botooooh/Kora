@@ -8,20 +8,13 @@
 <body>
 
   <div class="mn-holder" id="mnHolder">
-    <div class="mn" id="mn" data-s="pet" data-retracted="false" data-fullscreen-hidden="false" data-mic-muted="false">
+    <div class="mn" id="mn" data-s="pet" data-retracted="false" data-fullscreen-hidden="false">
 
-      <!-- 1. RESTING: KORA CYBER-VISOR EYES (+ MIC MUTE EYE BADGE) -->
+      <!-- 1. RESTING: KORA FLUID BLUE EYES -->
       <div class="ly l-pet">
         <div class="ambient"></div>
         <div class="eyes" id="mascotEyes">
           <i class="eye"></i>
-          <span class="mic-eye-badge" id="micEyeBadge" title="Microphone coupé">
-            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="1" y1="1" x2="23" y2="23"/>
-              <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
-              <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
-            </svg>
-          </span>
           <i class="eye"></i>
         </div>
       </div>
@@ -38,7 +31,7 @@
       <!-- SHARED TOP HEADER BAR (Expanded Modes) -->
       <div class="ly l-hdr">
         <div class="hdr-tabs" id="hdrTabs">
-          <img src="kora-logo.png" alt="Kora" title="Kora — par Mr Paul" style="width:18px;height:18px;border-radius:5px;margin-right:3px;box-shadow:0 0 8px rgba(0,230,118,.35)">
+          <img src="kora-logo.png" alt="Kora" title="Kora — par Mr Paul" style="width:18px;height:18px;border-radius:5px;margin-right:3px;box-shadow:0 0 10px rgba(25,184,255,.45)">
           <button class="hdr-tab active" data-tab="music" title="Musique & Paroles (Alt+M)">
             <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
             <span>Musique</span>
@@ -61,12 +54,6 @@
         </div>
 
         <div class="hdr-right">
-          <button class="pin-btn" id="hdrMicBtn" title="Couper / Activer le Microphone">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <rect x="9" y="2" width="6" height="11" rx="3"/>
-              <path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3"/>
-            </svg>
-          </button>
           <span class="ring" id="hdrRing" title="Batterie"></span>
           <b class="js-time">12:00</b>
           <button class="pin-btn" id="pinBtn" title="Épingler Kora ouverte">
@@ -112,8 +99,8 @@
         <button class="a ctl-btn c" id="openLyricsBtn" style="left:66px;top:135px" title="Afficher les paroles synchronisées">
           <svg viewBox="0 0 18 16" style="width:16px;height:15px;fill:none">
             <path d="M4 .8h10a3.2 3.2 0 0 1 3.2 3.2v4.6a3.2 3.2 0 0 1-3.2 3.2H8.4L4.6 15l.5-3.2H4A3.2 3.2 0 0 1 .8 8.6V4A3.2 3.2 0 0 1 4 .8z" stroke="rgba(255,255,255,.85)" stroke-width="1.4"/>
-            <circle cx="6.3" cy="5.4" r="1.2" fill="#a3ff12"/>
-            <circle cx="11.3" cy="5.4" r="1.2" fill="#ffd000"/>
+            <circle cx="6.3" cy="5.4" r="1.2" fill="#19b8ff"/>
+            <circle cx="11.3" cy="5.4" r="1.2" fill="#ffffff"/>
           </svg>
         </button>
 
@@ -130,7 +117,7 @@
 
         <!-- Quick Mute / Volume button -->
         <button class="a ctl-btn c" id="btnMute" style="left:382px;top:135px" title="Couper/Activer le son (ou molette souris)">
-          <svg viewBox="0 0 24 24"><path d="M3.5 9.5h3.8L12 5.5v13l-4.7-4H3.5z"/><path d="M15.5 9a4 4 0 0 1 0 6" stroke="#a3ff12" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M3.5 9.5h3.8L12 5.5v13l-4.7-4H3.5z"/><path d="M15.5 9a4 4 0 0 1 0 6" stroke="#19b8ff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
         </button>
       </div>
 
@@ -149,9 +136,9 @@
 
         <button class="a ctl-btn c" id="closeLyricsBtn" style="left:48px;top:134px" title="Retour au lecteur">
           <svg viewBox="0 0 18 16" style="width:16px;height:15px">
-            <path d="M4 .8h10a3.2 3.2 0 0 1 3.2 3.2v4.6a3.2 3.2 0 0 1-3.2 3.2H8.4L4.6 15l.5-3.2H4A3.2 3.2 0 0 1 .8 8.6V4A3.2 3.2 0 0 1 4 .8z" fill="#a3ff12"/>
-            <circle cx="6.3" cy="5.4" r="1.3" fill="#04140a"/>
-            <circle cx="11.3" cy="5.4" r="1.3" fill="#04140a"/>
+            <path d="M4 .8h10a3.2 3.2 0 0 1 3.2 3.2v4.6a3.2 3.2 0 0 1-3.2 3.2H8.4L4.6 15l.5-3.2H4A3.2 3.2 0 0 1 .8 8.6V4A3.2 3.2 0 0 1 4 .8z" fill="#19b8ff"/>
+            <circle cx="6.3" cy="5.4" r="1.3" fill="#030816"/>
+            <circle cx="11.3" cy="5.4" r="1.3" fill="#030816"/>
           </svg>
         </button>
         <button class="a ctl-btn c" id="lyrPrev" style="left:104px;top:134px">
@@ -209,9 +196,9 @@
 
         <div class="sh-zone" id="shelfZone">
           <svg width="28" height="28" viewBox="-15 -22 30 32">
-            <path d="M-10.2-8h20.4l3.2 7.8h-26.8z" fill="rgba(0,230,118,.28)"/>
-            <path d="M-1.7-21h3.4v6.5h3.5L0-8.5l-5.2-6H-1.7z" fill="#a3ff12"/>
-            <path d="M-14 1h8.8l1.6 3.2h7.2L5.2 1H14v8h-28z" fill="#00e676"/>
+            <path d="M-10.2-8h20.4l3.2 7.8h-26.8z" fill="rgba(25,184,255,.28)"/>
+            <path d="M-1.7-21h3.4v6.5h3.5L0-8.5l-5.2-6H-1.7z" fill="#70d6ff"/>
+            <path d="M-14 1h8.8l1.6 3.2h7.2L5.2 1H14v8h-28z" fill="#19b8ff"/>
           </svg>
           <span class="sb" style="font-size:12.5px">Glissez vos fichiers ou prenez une capture</span>
           <span class="dim" style="font-size:10px">Glissez-les vers n'importe quelle appli · clic pour ouvrir</span>
@@ -229,7 +216,7 @@
 
         <div class="todo-left">
           <div>
-            <div class="b" id="todoCount" style="font-size:28px;line-height:1;color:#a3ff12">1/3</div>
+            <div class="b" id="todoCount" style="font-size:28px;line-height:1;color:#19b8ff">1/3</div>
             <div class="dim" style="font-size:10.5px;margin-top:3px">Tâches terminées</div>
           </div>
           <form class="todo-form" id="todoForm">
@@ -273,8 +260,8 @@
               <small>Délai quand la souris passe en haut</small>
             </div>
             <div class="st-ctrl">
-              <input type="range" class="st-range" id="stOpenDelay" min="0" max="700" step="20" value="120">
-              <span class="st-val" id="stOpenDelayVal">120 ms</span>
+              <input type="range" class="st-range" id="stOpenDelay" min="0" max="700" step="20" value="100">
+              <span class="st-val" id="stOpenDelayVal">100 ms</span>
             </div>
           </div>
 
@@ -282,11 +269,11 @@
           <div class="st-row">
             <div class="st-label">
               <span>Temps de fermeture</span>
-              <small>Délai avant rétractation en haut</small>
+              <small>Délai avant rétractation quand vous quittez la zone</small>
             </div>
             <div class="st-ctrl">
-              <input type="range" class="st-range" id="stCloseDelay" min="100" max="2000" step="50" value="380">
-              <span class="st-val" id="stCloseDelayVal">380 ms</span>
+              <input type="range" class="st-range" id="stCloseDelay" min="100" max="2000" step="50" value="320">
+              <span class="st-val" id="stCloseDelayVal">320 ms</span>
             </div>
           </div>
 
@@ -316,14 +303,14 @@
             </div>
           </div>
 
-          <!-- Invisible dans les captures d'écran -->
+          <!-- Afficher Kora sur les captures d'écran / enregistrements -->
           <div class="st-row">
             <div class="st-label">
-              <span>Invisible sur les captures d'écran</span>
-              <small>Cache Kora sur Win+Shift+S et range la capture dans Fichiers</small>
+              <span>Afficher Kora sur mes captures / vidéos</span>
+              <small>Activé = visible sur capture · Désactivé = masqué</small>
             </div>
             <div class="st-ctrl">
-              <button type="button" class="st-toggle on" id="stHideInScreenshots"></button>
+              <button type="button" class="st-toggle" id="stShowInScreenshots"></button>
             </div>
           </div>
 
@@ -361,10 +348,11 @@
           <!-- Notifications rapides -->
           <div class="st-row">
             <div class="st-label">
-              <span>Animations & Notifications rapides</span>
-              <small>Volume, luminosité, micro, captures, batterie</small>
+              <span>Notifications PC & Animations rapides</span>
+              <small>Remplace les grandes notifs Windows en bas par Kora</small>
             </div>
             <div class="st-ctrl">
+              <button type="button" class="mini-act-btn" id="stTestNotifBtn" title="Tester une notification compacte dans Kora">Tester</button>
               <button type="button" class="st-toggle on" id="stPeekEnabled"></button>
             </div>
           </div>
@@ -381,16 +369,16 @@
           </div>
 
           <!-- Créateur : Mr Paul & Communauté -->
-          <div class="st-row" style="background:rgba(0,230,118,0.09);border-color:rgba(163,255,18,0.25)">
+          <div class="st-row" style="background:rgba(25,184,255,0.09);border-color:rgba(25,184,255,0.28)">
             <div class="st-label" style="flex-direction:row;align-items:center;gap:8px">
               <img src="kora-logo.png" alt="Kora" style="width:24px;height:24px;border-radius:6px">
               <div>
-                <span style="color:#a3ff12">Kora · par Mr Paul</span>
+                <span style="color:#70d6ff">Kora · par Mr Paul</span>
                 <small style="display:block">ivannguessan09@gmail.com · +225 01 51 19 10 73</small>
               </div>
             </div>
             <div class="st-ctrl" style="gap:4px">
-              <button type="button" class="mini-act-btn js-ext-link" data-url="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" style="background:#00e676;color:#021409;font-weight:700" title="Rejoindre la Communauté WhatsApp">Communauté</button>
+              <button type="button" class="mini-act-btn js-ext-link" data-url="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" style="background:#19b8ff;color:#020814;font-weight:700" title="Rejoindre la Communauté WhatsApp">Communauté</button>
               <button type="button" class="mini-act-btn js-ext-link" data-url="https://wa.me/2250151191073" title="WhatsApp : +225 01 51 19 10 73">WhatsApp</button>
               <button type="button" class="mini-act-btn js-ext-link" data-url="mailto:ivannguessan09@gmail.com" title="Email : ivannguessan09@gmail.com">Mail</button>
             </div>
@@ -403,16 +391,16 @@
         <span class="a pk-ring">
           <svg viewBox="0 0 30 30">
             <circle cx="15" cy="15" r="11" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="4.5"/>
-            <circle class="arc" cx="15" cy="15" r="11" fill="none" stroke="#00e676" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="18"/>
+            <circle class="arc" cx="15" cy="15" r="11" fill="none" stroke="#19b8ff" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="18"/>
           </svg>
         </span>
-        <svg class="a c" style="left:34px;top:31px;width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="#a3ff12" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="a c" style="left:34px;top:31px;width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="#70d6ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="m7 7 10 10-5 4V3l5 4L7 17"/>
         </svg>
         <span class="a vc sb" id="btName" style="left:62px;top:23px;font-size:14px;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">AirBuds Pro</span>
         <span class="a vc dim" id="btSub" style="left:62px;top:41px;font-size:11.5px">Audio connecté</span>
-        <span class="a c" style="right:14px;top:31px;width:32px;height:32px;border-radius:50%;background:#0a2214;display:grid;place-items:center;box-shadow:inset 0 0 0 1.5px rgba(0,230,118,.55)">
-          <svg viewBox="0 0 24 24" style="width:16px;height:16px" fill="none" stroke="#a3ff12" stroke-width="2" stroke-linecap="round">
+        <span class="a c" style="right:14px;top:31px;width:32px;height:32px;border-radius:50%;background:#07162c;display:grid;place-items:center;box-shadow:inset 0 0 0 1.5px rgba(25,184,255,.55)">
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px" fill="none" stroke="#70d6ff" stroke-width="2" stroke-linecap="round">
             <path d="M4 15v-3a8 8 0 0 1 16 0v3M4 15h3v5H5a1 1 0 0 1-1-1zM20 15h-3v5h2a1 1 0 0 0 1-1z"/>
           </svg>
         </span>
@@ -422,16 +410,16 @@
       <div class="ly l-charge">
         <span class="a pk-ring">
           <svg viewBox="0 0 30 30">
-            <circle cx="15" cy="15" r="11" fill="none" stroke="rgba(0,230,118,.28)" stroke-width="4.5"/>
-            <circle class="arc" id="chargeArc" cx="15" cy="15" r="11" fill="none" stroke="#00e676" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="20"/>
+            <circle cx="15" cy="15" r="11" fill="none" stroke="rgba(25,184,255,.28)" stroke-width="4.5"/>
+            <circle class="arc" id="chargeArc" cx="15" cy="15" r="11" fill="none" stroke="#19b8ff" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="20"/>
           </svg>
         </span>
         <svg class="a c" style="left:34px;top:31px;width:11px;height:13px" viewBox="0 0 10 14">
-          <path d="M6 0 0 8h4l-1 6 6-8H5z" fill="#ffd000"/>
+          <path d="M6 0 0 8h4l-1 6 6-8H5z" fill="#70d6ff"/>
         </svg>
         <span class="a vc sb" id="chargeTitle" style="left:62px;top:23px;font-size:14.5px">En charge</span>
         <span class="a vc dim" id="chargeSub" style="left:62px;top:41px;font-size:11.5px">Chargeur branché</span>
-        <span class="a vc b" id="chargePct" style="right:22px;top:31px;font-size:21px;color:#a3ff12">85%</span>
+        <span class="a vc b" id="chargePct" style="right:22px;top:31px;font-size:21px;color:#70d6ff">85%</span>
       </div>
 
       <!-- 11. QUICK PEEK: KEYBOARD VOLUME ANIMATION -->
@@ -439,50 +427,44 @@
         <span class="a pk-ring">
           <svg viewBox="0 0 30 30">
             <circle cx="15" cy="15" r="11" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="4.5"/>
-            <circle class="arc" id="volArc" cx="15" cy="15" r="11" fill="none" stroke="#00e676" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="30"/>
+            <circle class="arc" id="volArc" cx="15" cy="15" r="11" fill="none" stroke="#19b8ff" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="30"/>
           </svg>
         </span>
-        <svg class="a c" style="left:34px;top:31px;width:14px;height:14px" viewBox="0 0 24 24" fill="#a3ff12">
+        <svg class="a c" style="left:34px;top:31px;width:14px;height:14px" viewBox="0 0 24 24" fill="#70d6ff">
           <path d="M3.5 9.5h3.8L12 5.5v13l-4.7-4H3.5z"/>
         </svg>
         <span class="a vc sb" id="volTitle" style="left:62px;top:22px;font-size:13.5px">Volume système</span>
         <div class="a vc" style="left:62px;top:41px;width:190px;height:5.5px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden">
-          <div id="volBar" style="height:100%;width:50%;background:linear-gradient(90deg,#00e676,#a3ff12,#ffd000);border-radius:3px;transition:width .14s ease"></div>
+          <div id="volBar" style="height:100%;width:50%;background:linear-gradient(90deg,#2d5bff,#19b8ff,#ffffff);border-radius:3px;transition:width .14s ease"></div>
         </div>
-        <span class="a vc b" id="volPct" style="right:20px;top:31px;font-size:18px;color:#a3ff12">50%</span>
+        <span class="a vc b" id="volPct" style="right:20px;top:31px;font-size:18px;color:#70d6ff">50%</span>
       </div>
 
       <!-- 12. QUICK PEEK: KEYBOARD BRIGHTNESS ANIMATION -->
       <div class="ly l-brightness">
         <span class="a pk-ring">
           <svg viewBox="0 0 30 30">
-            <circle cx="15" cy="15" r="11" fill="none" stroke="rgba(255,208,0,.22)" stroke-width="4.5"/>
-            <circle class="arc" id="brtArc" cx="15" cy="15" r="11" fill="none" stroke="#ffd000" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="20"/>
+            <circle cx="15" cy="15" r="11" fill="none" stroke="rgba(25,184,255,.22)" stroke-width="4.5"/>
+            <circle class="arc" id="brtArc" cx="15" cy="15" r="11" fill="none" stroke="#70d6ff" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="20"/>
           </svg>
         </span>
-        <svg class="a c" style="left:34px;top:31px;width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="#ffd000" stroke-width="2.2" stroke-linecap="round">
+        <svg class="a c" style="left:34px;top:31px;width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round">
           <circle cx="12" cy="12" r="4"/>
           <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
         </svg>
         <span class="a vc sb" style="left:62px;top:22px;font-size:13.5px">Luminosité écran</span>
         <div class="a vc" style="left:62px;top:41px;width:190px;height:5.5px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden">
-          <div id="brtBar" style="height:100%;width:80%;background:linear-gradient(90deg,#a3ff12,#ffd000);border-radius:3px;transition:width .14s ease"></div>
+          <div id="brtBar" style="height:100%;width:80%;background:linear-gradient(90deg,#19b8ff,#ffffff);border-radius:3px;transition:width .14s ease"></div>
         </div>
-        <span class="a vc b" id="brtPct" style="right:20px;top:31px;font-size:18px;color:#ffd000">80%</span>
+        <span class="a vc b" id="brtPct" style="right:20px;top:31px;font-size:18px;color:#ffffff">80%</span>
       </div>
 
-      <!-- 13. QUICK PEEK: MICROPHONE MUTE / UNMUTE ANIMATION -->
-      <div class="ly l-mic">
-        <span class="a c" id="micPeekBadge" style="left:34px;top:32px;width:34px;height:34px;border-radius:50%;background:rgba(255,59,71,.22);display:grid;place-items:center;box-shadow:inset 0 0 0 1.5px #ff3b47">
-          <svg id="micPeekIcon" viewBox="0 0 24 24" style="width:16px;height:16px" fill="none" stroke="#ff3b47" stroke-width="2.2" stroke-linecap="round">
-            <line x1="1" y1="1" x2="23" y2="23"/>
-            <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
-            <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
-          </svg>
-        </span>
-        <span class="a vc sb" id="micPeekTitle" style="left:62px;top:23px;font-size:14px">Microphone désactivé</span>
-        <span class="a vc dim" id="micPeekSub" style="left:62px;top:41px;font-size:11px">Témoin lumineux affiché sur les yeux Kora</span>
-        <span class="a vc b" id="micPeekStatus" style="right:18px;top:32px;font-size:12px;color:#ff4b55;background:rgba(255,59,71,.16);padding:4px 9px;border-radius:99px">MUET</span>
+      <!-- 13. QUICK PEEK: COMPACT WINDOWS NOTIFICATION (ICON + SHORT SNIPPET) -->
+      <div class="ly l-notif">
+        <span class="a c notif-app-badge" id="notifBadge" style="left:32px;top:29px"></span>
+        <span class="a vc sb" id="notifTitle" style="left:58px;top:20px;font-size:12.5px;color:#ffffff;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Notification</span>
+        <span class="a vc dim" id="notifSnippet" style="left:58px;top:37px;font-size:11px;max-width:225px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Nouveau message reçu…</span>
+        <span class="a vc notif-dot" style="right:16px;top:29px"></span>
       </div>
 
       <!-- 14. QUICK PEEK: SCREENSHOT FLY-IN TO FILE SHELF -->
@@ -490,14 +472,14 @@
         <div class="a c shot-fly" style="left:36px;top:32px">
           <img id="shotPeekImg" src="" alt="Capture">
         </div>
-        <span class="a vc sb" style="left:66px;top:23px;font-size:13.5px;color:#a3ff12">Capture ajoutée aux Fichiers !</span>
+        <span class="a vc sb" style="left:66px;top:23px;font-size:13.5px;color:#70d6ff">Capture ajoutée aux Fichiers !</span>
         <span class="a vc dim" id="shotPeekSub" style="left:66px;top:41px;font-size:11px">Prête à glisser-déposer · Cliquer pour voir</span>
       </div>
 
       <!-- 15. QUICK PEEK: CLIPBOARD COPIED -->
       <div class="ly l-clip-peek">
-        <span class="a c" style="left:34px;top:31px;width:30px;height:30px;border-radius:50%;background:rgba(0,230,118,.2);display:grid;place-items:center">
-          <svg viewBox="0 0 24 24" style="width:15px;height:15px" fill="none" stroke="#a3ff12" stroke-width="2.4" stroke-linecap="round">
+        <span class="a c" style="left:34px;top:31px;width:30px;height:30px;border-radius:50%;background:rgba(25,184,255,.22);display:grid;place-items:center">
+          <svg viewBox="0 0 24 24" style="width:15px;height:15px" fill="none" stroke="#70d6ff" stroke-width="2.4" stroke-linecap="round">
             <path d="m5 12.5 4.5 4.5L19 7.5"/>
           </svg>
         </span>
@@ -507,7 +489,7 @@
 
       <!-- 16. QUICK PEEK: CAPS LOCK -->
       <div class="ly l-capslock">
-        <span class="a c" style="left:34px;top:31px;width:30px;height:30px;border-radius:50%;background:rgba(255,208,0,.18);color:#ffd000;display:grid;place-items:center;font-weight:800;font-size:13px">A</span>
+        <span class="a c" style="left:34px;top:31px;width:30px;height:30px;border-radius:50%;background:rgba(25,184,255,.2);color:#70d6ff;display:grid;place-items:center;font-weight:800;font-size:13px">A</span>
         <span class="a vc sb" id="capsTitle" style="left:60px;top:22px;font-size:14px">Verr. Maj activé</span>
         <span class="a vc dim" style="left:60px;top:41px;font-size:11px">Clavier en majuscules</span>
       </div>

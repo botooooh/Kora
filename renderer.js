@@ -1,7 +1,6 @@
 const mnHolder = document.getElementById('mnHolder');
 const mn = document.getElementById('mn');
 const pinBtn = document.getElementById('pinBtn');
-const hdrMicBtn = document.getElementById('hdrMicBtn');
 
 const TABS = ['music', 'clipboard', 'shelf', 'todo', 'settings'];
 let activeTab = 'music';
@@ -16,23 +15,25 @@ let peekTimer = null;
 
 let currentState = {
   battery: { percent: 85, charging: false },
-  audio: { volume: 50, muted: false, micMuted: false, brightness: 80, device: 'Audio Windows' },
+  audio: { volume: 50, muted: false, brightness: 80, device: 'Audio Windows' },
   window: { hasActiveApp: false, isMaximized: false, isFullscreen: false },
+  inNotchZone: false,
+  mouseDown: false,
   media: null
 };
 
 let store = {
   settings: {
     scale: 1.0,
-    openDelay: 120,
-    closeDelay: 380,
+    openDelay: 100,
+    closeDelay: 320,
     retractMode: 'app',
     hideInFullscreen: true,
-    hideInScreenshots: true,
+    showInScreenshots: false,
     retractedLip: 4,
     restingStyle: 'auto',
     peekEnabled: true,
-    peekDuration: 2600,
+    peekDuration: 2200,
     autoStart: false
   },
   todos: [],
@@ -86,7 +87,6 @@ function shouldRetractWhenClosed() {
   const mode = (store.settings && store.settings.retractMode) || 'app';
   if (mode === 'always') return true;
   if (mode === 'never') return false;
-  // mode === 'app': retract whenever an application window is open/active
   return Boolean(currentState.window && currentState.window.hasActiveApp);
 }
 
@@ -95,8 +95,6 @@ function updateVisibilityAndRetraction() {
   const hideFsSetting = store.settings ? store.settings.hideInFullscreen !== false : true;
   const mode = (store.settings && store.settings.retractMode) || 'app';
 
-  // Hide completely when an app (including WhatsApp/UWP) is fullscreen or maximized
-  // Especially when user selects "Toujours visible (sauf plein écran)" or has hideInFullscreen enabled
   const isFullOrMax = Boolean(win.isFullscreen || (mode === 'never' && win.isMaximized));
   const shouldHideFullscreen = isFullOrMax && hideFsSetting;
 
@@ -121,6 +119,29 @@ function updateVisibilityAndRetraction() {
   }
 }
 
+function blurSettingsControls() {
+  const activeEl = document.activeElement;
+  if (activeEl && activeEl !== document.body) {
+    try {
+      activeEl.blur();
+    } catch (e) {}
+  }
+}
+
+function handleMouseLeaveZone() {
+  if (!mouseInsideNotch && !isExpanded) return;
+  mouseInsideNotch = false;
+  if (openTimer) {
+    clearTimeout(openTimer);
+    openTimer = null;
+  }
+  blurSettingsControls();
+  window.nusa.setIgnoreMouse(true);
+  if (!isPinned && !isDraggingOut) {
+    scheduleClose();
+  }
+}
+
 // Triggered by main.js cursor watcher when user pushes cursor to very top edge (y <= 6px)
 window.nusa.onTopEdgeHover(({ active }) => {
   if (!active) return;
@@ -131,12 +152,11 @@ window.nusa.onTopEdgeHover(({ active }) => {
     closeTimer = null;
   }
 
-  // Slide down from retracted position immediately
   mn.dataset.retracted = 'false';
   mouseInsideNotch = true;
   window.nusa.setIgnoreMouse(false);
 
-  const delay = Number(store.settings?.openDelay ?? 120);
+  const delay = Number(store.settings?.openDelay ?? 100);
   if (openTimer) clearTimeout(openTimer);
   openTimer = setTimeout(() => {
     if (mouseInsideNotch) {
@@ -154,7 +174,6 @@ window.addEventListener('mousemove', e => {
   const rect = mn.getBoundingClientRect();
   const isRetracted = mn.dataset.retracted === 'true';
 
-  // When retracted into the top edge, only wake up if mouse is pushed all the way to the top edge (y <= 6px)
   let inside = false;
   if (isRetracted && !isExpanded) {
     inside =
@@ -179,7 +198,7 @@ window.addEventListener('mousemove', e => {
         closeTimer = null;
       }
       mn.dataset.retracted = 'false';
-      const delay = Number(store.settings?.openDelay ?? 120);
+      const delay = Number(store.settings?.openDelay ?? 100);
       if (openTimer) clearTimeout(openTimer);
       openTimer = setTimeout(() => {
         if (mouseInsideNotch) {
@@ -189,19 +208,7 @@ window.addEventListener('mousemove', e => {
         }
       }, delay);
     } else {
-      if (openTimer) {
-        clearTimeout(openTimer);
-        openTimer = null;
-      }
-      const activeEl = document.activeElement;
-      const isTyping =
-        activeEl &&
-        (activeEl.tagName === 'INPUT' ||
-          activeEl.tagName === 'TEXTAREA' ||
-          activeEl.tagName === 'SELECT');
-      if (!isPinned && !isTyping && !isDraggingOut) {
-        scheduleClose();
-      }
+      handleMouseLeaveZone();
     }
   }
 
@@ -216,24 +223,18 @@ window.addEventListener('mousemove', e => {
   }
 });
 
-// Close when input/select loses focus and mouse is outside
-document.addEventListener('focusout', () => {
-  setTimeout(() => {
-    const activeEl = document.activeElement;
-    const isTyping =
-      activeEl &&
-      (activeEl.tagName === 'INPUT' ||
-        activeEl.tagName === 'TEXTAREA' ||
-        activeEl.tagName === 'SELECT');
-    if (!mouseInsideNotch && !isPinned && !isTyping && !isDraggingOut) {
-      scheduleClose();
-    }
-  }, 100);
+// Also handle mouse leaving the Notch element or window directly (including from Settings)
+mn.addEventListener('mouseleave', () => {
+  handleMouseLeaveZone();
+});
+
+window.addEventListener('mouseleave', () => {
+  handleMouseLeaveZone();
 });
 
 function scheduleClose(customDelay) {
   if (closeTimer) clearTimeout(closeTimer);
-  const delay = customDelay ?? Number(store.settings?.closeDelay ?? 380);
+  const delay = customDelay ?? Number(store.settings?.closeDelay ?? 320);
   closeTimer = setTimeout(() => {
     if (!mouseInsideNotch && !isPinned && !isDraggingOut) {
       closeNotch();
@@ -255,6 +256,10 @@ function openNotch(tab = activeTab) {
     clearTimeout(peekTimer);
     peekTimer = null;
   }
+  if (closeTimer) {
+    clearTimeout(closeTimer);
+    closeTimer = null;
+  }
   isPeekActive = false;
   isExpanded = true;
   if (tab && TABS.includes(tab)) {
@@ -263,11 +268,19 @@ function openNotch(tab = activeTab) {
   mn.dataset.retracted = 'false';
   mn.dataset.s = activeTab;
   updateNavUI();
+
+  if (activeTab === 'clipboard') {
+    window.nusa.getStore().then(latest => {
+      store = latest;
+      renderClipboard();
+    });
+  }
 }
 
 function closeNotch() {
   isExpanded = false;
   isPeekActive = false;
+  blurSettingsControls();
   mn.dataset.s = getRestingState();
   updateVisibilityAndRetraction();
 }
@@ -323,14 +336,6 @@ pinBtn.addEventListener('click', e => {
   pinBtn.classList.toggle('pinned', isPinned);
 });
 
-// Header Mic Mute toggle button
-if (hdrMicBtn) {
-  hdrMicBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    window.nusa.sendMediaCmd('MIC_MUTE_TOGGLE');
-  });
-}
-
 // ==================== CLOCK & REMINDERS ====================
 function updateClock() {
   const now = new Date();
@@ -356,7 +361,7 @@ function updateClock() {
 }
 updateClock();
 
-// ==================== SYSTEM STATE (MEDIA, VOLUME, MIC, BRIGHTNESS, BATTERY, WINDOW) ====================
+// ==================== SYSTEM STATE (MEDIA, VOLUME, BRIGHTNESS, BATTERY, WINDOW, ZONE) ====================
 function formatSec(sec) {
   if (!sec || sec < 0 || !isFinite(sec)) return '00:00';
   const m = Math.floor(sec / 60);
@@ -367,19 +372,20 @@ function formatSec(sec) {
 window.nusa.onSystemState(state => {
   currentState = state;
 
-  // 1. Update window fullscreen & auto-retract state
-  updateVisibilityAndRetraction();
-
-  // 2. Update Microphone Mute indicator on Kora Visor Eyes + Header button
-  const micMuted = Boolean(state.audio && state.audio.micMuted);
-  mn.dataset.micMuted = micMuted ? 'true' : 'false';
-  if (hdrMicBtn) {
-    hdrMicBtn.style.background = micMuted ? '#ff3b47' : '';
-    hdrMicBtn.style.color = micMuted ? '#fff' : '';
-    hdrMicBtn.title = micMuted
-      ? 'Microphone COUPÉ (Cliquer pour réactiver)'
-      : 'Microphone actif (Cliquer pour couper)';
+  // 1. Guarantee retraction when mouse leaves activation zone across OS (even in Settings!)
+  if (state.inNotchZone === false && !state.mouseDown) {
+    if (mouseInsideNotch || (isExpanded && !isPinned && !isDraggingOut)) {
+      mouseInsideNotch = false;
+      blurSettingsControls();
+      window.nusa.setIgnoreMouse(true);
+      if (!closeTimer && isExpanded && !isPinned && !isDraggingOut) {
+        scheduleClose();
+      }
+    }
   }
+
+  // 2. Update window fullscreen & auto-retract state
+  updateVisibilityAndRetraction();
 
   // 3. Battery Ring
   if (state.battery) {
@@ -433,7 +439,6 @@ window.nusa.onSystemState(state => {
       dur > 0 ? '-' + formatSec(Math.max(0, dur - pos)) : '00:00';
     document.getElementById('lyrProgBar').style.width = pct + '%';
 
-    // Check if track changed to fetch synced lyrics
     const key = `${m.title}|${m.artist}`;
     if (key !== currentTrackKey) {
       currentTrackKey = key;
@@ -442,7 +447,6 @@ window.nusa.onSystemState(state => {
     updateActiveLyricLine(pos);
   }
 
-  // Update resting state if closed and not showing a peek
   if (!isExpanded && !isPeekActive && (mn.dataset.s === 'pet' || mn.dataset.s === 'idle')) {
     mn.dataset.s = getRestingState();
   }
@@ -493,8 +497,8 @@ mn.addEventListener('wheel', e => {
   } else if (mn.dataset.s === 'brightness') {
     e.preventDefault();
     const curBrt =
-      currentState.audio && currentState.audio.brightness >= 0
-        ? currentState.audio.brightness
+      typeof currentState.brightness === 'number'
+        ? currentState.brightness
         : 80;
     const step = e.deltaY < 0 ? 5 : -5;
     const nextBrt = Math.max(0, Math.min(100, curBrt + step));
@@ -585,10 +589,11 @@ const stCloseDelay = document.getElementById('stCloseDelay');
 const stCloseDelayVal = document.getElementById('stCloseDelayVal');
 const stRetractMode = document.getElementById('stRetractMode');
 const stFullscreen = document.getElementById('stFullscreen');
-const stHideInScreenshots = document.getElementById('stHideInScreenshots');
+const stShowInScreenshots = document.getElementById('stShowInScreenshots');
 const stLip = document.getElementById('stLip');
 const stRestingStyle = document.getElementById('stRestingStyle');
 const stPeekEnabled = document.getElementById('stPeekEnabled');
+const stTestNotifBtn = document.getElementById('stTestNotifBtn');
 const stAutoStart = document.getElementById('stAutoStart');
 
 function applySettingsToDOM() {
@@ -603,16 +608,17 @@ function applySettingsToDOM() {
   stScale.value = String(pct);
   stScaleVal.textContent = `${pct}%`;
 
-  stOpenDelay.value = String(s.openDelay ?? 120);
-  stOpenDelayVal.textContent = `${s.openDelay ?? 120} ms`;
+  stOpenDelay.value = String(s.openDelay ?? 100);
+  stOpenDelayVal.textContent = `${s.openDelay ?? 100} ms`;
 
-  stCloseDelay.value = String(s.closeDelay ?? 380);
-  stCloseDelayVal.textContent = `${s.closeDelay ?? 380} ms`;
+  stCloseDelay.value = String(s.closeDelay ?? 320);
+  stCloseDelayVal.textContent = `${s.closeDelay ?? 320} ms`;
 
   stRetractMode.value = s.retractMode || 'app';
   stFullscreen.classList.toggle('on', s.hideInFullscreen !== false);
-  if (stHideInScreenshots) {
-    stHideInScreenshots.classList.toggle('on', s.hideInScreenshots !== false);
+  if (stShowInScreenshots) {
+    // ON = Kora is visible on screenshots/recordings; OFF = Kora is hidden
+    stShowInScreenshots.classList.toggle('on', Boolean(s.showInScreenshots));
   }
   stLip.value = String(lip);
   stRestingStyle.value = s.restingStyle || 'auto';
@@ -644,6 +650,7 @@ stCloseDelay.addEventListener('input', () => {
 
 stRetractMode.addEventListener('change', () => {
   window.nusa.updateSettings({ retractMode: stRetractMode.value });
+  stRetractMode.blur();
 });
 
 stFullscreen.addEventListener('click', () => {
@@ -652,11 +659,11 @@ stFullscreen.addEventListener('click', () => {
   window.nusa.updateSettings({ hideInFullscreen: next });
 });
 
-if (stHideInScreenshots) {
-  stHideInScreenshots.addEventListener('click', () => {
-    const next = !stHideInScreenshots.classList.contains('on');
-    stHideInScreenshots.classList.toggle('on', next);
-    window.nusa.updateSettings({ hideInScreenshots: next });
+if (stShowInScreenshots) {
+  stShowInScreenshots.addEventListener('click', () => {
+    const next = !stShowInScreenshots.classList.contains('on');
+    stShowInScreenshots.classList.toggle('on', next);
+    window.nusa.updateSettings({ showInScreenshots: next });
   });
 }
 
@@ -664,10 +671,12 @@ stLip.addEventListener('change', () => {
   const retractedLip = Number(stLip.value);
   document.documentElement.style.setProperty('--lip', `${retractedLip}px`);
   window.nusa.updateSettings({ retractedLip });
+  stLip.blur();
 });
 
 stRestingStyle.addEventListener('change', () => {
   window.nusa.updateSettings({ restingStyle: stRestingStyle.value });
+  stRestingStyle.blur();
 });
 
 stPeekEnabled.addEventListener('click', () => {
@@ -675,6 +684,19 @@ stPeekEnabled.addEventListener('click', () => {
   stPeekEnabled.classList.toggle('on', next);
   window.nusa.updateSettings({ peekEnabled: next });
 });
+
+if (stTestNotifBtn) {
+  stTestNotifBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    isExpanded = false;
+    showPeekNotification({
+      type: 'notif',
+      app: 'whatsapp',
+      title: 'WhatsApp · Mr Paul',
+      snippet: 'Nouveau message reçu sur Kora…'
+    });
+  });
+}
 
 stAutoStart.addEventListener('click', () => {
   const next = !stAutoStart.classList.contains('on');
@@ -701,6 +723,7 @@ document.getElementById('clipClearBtn').addEventListener('click', () => {
 
 function renderClipboard() {
   const container = document.getElementById('clipList');
+  if (!container) return;
   const query = (clipSearchInput.value || '').toLowerCase().trim();
   const items = (store.clipboard || []).filter(
     item => !query || (item.text && item.text.toLowerCase().includes(query))
@@ -799,9 +822,9 @@ function renderShelf() {
     if (file.thumbDataUrl) {
       iconHtml = `<img src="${file.thumbDataUrl}" alt="">`;
     } else if (file.ext === 'folder') {
-      iconHtml = `<svg viewBox="0 0 44 44" width="34" height="34"><path d="M4 11a3 3 0 0 1 3-3h10l4 4h16a3 3 0 0 1 3 3v19a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="#e8a720"/><path d="M4 16h36v18a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="#ffc94d"/></svg>`;
+      iconHtml = `<svg viewBox="0 0 44 44" width="34" height="34"><path d="M4 11a3 3 0 0 1 3-3h10l4 4h16a3 3 0 0 1 3 3v19a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="#1982ff"/><path d="M4 16h36v18a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="#59bfff"/></svg>`;
     } else {
-      iconHtml = `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#00e676" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+      iconHtml = `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#19b8ff" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
     }
 
     card.innerHTML = `
@@ -846,7 +869,7 @@ function renderShelf() {
   });
 }
 
-// Drag & Drop files INTO Kora (ignored when dragging a file OUT of Kora)
+// Drag & Drop files INTO Kora
 window.addEventListener('dragenter', e => {
   if (isDraggingOut) return;
   e.preventDefault();
@@ -946,7 +969,26 @@ function renderTodos() {
 }
 
 // ==================== QUICK PEEK NOTIFICATIONS & ANIMATIONS ====================
-window.nusa.onPeekEvent(ev => {
+function getNotifAppIconSvg(appKind) {
+  switch (appKind) {
+    case 'whatsapp':
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`;
+    case 'mail':
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="#19b8ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`;
+    case 'discord':
+    case 'chat':
+    case 'telegram':
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="#70d6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+    case 'browser':
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="#19b8ff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`;
+    case 'music':
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="#19b8ff" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
+    default:
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="#19b8ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
+  }
+}
+
+function showPeekNotification(ev) {
   if (isExpanded) return;
   if (mn.dataset.fullscreenHidden === 'true') return;
   if (store.settings && store.settings.peekEnabled === false) return;
@@ -955,7 +997,16 @@ window.nusa.onPeekEvent(ev => {
   isPeekActive = true;
   mn.dataset.retracted = 'false';
 
-  if (ev.type === 'charge') {
+  if (ev.type === 'notif') {
+    const badge = document.getElementById('notifBadge');
+    const titleEl = document.getElementById('notifTitle');
+    const snipEl = document.getElementById('notifSnippet');
+    if (badge) badge.innerHTML = getNotifAppIconSvg(ev.app);
+    if (titleEl) titleEl.textContent = ev.title || 'Notification';
+    if (snipEl) snipEl.textContent = ev.snippet || 'Nouvelle notification…';
+    mn.dataset.s = 'notif';
+    playChime('soft');
+  } else if (ev.type === 'charge') {
     const pct = ev.percent ?? 85;
     document.getElementById('chargeTitle').textContent = ev.charging
       ? 'En charge'
@@ -985,48 +1036,14 @@ window.nusa.onPeekEvent(ev => {
     const offset = 69.1 - (69.1 * brt) / 100;
     document.getElementById('brtArc').style.strokeDashoffset = offset.toFixed(1);
     mn.dataset.s = 'brightness';
-  } else if (ev.type === 'mic') {
-    const isMuted = Boolean(ev.micMuted);
-    mn.dataset.micMuted = isMuted ? 'true' : 'false';
-    const badge = document.getElementById('micPeekBadge');
-    const icon = document.getElementById('micPeekIcon');
-    const title = document.getElementById('micPeekTitle');
-    const sub = document.getElementById('micPeekSub');
-    const status = document.getElementById('micPeekStatus');
-
-    if (isMuted) {
-      badge.style.background = 'rgba(255,59,71,.22)';
-      badge.style.boxShadow = 'inset 0 0 0 1.5px #ff3b47';
-      icon.setAttribute('stroke', '#ff3b47');
-      icon.innerHTML = '<line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>';
-      title.textContent = 'Microphone désactivé';
-      sub.textContent = 'Témoin affiché sur les yeux Kora';
-      status.textContent = 'MUET';
-      status.style.color = '#ff4b55';
-      status.style.background = 'rgba(255,59,71,.16)';
-    } else {
-      badge.style.background = 'rgba(0,230,118,.22)';
-      badge.style.boxShadow = 'inset 0 0 0 1.5px #00e676';
-      icon.setAttribute('stroke', '#a3ff12');
-      icon.innerHTML = '<rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3"/>';
-      title.textContent = 'Microphone activé';
-      sub.textContent = 'Votre voix est captée normalement';
-      status.textContent = 'ACTIF';
-      status.style.color = '#a3ff12';
-      status.style.background = 'rgba(0,230,118,.18)';
-    }
-    mn.dataset.s = 'mic';
-    playChime('soft');
   } else if (ev.type === 'screenshot') {
     const imgEl = document.getElementById('shotPeekImg');
-    if (imgEl && ev.dataUrl) {
-      imgEl.src = ev.dataUrl;
+    if (imgEl && (ev.thumbDataUrl || ev.dataUrl)) {
+      imgEl.src = ev.thumbDataUrl || ev.dataUrl;
     }
     const subEl = document.getElementById('shotPeekSub');
     if (subEl) {
-      subEl.textContent = ev.fileName
-        ? `${ev.fileName} · Prête à glisser-déposer`
-        : 'Prête à glisser-déposer dans Fichiers';
+      subEl.textContent = ev.preview || 'Prête à glisser-déposer dans Fichiers';
     }
     mn.dataset.s = 'screenshot';
     playChime('done');
@@ -1045,7 +1062,7 @@ window.nusa.onPeekEvent(ev => {
     mn.dataset.s = 'capslock';
   }
 
-  const dur = Number(store.settings?.peekDuration ?? 2600);
+  const dur = ev.type === 'notif' ? 2100 : Number(store.settings?.peekDuration ?? 2200);
   peekTimer = setTimeout(() => {
     isPeekActive = false;
     if (!isExpanded) {
@@ -1053,6 +1070,10 @@ window.nusa.onPeekEvent(ev => {
       updateVisibilityAndRetraction();
     }
   }, dur);
+}
+
+window.nusa.onPeekEvent(ev => {
+  showPeekNotification(ev);
 });
 
 // Global shortcuts / Tray commands

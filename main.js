@@ -53,14 +53,14 @@ try {
 const DEFAULT_SETTINGS = {
   scale: 1.0,
   openDelay: 100,
-  closeDelay: 380,
+  closeDelay: 320,
   retractMode: 'app',
   hideInFullscreen: true,
   retractedLip: 4,
   restingStyle: 'auto',
   peekEnabled: true,
-  peekDuration: 2600,
-  screenshotProtect: true,
+  peekDuration: 2200,
+  showInScreenshots: false, // false = invisible on screenshots/recordings, true = visible
   autoStart: false
 };
 
@@ -81,6 +81,14 @@ function loadStore() {
       const raw = JSON.parse(fs.readFileSync(storePath, 'utf8'));
       if (raw.settings) {
         appStore.settings = { ...DEFAULT_SETTINGS, ...raw.settings };
+        // Migrate old setting keys if present
+        if (typeof raw.settings.showInScreenshots !== 'boolean') {
+          if (typeof raw.settings.hideInScreenshots === 'boolean') {
+            appStore.settings.showInScreenshots = !raw.settings.hideInScreenshots;
+          } else if (typeof raw.settings.screenshotProtect === 'boolean') {
+            appStore.settings.showInScreenshots = !raw.settings.screenshotProtect;
+          }
+        }
       }
       if (raw.todos) appStore.todos = raw.todos;
       if (raw.shelf) {
@@ -98,7 +106,15 @@ function saveStore() {
     try {
       fs.writeFileSync(storePath, JSON.stringify(appStore), 'utf8');
     } catch (e) {}
-  }, 250);
+  }, 200);
+}
+
+function applyScreenshotVisibility() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const showOnCapture = Boolean(appStore.settings.showInScreenshots);
+  // setContentProtection(true) hides the window from screenshots/recordings
+  // setContentProtection(false) lets the window appear in screenshots/recordings
+  mainWindow.setContentProtection(!showOnCapture);
 }
 
 // Official Kora Logo Icon
@@ -135,16 +151,16 @@ function getDragIcon(thumbDataUrl) {
     } catch (e) {}
   }
   if (!cachedDragIcon) {
-    // Valid 32x32 green/gold file icon PNG
+    // Valid 32x32 fluid blue file icon PNG
     const w = 32, h = 32;
     const buf = Buffer.alloc(w * h * 4);
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const i = (y * w + x) * 4;
         if (x >= 4 && x < 28 && y >= 2 && y < 30) {
-          buf[i] = 38;     // B
-          buf[i + 1] = 230; // G
-          buf[i + 2] = 118; // R
+          buf[i] = 255;     // B
+          buf[i + 1] = 150; // G
+          buf[i + 2] = 25;  // R
           buf[i + 3] = 255; // A
         }
       }
@@ -199,29 +215,28 @@ function createWindow() {
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   mainWindow.setIgnoreMouseEvents(true, { forward: true });
 
-  // Make Kora Notch INVISIBLE in all screenshots (Win+Shift+S, PrtScn, OBS)
-  if (appStore.settings.screenshotProtect !== false) {
-    mainWindow.setContentProtection(true);
-  }
+  applyScreenshotVisibility();
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   mainWindow.webContents.once('did-finish-load', () => {
+    applyScreenshotVisibility();
     setTimeout(() => sendBridgeCommand('TRIM_MEM'), 1200);
   });
 
   screen.on('display-metrics-changed', positionWindowAtTopCenter);
 }
 
-// Persistent C# native bridge (nusa-bridge.exe, 17 KB)
+// Persistent C# native bridge (nusa-bridge.exe)
 let lastState = {
   battery: { percent: 100, charging: false },
-  audio: { volume: 50, muted: false, micMuted: false, device: 'Audio Windows' },
+  audio: { volume: 50, muted: false, device: 'Audio Windows' },
   brightness: 80,
   window: { hasActiveApp: false, isMaximized: false, isFullscreen: false },
   capsLock: false,
   mouseDown: false,
   atTopEdge: false,
+  inNotchZone: false,
   dragNearTop: false,
   clipSeq: 0,
   media: null
@@ -300,84 +315,57 @@ function sendBridgeCommand(cmd) {
 let lastClipText = '';
 let lastClipImgSig = '';
 let suppressNextClipPeek = false;
+let clipboardReady = false;
+
+function getImageSignature(img) {
+  if (!img || img.isEmpty()) return '';
+  const size = img.getSize();
+  if (!size || size.width <= 0 || size.height <= 0) return '';
+  const bitmap = img.toBitmap();
+  if (!bitmap || bitmap.length === 0) return '';
+  const len = bitmap.length;
+  const sample =
+    len > 200
+      ? `${bitmap[0]}_${bitmap[50]}_${bitmap[100]}_${bitmap[Math.floor(len / 3)]}_${bitmap[Math.floor(len / 2)]}_${bitmap[len - 12]}`
+      : String(len);
+  return `${size.width}x${size.height}_${sample}`;
+}
+
+function initClipboardBaseline() {
+  try {
+    const initialText = (clipboard.readText() || '').trim();
+    lastClipText = initialText;
+    // If clipboard store is empty and user already has text on their clipboard, add it silently
+    if (initialText && appStore.clipboard.length === 0) {
+      appStore.clipboard.unshift({
+        id: Date.now().toString(),
+        kind: detectTextKind(initialText),
+        text: initialText.slice(0, 2000),
+        preview: initialText.replace(/\s+/g, ' ').slice(0, 90),
+        time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        pinned: false
+      });
+      saveStore();
+    }
+    const formats = clipboard.availableFormats();
+    if (formats.some(f => f.toLowerCase().includes('image') || f.toLowerCase().includes('bitmap'))) {
+      lastClipImgSig = getImageSignature(clipboard.readImage());
+    }
+  } catch (e) {}
+  clipboardReady = true;
+}
 
 function checkClipboardNow() {
-  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (!clipboardReady || !mainWindow || mainWindow.isDestroyed()) return;
   try {
-    const formats = clipboard.availableFormats();
-
-    // 1. Check if an image / screenshot was copied (Win+Shift+S, PrtScn, Copy Image)
-    if (formats.some(f => f.includes('image') || f.includes('Bitmap'))) {
-      const img = clipboard.readImage();
-      if (img && !img.isEmpty()) {
-        const size = img.getSize();
-        const bitmap = img.toBitmap();
-        // Fast signature from dimensions + sample bytes (zero heavy PNG encoding unless changed!)
-        const sample =
-          bitmap.length > 200
-            ? `${bitmap[0]}_${bitmap[50]}_${bitmap[100]}_${bitmap[Math.floor(bitmap.length / 2)]}_${bitmap[bitmap.length - 10]}`
-            : String(bitmap.length);
-        const sig = `${size.width}x${size.height}_${sample}`;
-
-        if (sig !== lastClipImgSig) {
-          lastClipImgSig = sig;
-
-          const thumbImg = size.width > 180 ? img.resize({ width: 180 }) : img;
-          const thumbDataUrl = thumbImg.toDataURL();
-          const now = new Date();
-          const timeStr = now.toLocaleTimeString('fr-FR', {
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-          const stamp = now
-            .toISOString()
-            .replace(/[:.]/g, '-')
-            .slice(0, 19);
-          const fileName = `Capture_${stamp}.png`;
-          const filePath = path.join(capturesDir, fileName);
-
-          // Save screenshot as real PNG file and automatically place it in File Shelf!
-          try {
-            const pngBuffer = img.toPNG();
-            fs.writeFileSync(filePath, pngBuffer);
-
-            appStore.shelf.unshift({
-              id: 'cap_' + Date.now().toString(),
-              name: fileName,
-              path: filePath,
-              size: formatBytes(pngBuffer.length),
-              ext: 'png',
-              thumbDataUrl
-            });
-            appStore.shelf = appStore.shelf.slice(0, 12);
-          } catch (err) {}
-
-          // Also add to Clipboard history
-          addClipboardItem(
-            {
-              id: Date.now().toString(),
-              kind: 'image',
-              text: `Capture (${size.width}×${size.height})`,
-              preview: `Capture ${size.width}×${size.height} → Fichiers`,
-              dataUrl: thumbDataUrl,
-              filePath,
-              time: timeStr,
-              pinned: false
-            },
-            true // isScreenshot
-          );
-          return;
-        }
-      }
-    }
-
-    // 2. Check if text was copied (Ctrl+C)
-    const text = (clipboard.readText() || '').trim();
+    // 1. Always check text first (Ctrl+C text, links, hex colors, code)
+    const rawText = clipboard.readText() || '';
+    const text = rawText.trim();
     if (text && text !== lastClipText) {
       lastClipText = text;
       addClipboardItem(
         {
-          id: Date.now().toString(),
+          id: Date.now().toString() + '_' + Math.random().toString(36).slice(2, 5),
           kind: detectTextKind(text),
           text: text.slice(0, 2000),
           preview: text.replace(/\s+/g, ' ').slice(0, 90),
@@ -390,14 +378,169 @@ function checkClipboardNow() {
         false
       );
     }
+
+    // 2. Check if an image / screenshot was copied (Win+Shift+S, PrtScn, Copy Image)
+    const formats = clipboard.availableFormats();
+    if (formats.some(f => f.toLowerCase().includes('image') || f.toLowerCase().includes('bitmap'))) {
+      const img = clipboard.readImage();
+      const sig = getImageSignature(img);
+      if (sig && sig !== lastClipImgSig) {
+        lastClipImgSig = sig;
+        const size = img.getSize();
+        const thumbImg = size.width > 180 ? img.resize({ width: 180 }) : img;
+        const thumbDataUrl = thumbImg.toDataURL();
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        const stamp = now
+          .toISOString()
+          .replace(/[:.]/g, '-')
+          .slice(0, 19);
+        const fileName = `Capture_${stamp}.png`;
+        const filePath = path.join(capturesDir, fileName);
+
+        // Save screenshot as real PNG file and automatically place it in File Shelf!
+        try {
+          const pngBuffer = img.toPNG();
+          fs.writeFileSync(filePath, pngBuffer);
+
+          appStore.shelf.unshift({
+            id: 'cap_' + Date.now().toString(),
+            name: fileName,
+            path: filePath,
+            size: formatBytes(pngBuffer.length),
+            ext: 'png',
+            thumbDataUrl
+          });
+          appStore.shelf = appStore.shelf.slice(0, 12);
+        } catch (err) {}
+
+        addClipboardItem(
+          {
+            id: Date.now().toString() + '_img',
+            kind: 'image',
+            text: `Capture (${size.width}×${size.height})`,
+            preview: `Capture ${size.width}×${size.height} → Fichiers`,
+            dataUrl: thumbDataUrl,
+            filePath,
+            time: timeStr,
+            pinned: false
+          },
+          true
+        );
+      }
+    }
   } catch (e) {}
 }
 
 function triggerClipboardCheckWithRetry() {
-  // Check after 50ms and 220ms so Windows apps/Snipping Tool finish releasing OpenClipboard lock
-  setTimeout(checkClipboardNow, 50);
-  setTimeout(checkClipboardNow, 220);
-  setTimeout(checkClipboardNow, 550);
+  checkClipboardNow();
+  setTimeout(checkClipboardNow, 80);
+  setTimeout(checkClipboardNow, 260);
+}
+
+// ==================== WINDOWS NOTIFICATION INTERCEPTOR ====================
+// Monitors Windows Notification database (%LOCALAPPDATA%\Microsoft\Windows\Notifications\wpndatabase.db-wal & .db)
+// while NusaBridge.cs suppresses the huge Windows bottom-right toast popup.
+let seenNotifHashes = new Set();
+let notifBaselineDone = false;
+
+function decodeXmlEntities(str) {
+  if (!str) return '';
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function detectNotifApp(xmlBlock, title, body) {
+  const combined = `${xmlBlock} ${title} ${body}`.toLowerCase();
+  if (combined.includes('whatsapp')) return 'whatsapp';
+  if (combined.includes('telegram')) return 'telegram';
+  if (combined.includes('discord')) return 'discord';
+  if (combined.includes('outlook') || combined.includes('mail') || combined.includes('gmail') || combined.includes('courrier')) return 'mail';
+  if (combined.includes('chrome') || combined.includes('edge') || combined.includes('firefox') || combined.includes('brave')) return 'browser';
+  if (combined.includes('spotify') || combined.includes('music') || combined.includes('itunes')) return 'music';
+  if (combined.includes('teams') || combined.includes('slack') || combined.includes('zoom')) return 'chat';
+  return 'system';
+}
+
+function scanWindowsNotifications() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  try {
+    const notifDir = path.join(process.env.LOCALAPPDATA || '', 'Microsoft', 'Windows', 'Notifications');
+    const walPath = path.join(notifDir, 'wpndatabase.db-wal');
+    const dbPath = path.join(notifDir, 'wpndatabase.db');
+
+    let rawContent = '';
+    if (fs.existsSync(walPath)) {
+      const stat = fs.statSync(walPath);
+      if (stat.size > 0 && stat.size < 8 * 1024 * 1024) {
+        rawContent += fs.readFileSync(walPath, 'utf8');
+      }
+    }
+    if (!notifBaselineDone && fs.existsSync(dbPath)) {
+      const stat = fs.statSync(dbPath);
+      if (stat.size > 0 && stat.size < 8 * 1024 * 1024) {
+        rawContent += '\n' + fs.readFileSync(dbPath, 'utf8');
+      }
+    }
+
+    if (!rawContent) {
+      notifBaselineDone = true;
+      return;
+    }
+
+    const toastRegex = /<toast[\s\S]*?<\/toast>/gi;
+    let match;
+    let newestNotif = null;
+
+    while ((match = toastRegex.exec(rawContent)) !== null) {
+      const xml = match[0];
+      const textMatches = [...xml.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/gi)];
+      if (textMatches.length === 0) continue;
+
+      const texts = textMatches
+        .map(m => decodeXmlEntities(m[1]))
+        .filter(Boolean);
+      if (texts.length === 0) continue;
+
+      const title = texts[0] || 'Notification';
+      const body = texts.slice(1).join(' — ') || title;
+      const sig = `${title}|${body.slice(0, 60)}`;
+
+      if (!seenNotifHashes.has(sig)) {
+        seenNotifHashes.add(sig);
+        if (notifBaselineDone) {
+          const appKind = detectNotifApp(xml, title, body);
+          newestNotif = {
+            app: appKind,
+            title: title.length > 20 ? title.slice(0, 19) + '…' : title,
+            snippet: body.length > 34 ? body.slice(0, 33) + '…' : body
+          };
+        }
+      }
+    }
+
+    notifBaselineDone = true;
+
+    if (newestNotif && appStore.settings.peekEnabled) {
+      mainWindow.webContents.send('peek-event', {
+        type: 'notif',
+        app: newestNotif.app,
+        title: newestNotif.title,
+        snippet: newestNotif.snippet
+      });
+    }
+  } catch (e) {
+    notifBaselineDone = true;
+  }
 }
 
 function handleNativeStateUpdate(state) {
@@ -468,18 +611,6 @@ function handleNativeStateUpdate(state) {
         });
       }
 
-      // Microphone Mute changed
-      if (
-        state.audio &&
-        lastState.audio &&
-        state.audio.micMuted !== lastState.audio.micMuted
-      ) {
-        mainWindow.webContents.send('peek-event', {
-          type: 'mic',
-          micMuted: state.audio.micMuted
-        });
-      }
-
       // Screen Brightness changed
       if (
         typeof state.brightness === 'number' &&
@@ -502,19 +633,6 @@ function handleNativeStateUpdate(state) {
     }
   } else {
     isInitializedState = true;
-    try {
-      lastClipText = (clipboard.readText() || '').trim();
-      const img = clipboard.readImage();
-      if (img && !img.isEmpty()) {
-        const size = img.getSize();
-        const bitmap = img.toBitmap();
-        const sample =
-          bitmap.length > 200
-            ? `${bitmap[0]}_${bitmap[50]}_${bitmap[100]}_${bitmap[Math.floor(bitmap.length / 2)]}_${bitmap[bitmap.length - 10]}`
-            : String(bitmap.length);
-        lastClipImgSig = `${size.width}x${size.height}_${sample}`;
-      }
-    } catch (e) {}
   }
 
   lastState = state;
@@ -537,9 +655,11 @@ function addClipboardItem(item, isScreenshot = false) {
     appStore.clipboard = appStore.clipboard.slice(0, 25);
   }
   saveStore();
-  mainWindow.webContents.send('store-updated', appStore);
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('store-updated', appStore);
+  }
 
-  if (!suppressNextClipPeek && appStore.settings.peekEnabled) {
+  if (!suppressNextClipPeek && appStore.settings.peekEnabled && mainWindow && !mainWindow.isDestroyed()) {
     if (isScreenshot) {
       mainWindow.webContents.send('peek-event', {
         type: 'screenshot',
@@ -639,7 +759,10 @@ function setupIpc() {
     }
   });
 
-  ipcMain.handle('get-store', () => appStore);
+  ipcMain.handle('get-store', () => {
+    checkClipboardNow();
+    return appStore;
+  });
 
   ipcMain.on('settings-update', (_event, partialSettings) => {
     appStore.settings = { ...appStore.settings, ...partialSettings };
@@ -648,8 +771,19 @@ function setupIpc() {
         app.setLoginItemSettings({ openAtLogin: partialSettings.autoStart });
       } catch (e) {}
     }
-    if (typeof partialSettings.screenshotProtect === 'boolean' && mainWindow) {
-      mainWindow.setContentProtection(partialSettings.screenshotProtect);
+    if (
+      typeof partialSettings.showInScreenshots === 'boolean' ||
+      typeof partialSettings.hideInScreenshots === 'boolean' ||
+      typeof partialSettings.screenshotProtect === 'boolean'
+    ) {
+      if (typeof partialSettings.showInScreenshots !== 'boolean') {
+        if (typeof partialSettings.hideInScreenshots === 'boolean') {
+          appStore.settings.showInScreenshots = !partialSettings.hideInScreenshots;
+        } else if (typeof partialSettings.screenshotProtect === 'boolean') {
+          appStore.settings.showInScreenshots = !partialSettings.screenshotProtect;
+        }
+      }
+      applyScreenshotVisibility();
     }
     saveStore();
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -672,10 +806,11 @@ function setupIpc() {
     suppressNextClipPeek = true;
     if (item.kind === 'image' && item.dataUrl) {
       const img = nativeImage.createFromDataURL(item.dataUrl);
+      lastClipImgSig = getImageSignature(img);
       clipboard.writeImage(img);
     } else {
-      lastClipText = item.text;
-      clipboard.writeText(item.text);
+      lastClipText = (item.text || '').trim();
+      clipboard.writeText(item.text || '');
     }
   });
 
@@ -764,7 +899,7 @@ function setupIpc() {
     mainWindow.webContents.send('store-updated', appStore);
   });
 
-  // Native OS Drag OUT of Kora Notch into any Windows application (WhatsApp, Explorer, Browser, Discord)
+  // Native OS Drag OUT of Kora Notch into any Windows application
   ipcMain.on('shelf-start-drag', (event, filePath) => {
     if (!filePath) return;
     const normalizedPath = path.resolve(filePath);
@@ -867,11 +1002,6 @@ function createTray() {
     },
     { type: 'separator' },
     {
-      label: '🎙️ Couper / Activer le Micro (Alt+X)',
-      click: () => sendBridgeCommand('MIC_MUTE_TOGGLE')
-    },
-    { type: 'separator' },
-    {
       label: 'Quitter Kora',
       click: () => {
         app.isQuitting = true;
@@ -901,18 +1031,23 @@ function registerShortcuts() {
   globalShortcut.register('Alt+M', () => {
     if (mainWindow) mainWindow.webContents.send('switch-tab', 'music');
   });
-  globalShortcut.register('Alt+X', () => {
-    sendBridgeCommand('MIC_MUTE_TOGGLE');
-  });
 }
 
 app.whenReady().then(() => {
   loadStore();
+  initClipboardBaseline();
   setupIpc();
   createWindow();
   createTray();
   registerShortcuts();
   startWindowsBridge();
+
+  // Direct lightweight clipboard watcher (guarantees Ctrl+C text/images are never missed)
+  setInterval(checkClipboardNow, 380);
+
+  // Direct Windows notification interceptor (compact notification inside Kora)
+  scanWindowsNotifications();
+  setInterval(scanWindowsNotifications, 650);
 });
 
 app.on('will-quit', () => {

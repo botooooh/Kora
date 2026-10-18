@@ -92,6 +92,15 @@ namespace NusaBridge {
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+
+        [DllImport("user32.dll")]
+        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
         [DllImport("user32.dll")]
         static extern int GetSystemMetrics(int nIndex);
 
@@ -118,7 +127,6 @@ namespace NusaBridge {
         }
 
         static IAudioEndpointVolume cachedSpeakerObj = null;
-        static IAudioEndpointVolume cachedMicObj = null;
         static int audioTick = 0;
 
         static IAudioEndpointVolume GetSpeakerObject() {
@@ -128,7 +136,7 @@ namespace NusaBridge {
             try {
                 var enumerator = new MMDeviceEnumeratorComObject() as IMMDeviceEnumerator;
                 IMMDevice dev = null;
-                enumerator.GetDefaultAudioEndpoint(0, 1, out dev); // 0 = eRender (Speakers)
+                enumerator.GetDefaultAudioEndpoint(0, 1, out dev);
                 if (dev == null) return null;
                 Guid iid = typeof(IAudioEndpointVolume).GUID;
                 object o = null;
@@ -137,26 +145,6 @@ namespace NusaBridge {
                 return cachedSpeakerObj;
             } catch {
                 cachedSpeakerObj = null;
-                return null;
-            }
-        }
-
-        static IAudioEndpointVolume GetMicObject() {
-            if (cachedMicObj != null && (audioTick % 40 != 1)) {
-                return cachedMicObj;
-            }
-            try {
-                var enumerator = new MMDeviceEnumeratorComObject() as IMMDeviceEnumerator;
-                IMMDevice dev = null;
-                enumerator.GetDefaultAudioEndpoint(1, 1, out dev); // 1 = eCapture (Microphone)
-                if (dev == null) return null;
-                Guid iid = typeof(IAudioEndpointVolume).GUID;
-                object o = null;
-                dev.Activate(ref iid, 23, IntPtr.Zero, out o);
-                cachedMicObj = o as IAudioEndpointVolume;
-                return cachedMicObj;
-            } catch {
-                cachedMicObj = null;
                 return null;
             }
         }
@@ -190,20 +178,6 @@ namespace NusaBridge {
             v.SetMute(mute, Guid.Empty);
         }
 
-        static bool GetMicMute() {
-            var m = GetMicObject();
-            if (m == null) return false;
-            bool mute = false;
-            m.GetMute(out mute);
-            return mute;
-        }
-
-        static void SetMicMute(bool mute) {
-            var m = GetMicObject();
-            if (m == null) return;
-            m.SetMute(mute, Guid.Empty);
-        }
-
         static int cachedBrightness = 80;
         static int GetBrightness() {
             try {
@@ -233,6 +207,24 @@ namespace NusaBridge {
         static void SendMediaKey(byte vk) {
             keybd_event(vk, 0, 0, UIntPtr.Zero);
             keybd_event(vk, 0, 2, UIntPtr.Zero);
+        }
+
+        // Suppress large bottom-right Windows 10/11 Toast Banner popups when Kora handles notifications
+        static bool suppressWindowsToasts = true;
+        static void DismissWindowsToastPopups() {
+            if (!suppressWindowsToasts) return;
+            try {
+                IntPtr h1 = FindWindowEx(IntPtr.Zero, IntPtr.Zero, "Windows.UI.Core.CoreWindow", "Nouvelle notification");
+                if (h1 != IntPtr.Zero) {
+                    ShowWindow(h1, 0);
+                    PostMessage(h1, 0x0010, IntPtr.Zero, IntPtr.Zero);
+                }
+                IntPtr h2 = FindWindowEx(IntPtr.Zero, IntPtr.Zero, "Windows.UI.Core.CoreWindow", "New notification");
+                if (h2 != IntPtr.Zero) {
+                    ShowWindow(h2, 0);
+                    PostMessage(h2, 0x0010, IntPtr.Zero, IntPtr.Zero);
+                }
+            } catch {}
         }
 
         static void TrimMemory() {
@@ -317,7 +309,7 @@ namespace NusaBridge {
             sbBuf.Clear();
             GetWindowText(hwnd, sbBuf, 256);
             string title = sbBuf.ToString();
-            if (title == "Kora Notch" || title == "Nusa Notch") {
+            if (title.StartsWith("Kora") || title == "Nusa Notch") {
                 hasActiveApp = lastHasActiveApp;
                 isMaximized = lastIsMaximized;
                 isFullscreen = lastIsFullscreen;
@@ -343,7 +335,6 @@ namespace NusaBridge {
             int winW = r.Right - r.Left;
             int winH = r.Bottom - r.Top;
 
-            // Detect both exclusive F11 fullscreen AND maximized apps (like WhatsApp, Chrome, etc.)
             bool isMaxOrFull = zoomed || (r.Top <= 10 && r.Left <= 10 && winW >= scrW - 20 && winH >= scrH - 72);
             isFullscreen = lastIsFullscreen = isMaxOrFull;
             isMaximized = lastIsMaximized = isMaxOrFull;
@@ -421,15 +412,20 @@ namespace NusaBridge {
                         if (int.TryParse(cmd.Substring(8), out v)) SetVolume(v);
                     } else if (cmd == "VOL_MUTE_TOGGLE") {
                         SetMute(!GetMute());
-                    } else if (cmd == "MIC_MUTE_TOGGLE") {
-                        SetMicMute(!GetMicMute());
-                    } else if (cmd.StartsWith("BRIGHTNESS_SET:")) {
+                    } else if (cmd.StartsWith("BRT_SET:") || cmd.StartsWith("BRIGHTNESS_SET:")) {
                         int b;
-                        if (int.TryParse(cmd.Substring(15), out b)) SetBrightness(b);
+                        string sub = cmd.Contains("BRIGHTNESS_SET:") ? cmd.Substring(15) : cmd.Substring(8);
+                        if (int.TryParse(sub, out b)) SetBrightness(b);
+                    } else if (cmd == "TOAST_SUPPRESS_ON") {
+                        suppressWindowsToasts = true;
+                    } else if (cmd == "TOAST_SUPPRESS_OFF") {
+                        suppressWindowsToasts = false;
                     } else if (cmd == "TRIM_MEM") {
                         TrimMemory();
                     }
                 }
+
+                DismissWindowsToastPopups();
 
                 POINT pt;
                 GetCursorPos(out pt);
@@ -437,11 +433,11 @@ namespace NusaBridge {
                 int centerX = scrW / 2;
                 bool mouseDown = (GetAsyncKeyState(0x01) & 0x8000) != 0;
                 bool atTopEdge = (pt.Y <= 6 && Math.Abs(pt.X - centerX) <= 185);
+                bool inNotchZone = (pt.Y <= 238 && Math.Abs(pt.X - centerX) <= 285);
                 bool dragNearTop = (mouseDown && pt.Y <= 95 && Math.Abs(pt.X - centerX) <= 240);
                 uint clipSeq = GetClipboardSequenceNumber();
                 int vol = GetVolume();
                 bool mute = GetMute();
-                bool micMute = GetMicMute();
                 bool caps = (GetAsyncKeyState(0x14) & 0x0001) != 0;
 
                 if (tick % 4 == 0 || hadCmd) {
@@ -522,9 +518,9 @@ namespace NusaBridge {
                 tick++;
 
                 string json = string.Format(
-                    "{{\"battery\":{{\"percent\":{0},\"charging\":{1}}},\"audio\":{{\"volume\":{2},\"muted\":{3},\"micMuted\":{4},\"device\":\"Audio Windows\"}},\"brightness\":{5},\"window\":{{\"hasActiveApp\":{6},\"isMaximized\":{7},\"isFullscreen\":{8}}},\"capsLock\":{9},\"mouseDown\":{10},\"atTopEdge\":{11},\"dragNearTop\":{12},\"clipSeq\":{13},\"media\":{14}}}",
+                    "{{\"battery\":{{\"percent\":{0},\"charging\":{1}}},\"audio\":{{\"volume\":{2},\"muted\":{3},\"device\":\"Audio Windows\"}},\"brightness\":{4},\"window\":{{\"hasActiveApp\":{5},\"isMaximized\":{6},\"isFullscreen\":{7}}},\"capsLock\":{8},\"mouseDown\":{9},\"atTopEdge\":{10},\"inNotchZone\":{11},\"dragNearTop\":{12},\"clipSeq\":{13},\"media\":{14}}}",
                     batPct, charging ? "true" : "false",
-                    vol, mute ? "true" : "false", micMute ? "true" : "false",
+                    vol, mute ? "true" : "false",
                     brightness,
                     hasActiveApp ? "true" : "false",
                     isMaximized ? "true" : "false",
@@ -532,6 +528,7 @@ namespace NusaBridge {
                     caps ? "true" : "false",
                     mouseDown ? "true" : "false",
                     atTopEdge ? "true" : "false",
+                    inNotchZone ? "true" : "false",
                     dragNearTop ? "true" : "false",
                     clipSeq,
                     cachedMediaJson
