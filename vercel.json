@@ -1,0 +1,6 @@
+{
+  "buildCommand": "",
+  "installCommand": "echo 'Skip electron install for static landing page'",
+  "outputDirectory": "website",
+  "cleanUrls": true
+}
