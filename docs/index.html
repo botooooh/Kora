@@ -104,6 +104,53 @@
 
     
     
+
+    .bg .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(70px);
+      will-change: transform;
+      animation: drift 24s ease-in-out infinite alternate;
+    }
+
+    .bg .o1 {
+      width: 640px;
+      height: 640px;
+      left: -180px;
+      top: -240px;
+      background: radial-gradient(circle, rgba(0, 102, 255, 0.42), transparent 68%);
+    }
+
+    .bg .o2 {
+      width: 540px;
+      height: 540px;
+      right: -160px;
+      top: 80px;
+      background: radial-gradient(circle, rgba(25, 184, 255, 0.32), transparent 68%);
+      animation-duration: 28s;
+      animation-delay: -9s;
+    }
+
+    .bg .o3 {
+      width: 760px;
+      height: 760px;
+      left: 28%;
+      top: 70vh;
+      background: radial-gradient(circle, rgba(45, 91, 255, 0.18), transparent 68%);
+      animation-duration: 32s;
+      animation-delay: -4s;
+    }
+
+    @keyframes drift {
+      0% {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+
+      100% {
+        transform: translate3d(90px, 70px, 0) scale(1.15);
+      }
+    }
+
     /* ---- En-tête fixe (disparaît au défilement) ---- */
     .site-head {
       position: fixed;
@@ -239,6 +286,24 @@
     }
 
     
+
+    .mascot .glow {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: var(--glow);
+      -webkit-mask: linear-gradient(to top, #000, rgba(0, 0, 0, 0.45) 35%, transparent 78%);
+      mask: linear-gradient(to top, #000, rgba(0, 0, 0, 0.45) 35%, transparent 78%);
+      pointer-events: none;
+      animation: breathe-glow 4s ease-in-out infinite;
+    }
+
+    @keyframes breathe-glow {
+      50% {
+        opacity: 0.6;
+      }
+    }
+
     .mascot .eye {
       translate: var(--ex, 0) var(--ey, 0);
       transition: translate 0.25s ease-out;
@@ -2438,10 +2503,14 @@
 
   <div class="bg" aria-hidden="true">
     <div class="grid"></div>
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
   </div>
 
   <header class="site-head" id="siteHead">
     <div class="mascot" id="mascot" aria-hidden="true">
+      <div class="glow"></div>
       <span class="eye"></span>
       <span class="eye"></span>
     </div>
