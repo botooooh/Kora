@@ -2474,6 +2474,99 @@
         filter: none;
       }
     }
+
+    /* ---- Snap Scroll Fluide Kora ---- */
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 24px;
+      scroll-snap-type: y proximity;
+      overflow-y: scroll;
+    }
+
+    @media (min-width: 900px) and (min-height: 600px) {
+      html {
+        scroll-snap-type: y mandatory;
+      }
+    }
+
+    .snap-section {
+      scroll-snap-align: start;
+      scroll-snap-stop: normal;
+      position: relative;
+    }
+
+    /* Indicateur latéral de snap scroll (dots discrets) */
+    .snap-dots {
+      position: fixed;
+      right: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 10px 6px;
+      border-radius: 99px;
+      background: rgba(3, 4, 10, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transition: opacity 0.3s ease;
+    }
+
+    .snap-dot {
+      position: relative;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.22);
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+      transition: transform 0.35s var(--spring), background 0.3s, box-shadow 0.3s;
+    }
+
+    .snap-dot:hover {
+      background: rgba(25, 184, 255, 0.6);
+      transform: scale(1.3);
+    }
+
+    .snap-dot.active {
+      background: var(--cyan);
+      box-shadow: 0 0 12px rgba(25, 184, 255, 0.9);
+      transform: scale(1.4);
+    }
+
+    .snap-dot::after {
+      content: attr(data-label);
+      position: absolute;
+      right: calc(100% + 12px);
+      top: 50%;
+      transform: translateY(-50%) translateX(6px);
+      opacity: 0;
+      pointer-events: none;
+      background: rgba(10, 14, 26, 0.9);
+      border: 1px solid var(--line-2);
+      color: #fff;
+      font: 500 11.5px/1 var(--sans);
+      white-space: nowrap;
+      padding: 6px 10px;
+      border-radius: 6px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+      transition: opacity 0.25s, transform 0.25s var(--spring);
+    }
+
+    .snap-dot:hover::after {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+
+    @media (max-width: 860px) {
+      .snap-dots {
+        display: none;
+      }
+    }
   </style>
 </head>
 
@@ -2506,8 +2599,20 @@
     </nav>
   </header>
 
+  <nav class="snap-dots" id="snapDots" aria-label="Navigation par section">
+    <button class="snap-dot active" data-target="#hero" data-label="Accueil" aria-label="Aller à Accueil"></button>
+    <button class="snap-dot" data-target="#stage" data-label="Démo interactive" aria-label="Aller à Démo interactive"></button>
+    <button class="snap-dot" data-target="#stats" data-label="Chiffres" aria-label="Aller à Chiffres"></button>
+    <button class="snap-dot" data-target="#features" data-label="Fonctionnalités" aria-label="Aller à Fonctionnalités"></button>
+    <button class="snap-dot" data-target="#quiet" data-label="Discrétion" aria-label="Aller à Discrétion"></button>
+    <button class="snap-dot" data-target="#download" data-label="Télécharger" aria-label="Aller à Télécharger"></button>
+    <button class="snap-dot" data-target="#faq" data-label="FAQ" aria-label="Aller à FAQ"></button>
+    <button class="snap-dot" data-target="#contact" data-label="Communauté" aria-label="Aller à Communauté"></button>
+  </nav>
+
+
   <main>
-    <section class="hero wrap">
+    <section class="hero wrap snap-section" id="hero" data-snap-label="Accueil">
       <h1 class="intro" style="--d:.15s"><span class="l1">Une encoche vivante</span> <span class="grad">en haut de votre
           Windows.</span></h1>
       <p class="lede intro" style="--d:.3s">Musique, paroles synchronisées, presse-papiers, fichiers drag &amp; drop, notifications PC et rappels.</p>
@@ -2531,7 +2636,7 @@
     </section>
 
     <!-- ================= Aperçu interactif ================= -->
-    <section class="stage" aria-label="Aperçu interactif de Kora">
+    <section class="stage snap-section" id="stage" data-snap-label="Démo Kora" aria-label="Aperçu interactif de Kora">
       <div class="wrap">
         <div class="device intro" style="--d:.75s">
           <div class="device-glow" aria-hidden="true"></div>
@@ -2817,7 +2922,7 @@
     </section>
 
     <!-- ================= Chiffres clés ================= -->
-    <section class="stats-sec" aria-label="Kora en chiffres">
+    <section class="stats-sec snap-section" id="stats" data-snap-label="Chiffres clés" aria-label="Kora en chiffres">
       <div class="wrap">
         <div class="stats reveal">
           <div class="stat"><span class="num"><span data-count="0">0</span> %</span><span>CPU au repos</span></div>
@@ -2829,7 +2934,7 @@
     </section>
 
     <!-- ================= Fonctionnalités ================= -->
-    <section id="features" class="wrap">
+    <section id="features" class="wrap snap-section" data-snap-label="Fonctionnalités">
       <div class="sec-head reveal">
         <h2 class="sec-title">Tout ce que vous consultez, au même endroit.</h2>
         <p class="sec-lede">Survolez l'encoche pour l'ouvrir.</p>
@@ -2900,7 +3005,7 @@
     </section>
 
     <!-- ================= Discret ================= -->
-    <section class="wrap" id="quiet">
+    <section class="wrap snap-section" id="quiet" data-snap-label="Discrétion">
       <div class="sec-head reveal">
         <h2 class="sec-title">Un compagnon discret qui sait se faire oublier.</h2>
         <p class="sec-lede">Quand rien ne se passe, l'horloge laisse place aux yeux lumineux de Kora. Dès que vous
@@ -2936,7 +3041,7 @@
     </section>
 
     <!-- ================= Téléchargement ================= -->
-    <section id="download" class="wrap">
+    <section id="download" class="wrap snap-section" data-snap-label="Télécharger">
       <div class="dl-card reveal">
         <div class="icon-wrap"><img class="icon" src="kora-logo.png" alt="Icône de l'application Kora" width="96"
             height="96"></div>
@@ -2964,7 +3069,7 @@
     </section>
 
     <!-- ================= FAQ ================= -->
-    <section id="faq" class="wrap">
+    <section id="faq" class="wrap snap-section" data-snap-label="FAQ">
       <div class="faq-grid">
         <div class="sec-head reveal">
           <h2 class="sec-title">Questions fréquentes</h2>
@@ -3022,7 +3127,7 @@
     </section>
 
     <!-- ================= Contacts Mr Paul ================= -->
-    <section id="contact" class="wrap">
+    <section id="contact" class="wrap snap-section" data-snap-label="Communauté">
       <div class="sec-head reveal">
         <h2 class="sec-title">Créateur &amp; communauté</h2>
         <p class="sec-lede">Kora est conçue et développée par <b>Mr Paul</b>. Rejoignez la communauté officielle ou
@@ -3067,7 +3172,7 @@
     </section>
   </main>
 
-  <footer>
+  <footer class="snap-section" id="footer" data-snap-label="Pied de page">
     <div class="wrap">
       <div class="foot-top">
         <div>
@@ -3364,6 +3469,41 @@
     addEventListener("resize", onScroll);
     onScroll();
     toTop.addEventListener("click", () => scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" }));
+
+    // ---- Snap Scroll Navigation & Activation active ---------------------------------------
+    const snapSections = document.querySelectorAll(".snap-section");
+    const snapDots = document.querySelectorAll(".snap-dot");
+
+    snapDots.forEach(dot => {
+      dot.addEventListener("click", () => {
+        const target = document.querySelector(dot.dataset.target);
+        if (target) {
+          target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+        }
+      });
+    });
+
+    if ("IntersectionObserver" in window) {
+      const snapObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = "#" + entry.target.id;
+            snapDots.forEach(dot => {
+              const match = dot.dataset.target === id;
+              dot.classList.toggle("active", match);
+              dot.setAttribute("aria-current", match ? "true" : "false");
+            });
+          }
+        });
+      }, {
+        threshold: 0.45
+      });
+
+      snapSections.forEach(sec => {
+        if (sec.id) snapObserver.observe(sec);
+      });
+    }
+
 
     // ---- Les yeux de la mascotte suivent la souris ----------------------------------------
     const mascot = document.getElementById("mascot");
