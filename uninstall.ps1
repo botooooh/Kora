@@ -1,4 +1,4 @@
-# ============================================================================
+﻿# ============================================================================
 # KORA — Désinstalleur Officiel Propre (par Mr Paul)
 # Ferme Kora, supprime le démarrage auto, les raccourcis, l'entrée Windows
 # et les dossiers d'installation (%LOCALAPPDATA%\Kora).
@@ -8,7 +8,7 @@ $ErrorActionPreference = "SilentlyContinue"
 
 Write-Host ""
 Write-Host "  ======================================================" -ForegroundColor Cyan
-Write-Host "   KORA — Désinstallation complète (par Mr Paul)" -ForegroundColor White
+Write-Host "   KORA - Desinstallation complete (par Mr Paul)" -ForegroundColor White
 Write-Host "  ======================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -39,5 +39,5 @@ if (Test-Path $TargetDir) {
 }
 
 Write-Host ""
-Write-Host "  ✓ Kora a été complètement désinstallée de votre ordinateur." -ForegroundColor Green
+Write-Host "  [OK] Kora a ete completement desinstallee de votre ordinateur." -ForegroundColor Green
 Start-Sleep -Seconds 2
