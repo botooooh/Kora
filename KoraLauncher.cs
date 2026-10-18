@@ -19,22 +19,23 @@ namespace KoraLauncher
         [STAThread]
         static void Main()
         {
+            string localAppDataKora = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Kora"
+            );
+            string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+
             try
             {
-                string exeDir = AppDomain.CurrentDomain.BaseDirectory;
                 string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                string localAppDataKora = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Kora"
-                );
 
                 string[] candidateDirs = new string[]
                 {
+                    localAppDataKora,
                     exeDir,
                     Path.GetFullPath(Path.Combine(exeDir, "..")),
                     Path.Combine(desktop, "Progammation", "Kora"),
-                    Path.Combine(desktop, "Programmation", "Kora"),
-                    localAppDataKora
+                    Path.Combine(desktop, "Programmation", "Kora")
                 };
 
                 foreach (string dir in candidateDirs)
@@ -44,26 +45,61 @@ namespace KoraLauncher
                     string candidateMain = Path.Combine(dir, "main.js");
                     if (File.Exists(candidateElectron) && File.Exists(candidateMain))
                     {
-                        ProcessStartInfo psi = new ProcessStartInfo
+                        FileInfo fi = new FileInfo(candidateElectron);
+                        // Si le binaire est tronqué ou vide (< 20 Mo), c'est un téléchargement incomplet
+                        if (fi.Length < 20000000)
                         {
-                            FileName = candidateElectron,
-                            Arguments = ".",
-                            WorkingDirectory = dir,
-                            UseShellExecute = false,
-                            CreateNoWindow = true,
-                            WindowStyle = ProcessWindowStyle.Hidden
-                        };
-                        Process.Start(psi);
-                        return;
+                            try { File.Delete(candidateElectron); } catch {}
+                            continue;
+                        }
+
+                        try
+                        {
+                            ProcessStartInfo psi = new ProcessStartInfo
+                            {
+                                FileName = candidateElectron,
+                                Arguments = ".",
+                                WorkingDirectory = dir,
+                                UseShellExecute = false,
+                                CreateNoWindow = true,
+                                WindowStyle = ProcessWindowStyle.Hidden
+                            };
+                            Process.Start(psi);
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            // Incompatibilité d'architecture ou exécutable invalide pour la plateforme
+                            DialogResult repairChoice = MessageBox.Show(
+                                "Le moteur graphique Kora a rencontré une incompatibilité avec votre version de Windows :\n\n" +
+                                ex.Message + "\n\n" +
+                                "Voulez-vous lancer la réparation automatique adaptée à votre processeur ?",
+                                "Kora — Réparation recommandée",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Warning
+                            );
+
+                            if (repairChoice == DialogResult.Yes)
+                            {
+                                LaunchRepair(dir, localAppDataKora);
+                            }
+                            return;
+                        }
                     }
                 }
 
-                MessageBox.Show(
-                    "Pour installer Kora pour la première fois, lancez 'Installer-Kora.cmd' fourni dans le dossier Kora.",
+                DialogResult dr = MessageBox.Show(
+                    "Kora n'est pas encore configurée sur cet ordinateur ou des fichiers sont manquants.\n\n" +
+                    "Voulez-vous lancer l'installation automatique ?",
                     "Kora — par Mr Paul",
-                    MessageBoxButtons.OK,
+                    MessageBoxButtons.YesNo,
                     MessageBoxIcon.Information
                 );
+
+                if (dr == DialogResult.Yes)
+                {
+                    LaunchRepair(exeDir, localAppDataKora);
+                }
             }
             catch (Exception ex)
             {
@@ -73,6 +109,47 @@ namespace KoraLauncher
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
+            }
+        }
+
+        static void LaunchRepair(string currentDir, string localAppDataDir)
+        {
+            try
+            {
+                string localCmd = Path.Combine(currentDir, "Installer-Kora.cmd");
+                string appDataPs1 = Path.Combine(localAppDataDir, "install.ps1");
+
+                if (File.Exists(localCmd))
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = localCmd,
+                        WorkingDirectory = currentDir,
+                        UseShellExecute = true
+                    });
+                }
+                else if (File.Exists(appDataPs1))
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = "-NoProfile -ExecutionPolicy Bypass -File \"" + appDataPs1 + "\"",
+                        UseShellExecute = true
+                    });
+                }
+                else
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = "-NoProfile -ExecutionPolicy Bypass -Command \"iwr -useb https://kora-nine.vercel.app/install.ps1 | iex\"",
+                        UseShellExecute = true
+                    });
+                }
+            }
+            catch
+            {
+                Process.Start("https://kora-nine.vercel.app");
             }
         }
     }

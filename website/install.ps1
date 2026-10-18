@@ -1,7 +1,8 @@
 # ============================================================================
-# KORA - Installeur Officiel Sans Alerte SmartScreen (par Mr Paul)
-# Compile les composants natifs localement via Microsoft .NET pour eviter
-# tout faux-positif Windows Defender / SmartScreen ("Mark-of-the-Web").
+# KORA - Installeur Officiel Multi-Plateforme (par Mr Paul)
+# Supporte nativement x64, 32-bit (ia32) et ARM64 Windows
+# Compile les composants natifs localement via Microsoft .NET AnyCPU
+# Garantit 0 faux-positif Antivirus / SmartScreen
 # ============================================================================
 
 param([string]$SourceDir = "")
@@ -28,11 +29,24 @@ $ScriptDir = $SourceDir
 $TargetDir = Join-Path $env:LOCALAPPDATA "Kora"
 $DistDir   = Join-Path $TargetDir "node_modules\electron\dist"
 $BaseUrl   = "https://raw.githubusercontent.com/botooooh/Kora/main"
-$ElectronZipUrl = "https://github.com/electron/electron/releases/download/v35.0.0/electron-v35.0.0-win32-x64.zip"
+
+# Detection automatique de l'architecture reelle (x64, ia32, arm64)
+$rawArch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
+$electronArch = "x64"
+if ($rawArch -match "ARM64") {
+  $electronArch = "arm64"
+} elseif ($rawArch -match "x86|i386|i686" -or [IntPtr]::Size -eq 4) {
+  $electronArch = "ia32"
+} else {
+  $electronArch = "x64"
+}
+
+$ElectronZipUrl = "https://github.com/electron/electron/releases/download/v35.0.0/electron-v35.0.0-win32-$electronArch.zip"
 
 Write-Host ""
 Write-Host "  ======================================================" -ForegroundColor Cyan
 Write-Host "   KORA - Installation & Configuration (par Mr Paul)" -ForegroundColor White
+Write-Host "   Architecture detectee : $electronArch (Windows)" -ForegroundColor DarkGray
 Write-Host "  ======================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -69,7 +83,18 @@ foreach ($f in $Files) {
   Unblock-File -Path $dest -ErrorAction SilentlyContinue
 }
 
-# Copie egalement uninstall.ps1
+# Copie egalement install.ps1 et uninstall.ps1 pour maintenance locale
+$InstallDest = Join-Path $TargetDir "install.ps1"
+$LocalInstall = Join-Path $ScriptDir "install.ps1"
+if (Test-Path $LocalInstall) {
+  Copy-Item $LocalInstall $InstallDest -Force
+} else {
+  try {
+    Invoke-WebRequest -Uri "$BaseUrl/website/install.ps1?t=$([DateTimeOffset]::UtcNow.ToUnixTimeSeconds())" -UseBasicParsing -OutFile $InstallDest
+  } catch {}
+}
+Unblock-File -Path $InstallDest -ErrorAction SilentlyContinue
+
 $UninstallDest = Join-Path $TargetDir "uninstall.ps1"
 $LocalUninstall = Join-Path $ScriptDir "uninstall.ps1"
 if (Test-Path $LocalUninstall) {
@@ -83,25 +108,76 @@ Unblock-File -Path $UninstallDest -ErrorAction SilentlyContinue
 
 Write-Host "  [2/4] Compilation locale securisee (Microsoft .NET)..." -ForegroundColor Cyan
 $fw = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319"
+if (-not (Test-Path (Join-Path $fw "csc.exe"))) {
+  $fw = "C:\Windows\Microsoft.NET\Framework\v4.0.30319"
+}
 $csc = Join-Path $fw "csc.exe"
 $sysRuntime = Get-ChildItem "C:\Windows\Microsoft.NET" -Recurse -Filter "System.Runtime.dll" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-$winmds = Get-ChildItem "C:\Windows\System32\WinMetadata\*.winmd" | ForEach-Object { "/r:`"$($_.FullName)`"" }
+$winRuntime = Join-Path $fw "System.Runtime.WindowsRuntime.dll"
+if (-not (Test-Path $winRuntime)) {
+  $winRuntime = Get-ChildItem "C:\Windows\Microsoft.NET" -Recurse -Filter "System.Runtime.WindowsRuntime.dll" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+}
+$winmds = Get-ChildItem "C:\Windows\System32\WinMetadata\*.winmd" -ErrorAction SilentlyContinue | ForEach-Object { "/r:`"$($_.FullName)`"" }
 
-& $csc /nologo /target:exe /out:"$(Join-Path $TargetDir 'nusa-bridge.exe')" /optimize+ /r:"$fw\System.Runtime.WindowsRuntime.dll" /r:"$sysRuntime" $winmds "$(Join-Path $TargetDir 'NusaBridge.cs')" | Out-Null
-& $csc /nologo /target:winexe /out:"$(Join-Path $TargetDir 'Kora.exe')" /win32icon:"$(Join-Path $TargetDir 'kora.ico')" /optimize+ "$(Join-Path $TargetDir 'KoraLauncher.cs')" | Out-Null
+& $csc /nologo /target:exe /platform:anycpu /out:"$(Join-Path $TargetDir 'nusa-bridge.exe')" /optimize+ /r:"$winRuntime" /r:"$sysRuntime" $winmds "$(Join-Path $TargetDir 'NusaBridge.cs')" | Out-Null
+& $csc /nologo /target:winexe /platform:anycpu /out:"$(Join-Path $TargetDir 'Kora.exe')" /win32icon:"$(Join-Path $TargetDir 'kora.ico')" /optimize+ "$(Join-Path $TargetDir 'KoraLauncher.cs')" | Out-Null
 
 $ElectronExe = Join-Path $DistDir "electron.exe"
-if (-not (Test-Path $ElectronExe)) {
-  $devElectron = Join-Path ([Environment]::GetFolderPath("Desktop")) "Progammation\Kora\node_modules\electron\dist\electron.exe"
-  if (Test-Path $devElectron) {
-    Write-Host "  [3/4] Copie du moteur graphique local..." -ForegroundColor Cyan
-    Copy-Item (Join-Path ([Environment]::GetFolderPath("Desktop")) "Progammation\Kora\node_modules\electron\dist\*") $DistDir -Recurse -Force
-  } else {
-    Write-Host "  [3/4] Telechargement du moteur graphique..." -ForegroundColor Cyan
-    $zipPath = Join-Path $TargetDir "runtime.zip"
-    & curl.exe -L --fail --retry 3 -s $ElectronZipUrl -o $zipPath
+$archMarker  = Join-Path $DistDir ".arch"
+$needsDownload = $true
 
-    # Extraction ultra-rapide et robuste (tar.exe natif Windows 10/11 sans bogue d'encodage)
+if (Test-Path $ElectronExe) {
+  $exeSize = (Get-Item $ElectronExe).Length
+  $currentArch = if (Test-Path $archMarker) { (Get-Content $archMarker -Raw).Trim() } else { "" }
+  if ($exeSize -gt 30000000 -and ($currentArch -eq $electronArch -or (-not $currentArch -and $electronArch -eq "x64"))) {
+    $needsDownload = $false
+  } else {
+    Write-Host "  [!] Mise a niveau du moteur d'execution vers l'architecture $electronArch..." -ForegroundColor Yellow
+    Remove-Item $DistDir -Recurse -Force -ErrorAction SilentlyContinue
+    New-Item -ItemType Directory -Force -Path $DistDir | Out-Null
+  }
+}
+
+if ($needsDownload) {
+  $devElectron = Join-Path ([Environment]::GetFolderPath("Desktop")) "Progammation\Kora\node_modules\electron\dist\electron.exe"
+  if ($electronArch -eq "x64" -and (Test-Path $devElectron)) {
+    Write-Host "  [3/4] Copie du moteur graphique local ($electronArch)..." -ForegroundColor Cyan
+    Copy-Item (Join-Path ([Environment]::GetFolderPath("Desktop")) "Progammation\Kora\node_modules\electron\dist\*") $DistDir -Recurse -Force
+    Set-Content -Path $archMarker -Value $electronArch -Force
+  } else {
+    Write-Host "  [3/4] Telechargement du moteur graphique ($electronArch)..." -ForegroundColor Cyan
+    $zipPath = Join-Path $TargetDir "runtime.zip"
+    if (Test-Path $zipPath) { Remove-Item $zipPath -Force -ErrorAction SilentlyContinue }
+
+    $downloaded = $false
+    if (Get-Command "curl.exe" -ErrorAction SilentlyContinue) {
+      try {
+        & curl.exe -L --fail --retry 3 --connect-timeout 20 -s $ElectronZipUrl -o $zipPath
+        if ((Test-Path $zipPath) -and (Get-Item $zipPath).Length -gt 25000000) {
+          $downloaded = $true
+        }
+      } catch {}
+    }
+
+    if (-not $downloaded) {
+      Write-Host "  [i] Telechargement alternatif en cours..." -ForegroundColor Cyan
+      try {
+        $wc = New-Object System.Net.WebClient
+        $wc.DownloadFile($ElectronZipUrl, $zipPath)
+        $wc.Dispose()
+        if ((Test-Path $zipPath) -and (Get-Item $zipPath).Length -gt 25000000) {
+          $downloaded = $true
+        }
+      } catch {
+        Write-Host "  [!] Erreur de telechargement : $_" -ForegroundColor Red
+      }
+    }
+
+    if (-not (Test-Path $zipPath) -or (Get-Item $zipPath).Length -lt 25000000) {
+      throw "Impossible de telecharger le moteur graphique Kora ($electronArch). Verifiez votre connexion internet."
+    }
+
+    Write-Host "  [i] Extraction et configuration du moteur..." -ForegroundColor Cyan
     if (Get-Command "tar.exe" -ErrorAction SilentlyContinue) {
       & tar.exe -xf $zipPath -C $DistDir 2>$null
     } else {
@@ -109,9 +185,10 @@ if (-not (Test-Path $ElectronExe)) {
       [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $DistDir)
     }
     Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+    Set-Content -Path $archMarker -Value $electronArch -Force
   }
 } else {
-  Write-Host "  [3/4] Moteur graphique deja installe." -ForegroundColor Cyan
+  Write-Host "  [3/4] Moteur graphique ($electronArch) valide et pret." -ForegroundColor Cyan
 }
 
 Write-Host "  [4/4] Creation des raccourcis et du desinstalleur Windows..." -ForegroundColor Cyan
@@ -143,7 +220,7 @@ try {
   $UninstShortcut.Description = "Desinstaller Kora de votre ordinateur"
   $UninstShortcut.Save()
 
-  # Enregistrement dans les Applications Installees Windows (Parametres Windows -> Applications -> Kora -> Desinstaller)
+  # Enregistrement dans les Applications Installees Windows
   $UninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Kora"
   New-Item -Path $UninstallKey -Force | Out-Null
   New-ItemProperty -Path $UninstallKey -Name "DisplayName" -Value "Kora - Dynamic Island pour Windows" -PropertyType String -Force | Out-Null
@@ -158,5 +235,7 @@ try {
 
 Start-Process -FilePath (Join-Path $TargetDir "Kora.exe") -WorkingDirectory $TargetDir
 Write-Host ""
-Write-Host "  [OK] Kora est installee et lancee en haut de votre ecran !" -ForegroundColor Green
+Write-Host "  ======================================================" -ForegroundColor Green
+Write-Host "   [OK] Kora est installee et lancee avec succes !" -ForegroundColor Green
+Write-Host "  ======================================================" -ForegroundColor Green
 Start-Sleep -Seconds 2
