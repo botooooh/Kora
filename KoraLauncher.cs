@@ -69,12 +69,12 @@ namespace KoraLauncher
                         }
                         catch (Exception ex)
                         {
-                            // Incompatibilité d'architecture ou exécutable invalide pour la plateforme
+                            try { File.Delete(candidateElectron); } catch {}
                             DialogResult repairChoice = MessageBox.Show(
                                 "Le moteur graphique Kora a rencontré une incompatibilité avec votre version de Windows :\n\n" +
                                 ex.Message + "\n\n" +
-                                "Voulez-vous lancer la réparation automatique adaptée à votre processeur ?",
-                                "Kora — Réparation recommandée",
+                                "Voulez-vous lancer la configuration automatique optimisée pour votre PC (Windows 7 / 8 / 10 / 11, 32-bit ou 64-bit) ?",
+                                "Kora — Configuration requise",
                                 MessageBoxButtons.YesNo,
                                 MessageBoxIcon.Warning
                             );

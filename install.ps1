@@ -1,6 +1,7 @@
 # ============================================================================
 # KORA - Installeur Officiel Multi-Plateforme (par Mr Paul)
-# Supporte nativement x64, 32-bit (ia32) et ARM64 Windows
+# Supporte TOUTES les versions de Windows : 11, 10, 8.1, 8 et 7
+# Supporte TOUTES les architectures : 64-bit (x64), 32-bit (ia32) et ARM64
 # Compile les composants natifs localement via Microsoft .NET AnyCPU
 # Garantit 0 faux-positif Antivirus / SmartScreen
 # ============================================================================
@@ -8,7 +9,13 @@
 param([string]$SourceDir = "")
 
 $ErrorActionPreference = "Stop"
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+# Configuration TLS 1.2 universelle (compatible PowerShell 2.0 / 3.0 / 4.0 / 5.1 et tout .NET)
+try {
+  [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+} catch {
+  [Net.ServicePointManager]::SecurityProtocol = 3072 -bor 768 -bor 192 -bor 48
+}
 
 if (-not $SourceDir) {
   if ($PSScriptRoot) {
@@ -30,23 +37,40 @@ $TargetDir = Join-Path $env:LOCALAPPDATA "Kora"
 $DistDir   = Join-Path $TargetDir "node_modules\electron\dist"
 $BaseUrl   = "https://raw.githubusercontent.com/botooooh/Kora/main"
 
-# Detection automatique de l'architecture reelle (x64, ia32, arm64)
+# 1. Detection de l'architecture du processeur
 $rawArch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
-$electronArch = "x64"
+$cpuArch = "x64"
 if ($rawArch -match "ARM64") {
-  $electronArch = "arm64"
+  $cpuArch = "arm64"
 } elseif ($rawArch -match "x86|i386|i686" -or [IntPtr]::Size -eq 4) {
-  $electronArch = "ia32"
+  $cpuArch = "ia32"
 } else {
-  $electronArch = "x64"
+  $cpuArch = "x64"
 }
 
-$ElectronZipUrl = "https://github.com/electron/electron/releases/download/v35.0.0/electron-v35.0.0-win32-$electronArch.zip"
+# 2. Detection de la version de Windows
+$osMajor = [Environment]::OSVersion.Version.Major
+$isLegacyWin = ($osMajor -lt 10)
+
+if ($isLegacyWin) {
+  # Pour Windows 7, 8 et 8.1 : Electron v22.3.27 est la derniere version certifiee compatible
+  $electronVersion = "v22.3.27"
+  $archToUse = if ($cpuArch -eq "arm64") { "ia32" } else { $cpuArch }
+  $osName = "Windows 7/8 ($archToUse)"
+} else {
+  # Pour Windows 10 et 11 : Electron v35.0.0
+  $electronVersion = "v35.0.0"
+  $archToUse = $cpuArch
+  $osName = "Windows 10/11 ($archToUse)"
+}
+
+$ElectronZipUrl = "https://github.com/electron/electron/releases/download/$electronVersion/electron-$electronVersion-win32-$archToUse.zip"
+$expectedMarker = "$electronVersion-$archToUse"
 
 Write-Host ""
 Write-Host "  ======================================================" -ForegroundColor Cyan
 Write-Host "   KORA - Installation & Configuration (par Mr Paul)" -ForegroundColor White
-Write-Host "   Architecture detectee : $electronArch (Windows)" -ForegroundColor DarkGray
+Write-Host "   Environnement detecte : $osName" -ForegroundColor DarkGray
 Write-Host "  ======================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -83,7 +107,7 @@ foreach ($f in $Files) {
   Unblock-File -Path $dest -ErrorAction SilentlyContinue
 }
 
-# Copie egalement install.ps1 et uninstall.ps1 pour maintenance locale
+# Sauvegarde des scripts d'installation et desinstallation pour maintenance locale
 $InstallDest = Join-Path $TargetDir "install.ps1"
 $LocalInstall = Join-Path $ScriptDir "install.ps1"
 if (Test-Path $LocalInstall) {
@@ -106,7 +130,7 @@ if (Test-Path $LocalUninstall) {
 }
 Unblock-File -Path $UninstallDest -ErrorAction SilentlyContinue
 
-Write-Host "  [2/4] Compilation locale securisee (Microsoft .NET)..." -ForegroundColor Cyan
+Write-Host "  [2/4] Compilation locale securisee (Microsoft .NET AnyCPU)..." -ForegroundColor Cyan
 $fw = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319"
 if (-not (Test-Path (Join-Path $fw "csc.exe"))) {
   $fw = "C:\Windows\Microsoft.NET\Framework\v4.0.30319"
@@ -119,20 +143,27 @@ if (-not (Test-Path $winRuntime)) {
 }
 $winmds = Get-ChildItem "C:\Windows\System32\WinMetadata\*.winmd" -ErrorAction SilentlyContinue | ForEach-Object { "/r:`"$($_.FullName)`"" }
 
-& $csc /nologo /target:exe /platform:anycpu /out:"$(Join-Path $TargetDir 'nusa-bridge.exe')" /optimize+ /r:"$winRuntime" /r:"$sysRuntime" $winmds "$(Join-Path $TargetDir 'NusaBridge.cs')" | Out-Null
+# KoraLauncher universel
 & $csc /nologo /target:winexe /platform:anycpu /out:"$(Join-Path $TargetDir 'Kora.exe')" /win32icon:"$(Join-Path $TargetDir 'kora.ico')" /optimize+ "$(Join-Path $TargetDir 'KoraLauncher.cs')" | Out-Null
 
+# NusaBridge si WinRT supporte
+try {
+  if ($winmds -and $winRuntime -and (Test-Path $winRuntime)) {
+    & $csc /nologo /target:exe /platform:anycpu /out:"$(Join-Path $TargetDir 'nusa-bridge.exe')" /optimize+ /r:"$winRuntime" /r:"$sysRuntime" $winmds "$(Join-Path $TargetDir 'NusaBridge.cs')" 2>$null | Out-Null
+  }
+} catch {}
+
 $ElectronExe = Join-Path $DistDir "electron.exe"
-$archMarker  = Join-Path $DistDir ".arch"
+$archMarker  = Join-Path $DistDir ".runtime_ver"
 $needsDownload = $true
 
 if (Test-Path $ElectronExe) {
   $exeSize = (Get-Item $ElectronExe).Length
-  $currentArch = if (Test-Path $archMarker) { (Get-Content $archMarker -Raw).Trim() } else { "" }
-  if ($exeSize -gt 30000000 -and ($currentArch -eq $electronArch -or (-not $currentArch -and $electronArch -eq "x64"))) {
+  $currentMarker = if (Test-Path $archMarker) { (Get-Content $archMarker -Raw).Trim() } else { "" }
+  if ($exeSize -gt 25000000 -and $currentMarker -eq $expectedMarker) {
     $needsDownload = $false
   } else {
-    Write-Host "  [!] Mise a niveau du moteur d'execution vers l'architecture $electronArch..." -ForegroundColor Yellow
+    Write-Host "  [!] Configuration du moteur d'execution universel pour $osName..." -ForegroundColor Yellow
     Remove-Item $DistDir -Recurse -Force -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Force -Path $DistDir | Out-Null
   }
@@ -140,55 +171,89 @@ if (Test-Path $ElectronExe) {
 
 if ($needsDownload) {
   $devElectron = Join-Path ([Environment]::GetFolderPath("Desktop")) "Progammation\Kora\node_modules\electron\dist\electron.exe"
-  if ($electronArch -eq "x64" -and (Test-Path $devElectron)) {
-    Write-Host "  [3/4] Copie du moteur graphique local ($electronArch)..." -ForegroundColor Cyan
+  if (-not $isLegacyWin -and $cpuArch -eq "x64" -and (Test-Path $devElectron)) {
+    Write-Host "  [3/4] Copie du moteur graphique local ($expectedMarker)..." -ForegroundColor Cyan
     Copy-Item (Join-Path ([Environment]::GetFolderPath("Desktop")) "Progammation\Kora\node_modules\electron\dist\*") $DistDir -Recurse -Force
-    Set-Content -Path $archMarker -Value $electronArch -Force
+    Set-Content -Path $archMarker -Value $expectedMarker -Force
   } else {
-    Write-Host "  [3/4] Telechargement du moteur graphique ($electronArch)..." -ForegroundColor Cyan
+    Write-Host "  [3/4] Telechargement du moteur graphique universel ($osName)..." -ForegroundColor Cyan
     $zipPath = Join-Path $TargetDir "runtime.zip"
     if (Test-Path $zipPath) { Remove-Item $zipPath -Force -ErrorAction SilentlyContinue }
 
     $downloaded = $false
+    # 1. curl.exe (Windows 10 / 11)
     if (Get-Command "curl.exe" -ErrorAction SilentlyContinue) {
       try {
         & curl.exe -L --fail --retry 3 --connect-timeout 20 -s $ElectronZipUrl -o $zipPath
-        if ((Test-Path $zipPath) -and (Get-Item $zipPath).Length -gt 25000000) {
+        if ((Test-Path $zipPath) -and (Get-Item $zipPath).Length -gt 20000000) {
           $downloaded = $true
         }
       } catch {}
     }
 
+    # 2. Windows WebClient (Universel tout Windows 7 / 8 / 10 / 11)
     if (-not $downloaded) {
       Write-Host "  [i] Telechargement alternatif en cours..." -ForegroundColor Cyan
       try {
         $wc = New-Object System.Net.WebClient
+        $wc.Headers.Add("User-Agent", "Kora-Installer/2.0")
         $wc.DownloadFile($ElectronZipUrl, $zipPath)
         $wc.Dispose()
-        if ((Test-Path $zipPath) -and (Get-Item $zipPath).Length -gt 25000000) {
+        if ((Test-Path $zipPath) -and (Get-Item $zipPath).Length -gt 20000000) {
           $downloaded = $true
         }
       } catch {
-        Write-Host "  [!] Erreur de telechargement : $_" -ForegroundColor Red
+        Write-Host "  [!] Echec WebClient : $_" -ForegroundColor Yellow
       }
     }
 
-    if (-not (Test-Path $zipPath) -or (Get-Item $zipPath).Length -lt 25000000) {
-      throw "Impossible de telecharger le moteur graphique Kora ($electronArch). Verifiez votre connexion internet."
+    # 3. BITS ou Invoke-WebRequest
+    if (-not $downloaded) {
+      try {
+        Start-BitsTransfer -Source $ElectronZipUrl -Destination $zipPath -ErrorAction Stop
+        if ((Test-Path $zipPath) -and (Get-Item $zipPath).Length -gt 20000000) {
+          $downloaded = $true
+        }
+      } catch {
+        Invoke-WebRequest -Uri $ElectronZipUrl -OutFile $zipPath -UseBasicParsing -ErrorAction SilentlyContinue
+        if ((Test-Path $zipPath) -and (Get-Item $zipPath).Length -gt 20000000) {
+          $downloaded = $true
+        }
+      }
+    }
+
+    if (-not (Test-Path $zipPath) -or (Get-Item $zipPath).Length -lt 20000000) {
+      throw "Impossible de telecharger le moteur graphique Kora ($expectedMarker). Verifiez votre connexion internet."
     }
 
     Write-Host "  [i] Extraction et configuration du moteur..." -ForegroundColor Cyan
+    # Extraction universelle : tar.exe (Win10+) -> ZipFile (.NET 4.5+) -> Shell.Application COM (Win7/8)
     if (Get-Command "tar.exe" -ErrorAction SilentlyContinue) {
       & tar.exe -xf $zipPath -C $DistDir 2>$null
     } else {
-      Add-Type -AssemblyName System.IO.Compression.FileSystem
-      [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $DistDir)
+      $extracted = $false
+      try {
+        Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction Stop
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $DistDir)
+        $extracted = $true
+      } catch {}
+
+      if (-not $extracted) {
+        $shell = New-Object -ComObject Shell.Application
+        $zipPackage = $shell.NameSpace($zipPath)
+        $destFolder = $shell.NameSpace($DistDir)
+        $destFolder.CopyHere($zipPackage.Items(), 16)
+      }
     }
     Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
-    Set-Content -Path $archMarker -Value $electronArch -Force
+    Set-Content -Path $archMarker -Value $expectedMarker -Force
   }
 } else {
-  Write-Host "  [3/4] Moteur graphique ($electronArch) valide et pret." -ForegroundColor Cyan
+  Write-Host "  [3/4] Moteur graphique ($expectedMarker) valide et pret." -ForegroundColor Cyan
+}
+
+if (-not (Test-Path $ElectronExe) -or (Get-Item $ElectronExe).Length -lt 20000000) {
+  throw "Le moteur graphique Kora n'a pas pu etre installe correctement. Verifiez votre espace disque."
 }
 
 Write-Host "  [4/4] Creation des raccourcis et du desinstalleur Windows..." -ForegroundColor Cyan

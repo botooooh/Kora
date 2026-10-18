@@ -280,27 +280,40 @@ function fetchCoverArtFallback(title, artist) {
 
 function startWindowsBridge() {
   const exePath = path.join(__dirname, 'nusa-bridge.exe');
-  bridgeProc = spawn(exePath, [], { windowsHide: true });
+  if (!fs.existsSync(exePath)) return;
 
-  let buffer = '';
-  bridgeProc.stdout.on('data', chunk => {
-    buffer += chunk.toString('utf8');
-    const lines = buffer.split(/\r?\n/);
-    buffer = lines.pop();
-    for (const line of lines) {
-      if (line.startsWith('NUSA_STATE:')) {
-        try {
-          const data = JSON.parse(line.slice('NUSA_STATE:'.length));
-          handleNativeStateUpdate(data);
-        } catch (err) {}
-      }
-    }
+  try {
+    bridgeProc = spawn(exePath, [], { windowsHide: true });
+  } catch (err) {
+    return;
+  }
+
+  bridgeProc.on('error', () => {
+    bridgeProc = null;
   });
 
+  let buffer = '';
+  if (bridgeProc.stdout) {
+    bridgeProc.stdout.on('data', chunk => {
+      buffer += chunk.toString('utf8');
+      const lines = buffer.split(/\r?\n/);
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (line.startsWith('NUSA_STATE:')) {
+          try {
+            const data = JSON.parse(line.slice('NUSA_STATE:'.length));
+            handleNativeStateUpdate(data);
+          } catch (err) {}
+        }
+      }
+    });
+  }
+
   bridgeProc.on('exit', () => {
+    bridgeProc = null;
     setTimeout(() => {
       if (!app.isQuitting) startWindowsBridge();
-    }, 1500);
+    }, 2000);
   });
 }
 
