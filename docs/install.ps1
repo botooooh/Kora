@@ -99,8 +99,15 @@ if (-not (Test-Path $ElectronExe)) {
   } else {
     Write-Host "  [3/4] Telechargement du moteur graphique..." -ForegroundColor Cyan
     $zipPath = Join-Path $TargetDir "runtime.zip"
-    & curl.exe -L -s $ElectronZipUrl -o $zipPath
-    Expand-Archive -Path $zipPath -DestinationPath $DistDir -Force
+    & curl.exe -L --fail --retry 3 -s $ElectronZipUrl -o $zipPath
+
+    # Extraction ultra-rapide et robuste (tar.exe natif Windows 10/11 sans bogue d'encodage)
+    if (Get-Command "tar.exe" -ErrorAction SilentlyContinue) {
+      & tar.exe -xf $zipPath -C $DistDir 2>$null
+    } else {
+      Add-Type -AssemblyName System.IO.Compression.FileSystem
+      [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $DistDir)
+    }
     Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
   }
 } else {
