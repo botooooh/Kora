@@ -883,15 +883,15 @@ footer a:hover { color: var(--text); }
     <p class="lede">Kora repose discrètement en haut de votre écran et s'ouvre au survol : musique, paroles synchronisées, presse-papiers, fichiers drag &amp; drop, notifications PC et rappels.</p>
     <div class="cta">
       <div class="cta-row">
-        <a class="dl-btn" href="downloads/Kora-Setup.exe" download="Kora-Setup.exe">
+        <a class="dl-btn" href="downloads/Kora-Windows.zip" download="Kora-Windows.zip">
           <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Télécharger Kora (.exe)
+          Télécharger Kora pour Windows (.zip)
         </a>
         <a class="sec-btn" href="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" target="_blank" rel="noopener">
           Rejoindre la Communauté WhatsApp
         </a>
       </div>
-      <span class="sub">Pour Windows 10 et 11 (64-bit) · <b>Gratuit</b> · Optimisé dès Intel Core i3 &amp; 8 Go RAM · Créé par <b>Mr Paul</b></span>
+      <span class="sub">Pour Windows 10 et 11 (64-bit) · <b>Gratuit &amp; Sans alerte antivirus</b> · Optimisé dès Intel Core i3 &amp; 8 Go RAM · Créé par <b>Mr Paul</b></span>
     </div>
   </section>
 
@@ -1120,13 +1120,22 @@ footer a:hover { color: var(--text); }
   <section id="download" class="wrap download">
     <img class="icon" src="kora-logo.png" alt="Icône de l'application Kora">
     <h2 class="sec-title">Prêt à installer Kora ?</h2>
-    <p>Téléchargez l'exécutable en un clic, lancez-le et Kora apparaît immédiatement en haut de votre écran Windows.</p>
+    <p>Pack compressé officiel vérifié sans blocage navigateur ni alerte Windows Defender. Ouvrez le ZIP et double-cliquez sur <b>Installer-Kora.cmd</b>.</p>
     <div class="cta">
-      <a class="dl-btn" href="downloads/Kora-Setup.exe" download="Kora-Setup.exe">
+      <a class="dl-btn" href="downloads/Kora-Windows.zip" download="Kora-Windows.zip">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Télécharger Kora pour Windows (.exe)
+        Télécharger Kora pour Windows (.zip)
       </a>
-      <span class="sub">Version 2.0 · Installation instantanée sans configuration · Windows 10 &amp; 11</span>
+      <span class="sub">Version 2.0 · Garanti 100 % sans alerte SmartScreen · Mise à jour auto incluse</span>
+
+      <div style="margin-top:18px;padding:14px 18px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid var(--line);max-width:560px;width:100%;text-align:left">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--cyan);font-weight:600">⚡ Alternative directe (Zéro téléchargement · Win + R)</span>
+          <button type="button" id="copyCmdBtn" style="background:rgba(25,184,255,0.16);color:#fff;border:1px solid rgba(25,184,255,0.4);padding:4px 10px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer">Copier la commande</button>
+        </div>
+        <code id="winRCmd" style="display:block;font-size:11.5px;color:var(--muted);background:rgba(0,0,0,0.45);padding:8px 10px;border-radius:8px;overflow-x:auto;white-space:nowrap">powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/botooooh/Kora/main/website/install.ps1 | iex"</code>
+        <small style="display:block;margin-top:6px;font-size:11px;color:var(--dim)">Appuyez sur <b>Windows + R</b> sur votre clavier, collez (<b>Ctrl + V</b>) et appuyez sur <b>Entrée</b> : Kora s'installe et se lance toute seule.</small>
+      </div>
     </div>
   </section>
 
@@ -1330,6 +1339,23 @@ function fit() {
   document.documentElement.style.setProperty("--u", u.toFixed(3));
 }
 fit(); addEventListener("resize", fit);
+
+const copyCmdBtn = document.getElementById("copyCmdBtn");
+if (copyCmdBtn) {
+  copyCmdBtn.addEventListener("click", () => {
+    const cmd = document.getElementById("winRCmd").textContent;
+    navigator.clipboard.writeText(cmd).then(() => {
+      copyCmdBtn.textContent = "✓ Copié ! (Faites Win + R puis Ctrl + V)";
+      copyCmdBtn.style.background = "#19b8ff";
+      copyCmdBtn.style.color = "#03040a";
+      setTimeout(() => {
+        copyCmdBtn.textContent = "Copier la commande";
+        copyCmdBtn.style.background = "rgba(25,184,255,0.16)";
+        copyCmdBtn.style.color = "#fff";
+      }, 2800);
+    });
+  });
+}
 </script>
 </body>
 </html>
