@@ -102,67 +102,8 @@
       mask: radial-gradient(ellipse 75% 55% at 50% 0%, #000 25%, transparent 75%);
     }
 
-    .bg .orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(70px);
-      will-change: transform;
-      animation: drift 24s ease-in-out infinite alternate;
-    }
-
-    .bg .o1 {
-      width: 640px;
-      height: 640px;
-      left: -180px;
-      top: -240px;
-      background: radial-gradient(circle, rgba(0, 102, 255, 0.42), transparent 68%);
-    }
-
-    .bg .o2 {
-      width: 540px;
-      height: 540px;
-      right: -160px;
-      top: 80px;
-      background: radial-gradient(circle, rgba(25, 184, 255, 0.32), transparent 68%);
-      animation-duration: 28s;
-      animation-delay: -9s;
-    }
-
-    .bg .o3 {
-      width: 760px;
-      height: 760px;
-      left: 28%;
-      top: 70vh;
-      background: radial-gradient(circle, rgba(45, 91, 255, 0.18), transparent 68%);
-      animation-duration: 32s;
-      animation-delay: -4s;
-    }
-
-    @keyframes drift {
-      0% {
-        transform: translate3d(0, 0, 0) scale(1);
-      }
-
-      100% {
-        transform: translate3d(90px, 70px, 0) scale(1.15);
-      }
-    }
-
-    /* ---- Barre de progression de lecture ---- */
-    .progress {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      z-index: 70;
-      background: var(--glow);
-      transform-origin: 0 50%;
-      transform: scaleX(var(--p, 0));
-      box-shadow: 0 0 12px rgba(25, 184, 255, 0.7);
-      pointer-events: none;
-    }
-
+    
+    
     /* ---- En-tête fixe (disparaît au défilement) ---- */
     .site-head {
       position: fixed;
@@ -248,7 +189,7 @@
       color: #05070f;
       background: #fff;
       font-weight: 600;
-      box-shadow: 0 8px 24px -8px rgba(25, 184, 255, 0.6);
+      box-shadow: none;
     }
 
     .nav-links .nav-cta:hover {
@@ -297,23 +238,7 @@
       background: radial-gradient(circle at 100% 100%, transparent calc(var(--e) - 0.5px), #000 var(--e));
     }
 
-    .mascot .glow {
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background: var(--glow);
-      -webkit-mask: linear-gradient(to top, #000, rgba(0, 0, 0, 0.45) 35%, transparent 78%);
-      mask: linear-gradient(to top, #000, rgba(0, 0, 0, 0.45) 35%, transparent 78%);
-      pointer-events: none;
-      animation: breathe-glow 4s ease-in-out infinite;
-    }
-
-    @keyframes breathe-glow {
-      50% {
-        opacity: 0.6;
-      }
-    }
-
+    
     .mascot .eye {
       translate: var(--ex, 0) var(--ey, 0);
       transition: translate 0.25s ease-out;
@@ -325,7 +250,7 @@
       height: 11px;
       border-radius: 4px;
       background: #fff;
-      box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.7), 0 0 14px 3px rgba(25, 184, 255, 0.55);
+      box-shadow: none;
       animation: blink 4.2s infinite;
     }
 
@@ -383,23 +308,10 @@
       height: 7px;
       border-radius: 50%;
       background: var(--cyan);
-      animation: pulse 2s infinite;
+      
     }
 
-    @keyframes pulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(25, 184, 255, 0.6);
-      }
-
-      70% {
-        box-shadow: 0 0 0 9px rgba(25, 184, 255, 0);
-      }
-
-      100% {
-        box-shadow: 0 0 0 0 rgba(25, 184, 255, 0);
-      }
-    }
-
+    
     h1 {
       font-family: var(--display);
       font-weight: 700;
@@ -505,7 +417,7 @@
       background: #f4f5f8;
       color: #000000;
       /* transform: none */
-      box-shadow: 0 14px 34px rgba(25, 184, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
 
     .btn-download-pill:active,
@@ -616,25 +528,7 @@
       perspective: 1800px;
     }
 
-    .device-glow {
-      position: absolute;
-      left: 6%;
-      right: 6%;
-      top: 10%;
-      bottom: -8%;
-      background: radial-gradient(60% 60% at 50% 50%, rgba(25, 184, 255, 0.42), rgba(0, 102, 255, 0.22) 50%, transparent 75%);
-      filter: blur(60px);
-      pointer-events: none;
-      animation: breathe 7s ease-in-out infinite;
-    }
-
-    @keyframes breathe {
-      50% {
-        opacity: 0.55;
-        transform: scale(0.96);
-      }
-    }
-
+    
     .laptop {
       position: relative;
       max-width: 980px;
@@ -1006,7 +900,7 @@
       height: 5px;
       border-radius: 50%;
       background: #19b8ff;
-      box-shadow: 0 0 6px #19b8ff;
+      box-shadow: none;
     }
 
     .dots {
@@ -1894,7 +1788,7 @@
       font-size: 17px;
       color: #02101f;
       background: linear-gradient(160deg, var(--sky), var(--cyan) 50%, var(--indigo));
-      box-shadow: 0 0 0 6px rgba(25, 184, 255, 0.1), 0 10px 26px -8px rgba(25, 184, 255, 0.8);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     }
 
     .step code {
@@ -1977,7 +1871,7 @@
       width: 96px;
       height: 96px;
       border-radius: 24px;
-      box-shadow: 0 22px 50px rgba(0, 0, 0, 0.7), 0 0 40px rgba(25, 184, 255, 0.35);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
       animation: float 6s ease-in-out infinite;
     }
 
@@ -2504,7 +2398,7 @@
 
     .snap-dot.active {
       background: var(--cyan);
-      box-shadow: 0 0 12px rgba(25, 184, 255, 0.9);
+      box-shadow: none;
       transform: scale(1.4);
     }
 
@@ -2544,15 +2438,10 @@
 
   <div class="bg" aria-hidden="true">
     <div class="grid"></div>
-    <div class="orb o1"></div>
-    <div class="orb o2"></div>
-    <div class="orb o3"></div>
   </div>
-  <div class="progress" id="progress" aria-hidden="true"></div>
 
   <header class="site-head" id="siteHead">
     <div class="mascot" id="mascot" aria-hidden="true">
-      <div class="glow"></div>
       <span class="eye"></span>
       <span class="eye"></span>
     </div>
@@ -2609,7 +2498,6 @@
     <section class="stage snap-section" id="stage" data-snap-label="Démo Kora" aria-label="Aperçu interactif de Kora">
       <div class="wrap">
         <div class="device intro" style="--d:.75s">
-          <div class="device-glow" aria-hidden="true"></div>
           <div class="laptop" id="laptop">
             <div class="screen">
 
@@ -2817,7 +2705,7 @@
                       <span class="a vc sb" style="left:58px;top:20px;font-size:13px">WhatsApp · Mr Paul</span>
                       <span class="a vc dim" style="left:58px;top:37px;font-size:11px">Nouveau message reçu…</span>
                       <span class="a vc"
-                        style="right:16px;top:28px;width:7px;height:7px;border-radius:50%;background:#19b8ff;box-shadow:0 0 8px #19b8ff"></span>
+                        style="right:16px;top:28px;width:7px;height:7px;border-radius:50%;background:#19b8ff;box-shadow: none"></span>
                     </div>
 
                     <!-- Volume / Luminosité -->
@@ -3411,8 +3299,7 @@
 
     // ---- En-tête, barre de progression, inclinaison de l'écran, retour en haut ------------
     const head = document.getElementById("siteHead");
-    const bar = document.getElementById("progress");
-    const toTop = document.getElementById("toTop");
+        const toTop = document.getElementById("toTop");
     const laptop = document.getElementById("laptop");
     const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let ticking = false;
@@ -3420,8 +3307,7 @@
       const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
       head.classList.toggle("scrolled-hidden", y > 30);
       head.classList.toggle("scrolled", y > 24);
-      bar.style.setProperty("--p", max > 0 ? (y / max).toFixed(4) : 0);
-      toTop.classList.toggle("show", y > innerHeight * 1.2);
+            toTop.classList.toggle("show", y > innerHeight * 1.2);
       if (!reduceMotion) {
         const r = laptop.getBoundingClientRect();
         const k = Math.min(1, Math.max(0, (r.top - innerHeight * 0.15) / (innerHeight * 0.7)));
