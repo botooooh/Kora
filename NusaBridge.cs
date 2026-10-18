@@ -102,6 +102,12 @@ namespace NusaBridge {
         static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll")]
+        static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        static extern bool IsIconic(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
         static extern int GetSystemMetrics(int nIndex);
 
         [DllImport("user32.dll")]
@@ -294,7 +300,7 @@ namespace NusaBridge {
             }
         }
 
-        static bool lastHasActiveApp = true;
+        static bool lastHasActiveApp = false;
         static bool lastIsMaximized = false;
         static bool lastIsFullscreen = false;
         static StringBuilder sbBuf = new StringBuilder(256);
@@ -302,7 +308,9 @@ namespace NusaBridge {
         static void GetWindowEnv(out bool hasActiveApp, out bool isMaximized, out bool isFullscreen) {
             IntPtr hwnd = GetForegroundWindow();
             if (hwnd == IntPtr.Zero) {
-                hasActiveApp = false; isMaximized = false; isFullscreen = false;
+                hasActiveApp = lastHasActiveApp = false;
+                isMaximized = lastIsMaximized = false;
+                isFullscreen = lastIsFullscreen = false;
                 return;
             }
 
@@ -316,10 +324,19 @@ namespace NusaBridge {
                 return;
             }
 
+            if (!IsWindowVisible(hwnd) || IsIconic(hwnd)) {
+                hasActiveApp = lastHasActiveApp = false;
+                isMaximized = lastIsMaximized = false;
+                isFullscreen = lastIsFullscreen = false;
+                return;
+            }
+
             sbBuf.Clear();
             GetClassName(hwnd, sbBuf, 256);
             string cls = sbBuf.ToString();
-            if (cls == "Progman" || cls == "WorkerW" || cls == "Shell_TrayWnd" || cls == "Shell_SecondaryTrayWnd") {
+            if (cls == "Progman" || cls == "WorkerW" || cls == "Shell_TrayWnd" || cls == "Shell_SecondaryTrayWnd" ||
+                cls == "Windows.UI.Core.CoreWindow" || cls == "EdgeUiInputTopWndClass" || cls == "ForegroundStaging" ||
+                (cls == "ApplicationFrameWindow" && title.Length == 0)) {
                 hasActiveApp = lastHasActiveApp = false;
                 isMaximized = lastIsMaximized = false;
                 isFullscreen = lastIsFullscreen = false;
@@ -330,15 +347,27 @@ namespace NusaBridge {
             GetWindowRect(hwnd, out r);
             int scrW = GetSystemMetrics(0);
             int scrH = GetSystemMetrics(1);
-            bool zoomed = IsZoomed(hwnd);
-
             int winW = r.Right - r.Left;
             int winH = r.Bottom - r.Top;
 
-            bool isMaxOrFull = zoomed || (r.Top <= 10 && r.Left <= 10 && winW >= scrW - 20 && winH >= scrH - 72);
-            isFullscreen = lastIsFullscreen = isMaxOrFull;
-            isMaximized = lastIsMaximized = isMaxOrFull;
+            if (winW < 120 || winH < 80) {
+                hasActiveApp = lastHasActiveApp = false;
+                isMaximized = lastIsMaximized = false;
+                isFullscreen = lastIsFullscreen = false;
+                return;
+            }
+
+            bool zoomed = IsZoomed(hwnd);
+
+            // VRAI PLEIN ÉCRAN (F11, YouTube plein écran, VLC, Jeux vidéo)
+            bool isTrueFullscreen = (r.Left <= 0 && r.Top <= 0 && winW >= scrW && winH >= scrH);
+
+            // MAXIMISÉ STANDARD (Bouton Agrandir, barre des tâches Windows visible)
+            bool isNormalMaximized = zoomed || (r.Top <= 10 && winW >= scrW - 20 && winH >= scrH - 60);
+
             hasActiveApp = lastHasActiveApp = true;
+            isMaximized = lastIsMaximized = isNormalMaximized;
+            isFullscreen = lastIsFullscreen = isTrueFullscreen;
         }
 
         static string EscapeJson(string s) {
@@ -440,7 +469,9 @@ namespace NusaBridge {
                 bool mute = GetMute();
                 bool caps = (GetAsyncKeyState(0x14) & 0x0001) != 0;
 
-                if (tick % 4 == 0 || hadCmd) {
+                GetWindowEnv(out hasActiveApp, out isMaximized, out isFullscreen);
+
+                if (tick % 6 == 0 || hadCmd) {
                     SYSTEM_POWER_STATUS sps;
                     if (GetSystemPowerStatus(out sps)) {
                         batPct = sps.BatteryLifePercent <= 100 ? sps.BatteryLifePercent : 100;
@@ -448,7 +479,6 @@ namespace NusaBridge {
                     }
 
                     brightness = GetBrightness();
-                    GetWindowEnv(out hasActiveApp, out isMaximized, out isFullscreen);
 
                     var sess = SelectBestSession();
                     activeSession = sess;

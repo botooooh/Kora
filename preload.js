@@ -42,5 +42,6 @@ contextBridge.exposeInMainWorld('nusa', {
   onOsDragNear: cb => ipcRenderer.on('os-drag-near', (_e, data) => cb(data)),
   onTopEdgeHover: cb => ipcRenderer.on('top-edge-hover', (_e, data) => cb(data)),
   onSwitchTab: cb => ipcRenderer.on('switch-tab', (_e, tab) => cb(tab)),
-  onToggleNotch: cb => ipcRenderer.on('toggle-notch', () => cb())
+  onToggleNotch: cb => ipcRenderer.on('toggle-notch', () => cb()),
+  onNotchBlur: cb => ipcRenderer.on('notch-blur', () => cb())
 });

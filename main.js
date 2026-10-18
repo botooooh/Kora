@@ -227,6 +227,12 @@ function createWindow() {
   });
 
   screen.on('display-metrics-changed', positionWindowAtTopCenter);
+
+  mainWindow.on('blur', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('notch-blur');
+    }
+  });
 }
 
 // Persistent C# native bridge (nusa-bridge.exe)

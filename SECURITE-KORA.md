@@ -55,7 +55,7 @@ L'empreinte cryptographique SHA-256 permet de garantir qu'aucun pirate n'a pu al
 * **Algorithme** : SHA-256 (256 bits)
 * **Empreinte Officielle (Hash)** :
   ```text
-  6f897cd499ba030969f4cdcbee3e4c28a1e8d58fccd4da72adccc1aa5d4ebef1
+  09b1d67ae0e7733ec39e4d9940c1ac829c6dca6b4cf58bdd81a0c77411aeb41d
   ```
 
 ### Comment l'utilisateur peut vérifier l'intégrité sous Windows :

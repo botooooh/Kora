@@ -94,10 +94,10 @@ function shouldRetractWhenClosed() {
 function updateVisibilityAndRetraction() {
   const win = currentState.window || {};
   const hideFsSetting = store.settings ? store.settings.hideInFullscreen !== false : true;
-  const mode = (store.settings && store.settings.retractMode) || 'app';
 
-  const isFullOrMax = Boolean(win.isFullscreen || (mode === 'never' && win.isMaximized));
-  const shouldHideFullscreen = isFullOrMax && hideFsSetting;
+  // 1. True Fullscreen (vidéos YouTube F11, VLC plein écran, jeux vidéo)
+  // Ne disparaît complètement que si l'appli est en VRAI plein écran
+  const shouldHideFullscreen = Boolean(win.isFullscreen && hideFsSetting);
 
   mn.dataset.fullscreenHidden = shouldHideFullscreen ? 'true' : 'false';
   if (shouldHideFullscreen) {
@@ -109,6 +109,7 @@ function updateVisibilityAndRetraction() {
     return;
   }
 
+  // 2. Rétractation automatique : se rétracte si une application est ouverte, sinon descend sur le Bureau
   if (isExpanded || isPeekActive || isPinned) {
     mn.dataset.retracted = 'false';
   } else {
@@ -176,17 +177,18 @@ window.addEventListener('mousemove', e => {
   const isRetracted = mn.dataset.retracted === 'true';
 
   let inside = false;
+  const lip = Number(store.settings?.retractedLip ?? 4);
   if (isRetracted && !isExpanded) {
     inside =
-      e.clientY <= 6 &&
-      e.clientX >= rect.left - 12 &&
-      e.clientX <= rect.right + 12;
+      e.clientY <= Math.max(8, lip + 3) &&
+      e.clientX >= rect.left - 16 &&
+      e.clientX <= rect.right + 16;
   } else {
     inside =
-      e.clientX >= rect.left - 10 &&
-      e.clientX <= rect.right + 10 &&
+      e.clientX >= rect.left - 12 &&
+      e.clientX <= rect.right + 12 &&
       e.clientY >= rect.top &&
-      e.clientY <= rect.bottom + 12;
+      e.clientY <= rect.bottom + 14;
   }
 
   if (inside !== mouseInsideNotch) {
@@ -1127,5 +1129,11 @@ window.nusa.onToggleNotch(() => {
     closeNotch();
   } else {
     openNotch(activeTab);
+  }
+});
+
+window.nusa.onNotchBlur(() => {
+  if (isExpanded && !isPinned && !isDraggingOut) {
+    closeNotch();
   }
 });
