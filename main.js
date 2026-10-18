@@ -8,7 +8,8 @@ const {
   shell,
   Tray,
   Menu,
-  globalShortcut
+  globalShortcut,
+  dialog
 } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -1089,6 +1090,35 @@ function createTray() {
       click: () => shell.openExternal('mailto:ivannguessan09@gmail.com')
     },
     { type: 'separator' },
+    {
+      label: '🗑️ Désinstaller Kora',
+      click: async () => {
+        const res = await dialog.showMessageBox({
+          type: 'warning',
+          buttons: ['Annuler', 'Désinstaller Kora'],
+          defaultId: 0,
+          cancelId: 0,
+          title: 'Désinstaller Kora',
+          message: 'Voulez-vous vraiment désinstaller Kora de cet ordinateur ?',
+          detail: 'Cela supprimera les raccourcis (Bureau, Menu Démarrer), le lancement automatique et les fichiers de Kora.'
+        });
+        if (res.response === 1) {
+          const candidates = [
+            path.join(__dirname, 'uninstall.ps1'),
+            path.join(__dirname, 'website', 'uninstall.ps1')
+          ];
+          const scriptPath = candidates.find(p => fs.existsSync(p));
+          if (scriptPath) {
+            spawn('powershell.exe', ['-ExecutionPolicy', 'Bypass', '-File', scriptPath], {
+              detached: true,
+              stdio: 'ignore'
+            }).unref();
+          }
+          app.isQuitting = true;
+          app.quit();
+        }
+      }
+    },
     {
       label: 'Quitter Kora',
       click: () => {

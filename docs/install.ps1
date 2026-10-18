@@ -31,7 +31,8 @@ $Files = @(
   "NusaBridge.cs",
   "KoraLauncher.cs",
   "kora-logo.png",
-  "kora.ico"
+  "kora.ico",
+  "Desinstaller-Kora.cmd"
 )
 
 Write-Host "  [1/4] Synchronisation des fichiers sources Kora..." -ForegroundColor Cyan
@@ -46,6 +47,16 @@ foreach ($f in $Files) {
   Unblock-File -Path $dest -ErrorAction SilentlyContinue
 }
 
+# Copy uninstall.ps1 as well
+$UninstallDest = Join-Path $TargetDir "uninstall.ps1"
+$LocalUninstall = Join-Path $PSScriptRoot "uninstall.ps1"
+if (Test-Path $LocalUninstall) {
+  Copy-Item $LocalUninstall $UninstallDest -Force
+} else {
+  Invoke-WebRequest -Uri "$BaseUrl/website/uninstall.ps1?t=$([DateTimeOffset]::UtcNow.ToUnixTimeSeconds())" -UseBasicParsing -OutFile $UninstallDest
+}
+Unblock-File -Path $UninstallDest -ErrorAction SilentlyContinue
+
 Write-Host "  [2/4] Compilation locale sécurisée (Microsoft .NET)..." -ForegroundColor Cyan
 $fw = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319"
 $csc = Join-Path $fw "csc.exe"
@@ -57,7 +68,6 @@ $winmds = Get-ChildItem "C:\Windows\System32\WinMetadata\*.winmd" | ForEach-Obje
 
 $ElectronExe = Join-Path $DistDir "electron.exe"
 if (-not (Test-Path $ElectronExe)) {
-  # Check if already present in Desktop\Progammation\Kora
   $devElectron = Join-Path ([Environment]::GetFolderPath("Desktop")) "Progammation\Kora\node_modules\electron\dist\electron.exe"
   if (Test-Path $devElectron) {
     Write-Host "  [3/4] Copie du moteur graphique local..." -ForegroundColor Cyan
@@ -73,7 +83,7 @@ if (-not (Test-Path $ElectronExe)) {
   Write-Host "  [3/4] Moteur graphique déjà installé." -ForegroundColor Cyan
 }
 
-Write-Host "  [4/4] Création du raccourci 'Kora' sur le Bureau et lancement..." -ForegroundColor Cyan
+Write-Host "  [4/4] Création des raccourcis et du désinstalleur Windows..." -ForegroundColor Cyan
 try {
   $WshShell = New-Object -ComObject WScript.Shell
   $DesktopPath = [Environment]::GetFolderPath("Desktop")
@@ -83,6 +93,18 @@ try {
   $Shortcut.IconLocation = Join-Path $TargetDir "kora.ico"
   $Shortcut.Description = "Kora — Une encoche vivante pour Windows (par Mr Paul)"
   $Shortcut.Save()
+
+  # Register in Windows Installed Apps (Paramètres Windows -> Applications -> Kora -> Désinstaller)
+  $UninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Kora"
+  New-Item -Path $UninstallKey -Force | Out-Null
+  New-ItemProperty -Path $UninstallKey -Name "DisplayName" -Value "Kora — Dynamic Island pour Windows" -PropertyType String -Force | Out-Null
+  New-ItemProperty -Path $UninstallKey -Name "DisplayVersion" -Value "2.0.0" -PropertyType String -Force | Out-Null
+  New-ItemProperty -Path $UninstallKey -Name "Publisher" -Value "Mr Paul" -PropertyType String -Force | Out-Null
+  New-ItemProperty -Path $UninstallKey -Name "DisplayIcon" -Value (Join-Path $TargetDir "kora.ico") -PropertyType String -Force | Out-Null
+  New-ItemProperty -Path $UninstallKey -Name "InstallLocation" -Value $TargetDir -PropertyType String -Force | Out-Null
+  New-ItemProperty -Path $UninstallKey -Name "UninstallString" -Value "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$UninstallDest`"" -PropertyType String -Force | Out-Null
+  New-ItemProperty -Path $UninstallKey -Name "NoModify" -Value 1 -PropertyType DWord -Force | Out-Null
+  New-ItemProperty -Path $UninstallKey -Name "NoRepair" -Value 1 -PropertyType DWord -Force | Out-Null
 } catch {}
 
 Start-Process -FilePath (Join-Path $TargetDir "Kora.exe") -WorkingDirectory $TargetDir
