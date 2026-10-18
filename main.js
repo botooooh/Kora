@@ -957,13 +957,97 @@ function formatBytes(bytes) {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
+function isNewerVersion(remoteVer, localVer) {
+  const r = String(remoteVer || '0.0.0').split('.').map(n => parseInt(n, 10) || 0);
+  const l = String(localVer || '0.0.0').split('.').map(n => parseInt(n, 10) || 0);
+  for (let i = 0; i < 3; i++) {
+    if ((r[i] || 0) > (l[i] || 0)) return true;
+    if ((r[i] || 0) < (l[i] || 0)) return false;
+  }
+  return false;
+}
+
+function fetchHttpsBuffer(url) {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, { headers: { 'User-Agent': 'KoraAutoUpdater/2.0', 'Cache-Control': 'no-cache' }, timeout: 8000 }, res => {
+        if (res.statusCode !== 200) {
+          res.resume();
+          return reject(new Error('HTTP ' + res.statusCode));
+        }
+        const chunks = [];
+        res.on('data', d => chunks.push(d));
+        res.on('end', () => resolve(Buffer.concat(chunks)));
+      })
+      .on('error', reject)
+      .on('timeout', function () {
+        this.destroy();
+        reject(new Error('timeout'));
+      });
+  });
+}
+
+let updateCheckInProgress = false;
+async function checkForGitHubUpdates(isManual = false) {
+  if (updateCheckInProgress) return;
+  updateCheckInProgress = true;
+  const baseUrl = 'https://raw.githubusercontent.com/botooooh/Kora/main';
+  try {
+    const localPkgPath = path.join(__dirname, 'package.json');
+    const localPkg = fs.existsSync(localPkgPath)
+      ? JSON.parse(fs.readFileSync(localPkgPath, 'utf8'))
+      : { version: '2.0.0' };
+    const remoteBuf = await fetchHttpsBuffer(`${baseUrl}/package.json?t=${Date.now()}`);
+    const remotePkg = JSON.parse(remoteBuf.toString('utf8'));
+
+    if (remotePkg && remotePkg.version && isNewerVersion(remotePkg.version, localPkg.version)) {
+      const filesToUpdate = ['index.html', 'styles.css', 'renderer.js', 'preload.js', 'main.js', 'package.json'];
+      for (const file of filesToUpdate) {
+        const buf = await fetchHttpsBuffer(`${baseUrl}/${file}?t=${Date.now()}`);
+        fs.writeFileSync(path.join(__dirname, file), buf);
+      }
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('peek-event', {
+          type: 'notif',
+          app: 'system',
+          title: `Kora v${remotePkg.version}`,
+          snippet: 'Mise à jour installée avec succès !'
+        });
+        setTimeout(() => {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.reloadIgnoringCache();
+          }
+        }, 2200);
+      }
+    } else if (isManual && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('peek-event', {
+        type: 'notif',
+        app: 'system',
+        title: `Kora v${localPkg.version}`,
+        snippet: 'Vous avez déjà la dernière version ✓'
+      });
+    }
+  } catch (e) {
+    if (isManual && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('peek-event', {
+        type: 'notif',
+        app: 'system',
+        title: 'Mise à jour Kora',
+        snippet: 'Vérification hors-ligne ou déjà à jour'
+      });
+    }
+  } finally {
+    updateCheckInProgress = false;
+  }
+}
+
 function createTray() {
   tray = new Tray(getKoraIcon());
   tray.setToolTip('Kora — par Mr Paul');
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Kora — créé par Mr Paul',
+      label: 'Kora v2.0 — créé par Mr Paul',
       enabled: false
     },
     { type: 'separator' },
@@ -988,6 +1072,10 @@ function createTray() {
       click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'settings')
     },
     { type: 'separator' },
+    {
+      label: '🔄 Vérifier les mises à jour (GitHub)',
+      click: () => checkForGitHubUpdates(true)
+    },
     {
       label: '📢 Rejoindre la Communauté WhatsApp (Mr Paul)',
       click: () => shell.openExternal('https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k')
@@ -1048,6 +1136,10 @@ app.whenReady().then(() => {
   // Direct Windows notification interceptor (compact notification inside Kora)
   scanWindowsNotifications();
   setInterval(scanWindowsNotifications, 650);
+
+  // Automatic OTA update check on startup (after 6s) and every 3 hours
+  setTimeout(() => checkForGitHubUpdates(false), 6000);
+  setInterval(() => checkForGitHubUpdates(false), 3 * 60 * 60 * 1000);
 });
 
 app.on('will-quit', () => {
