@@ -32,6 +32,7 @@ let store = {
     showInScreenshots: false,
     retractedLip: 4,
     restingStyle: 'auto',
+    musicCompactStyle: 'cover',
     peekEnabled: true,
     peekDuration: 2200,
     autoStart: false
@@ -203,7 +204,8 @@ window.addEventListener('mousemove', e => {
       openTimer = setTimeout(() => {
         if (mouseInsideNotch) {
           if (mn.dataset.s === 'clip-peek') activeTab = 'clipboard';
-          if (mn.dataset.s === 'screenshot') activeTab = 'shelf';
+          else if (mn.dataset.s === 'screenshot') activeTab = 'shelf';
+          else if (currentState.media && currentState.media.status === 'Playing') activeTab = 'music';
           openNotch(activeTab);
         }
       }, delay);
@@ -401,7 +403,15 @@ window.nusa.onSystemState(state => {
   const m = state.media;
   const isPlaying = m && m.status === 'Playing';
 
+  const compactMusicStyle = store.settings?.musicCompactStyle || 'cover';
+  const idleEl = document.getElementById('idleLayer');
+  if (idleEl) {
+    idleEl.dataset.mode = (isPlaying && compactMusicStyle === 'cover') ? 'music' : 'clock';
+  }
+
   document.getElementById('idleBars').classList.toggle('paused', !isPlaying);
+  const idleMusicBars = document.getElementById('idleMusicBars');
+  if (idleMusicBars) idleMusicBars.classList.toggle('paused', !isPlaying);
   document.getElementById('musicBars').classList.toggle('paused', !isPlaying);
 
   const playPath = '<path d="M7 4.5v15l12-7.5z"/>';
@@ -418,12 +428,15 @@ window.nusa.onSystemState(state => {
 
     const artEl = document.getElementById('musicArt');
     const lyrArtEl = document.getElementById('lyrArt');
+    const idleArtEl = document.getElementById('idleArt');
     if (m.thumbnail) {
       artEl.style.backgroundImage = `url("${m.thumbnail}")`;
       lyrArtEl.style.backgroundImage = `url("${m.thumbnail}")`;
+      if (idleArtEl) idleArtEl.style.backgroundImage = `url("${m.thumbnail}")`;
     } else {
       artEl.style.backgroundImage = '';
       lyrArtEl.style.backgroundImage = '';
+      if (idleArtEl) idleArtEl.style.backgroundImage = '';
     }
 
     const pos = m.position || 0;
@@ -592,6 +605,7 @@ const stFullscreen = document.getElementById('stFullscreen');
 const stShowInScreenshots = document.getElementById('stShowInScreenshots');
 const stLip = document.getElementById('stLip');
 const stRestingStyle = document.getElementById('stRestingStyle');
+const stMusicCompactStyle = document.getElementById('stMusicCompactStyle');
 const stPeekEnabled = document.getElementById('stPeekEnabled');
 const stTestNotifBtn = document.getElementById('stTestNotifBtn');
 const stAutoStart = document.getElementById('stAutoStart');
@@ -622,6 +636,9 @@ function applySettingsToDOM() {
   }
   stLip.value = String(lip);
   stRestingStyle.value = s.restingStyle || 'auto';
+  if (stMusicCompactStyle) {
+    stMusicCompactStyle.value = s.musicCompactStyle || 'cover';
+  }
   stPeekEnabled.classList.toggle('on', s.peekEnabled !== false);
   stAutoStart.classList.toggle('on', Boolean(s.autoStart));
 
@@ -678,6 +695,28 @@ stRestingStyle.addEventListener('change', () => {
   window.nusa.updateSettings({ restingStyle: stRestingStyle.value });
   stRestingStyle.blur();
 });
+
+if (stMusicCompactStyle) {
+  stMusicCompactStyle.addEventListener('change', () => {
+    window.nusa.updateSettings({ musicCompactStyle: stMusicCompactStyle.value });
+    stMusicCompactStyle.blur();
+    if (currentState) {
+      const isPlaying = currentState.media && currentState.media.status === 'Playing';
+      const idleEl = document.getElementById('idleLayer');
+      if (idleEl) {
+        idleEl.dataset.mode = (isPlaying && stMusicCompactStyle.value === 'cover') ? 'music' : 'clock';
+      }
+    }
+  });
+}
+
+const idleMusicView = document.getElementById('idleMusicView');
+if (idleMusicView) {
+  idleMusicView.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openNotch('music');
+  });
+}
 
 stPeekEnabled.addEventListener('click', () => {
   const next = !stPeekEnabled.classList.contains('on');

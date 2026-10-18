@@ -59,6 +59,7 @@ const DEFAULT_SETTINGS = {
   hideInFullscreen: true,
   retractedLip: 4,
   restingStyle: 'auto',
+  musicCompactStyle: 'cover',
   peekEnabled: true,
   peekDuration: 2200,
   showInScreenshots: false, // false = invisible on screenshots/recordings, true = visible

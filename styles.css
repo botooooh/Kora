@@ -294,6 +294,65 @@ html, body {
 .bars i:nth-child(5) { animation-delay: -0.45s; }
 @keyframes eq { to { height: 100%; } }
 
+/* Compact Notch Views: Clock vs Music (Apple Dynamic Island Style) */
+.idle-clock-view,
+.idle-music-view {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.idle-clock-view {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.idle-music-view {
+  opacity: 0;
+  transform: scale(0.92);
+  pointer-events: none;
+}
+
+.l-idle[data-mode="music"] .idle-clock-view {
+  opacity: 0;
+  transform: scale(0.92);
+  pointer-events: none;
+}
+
+.l-idle[data-mode="music"] .idle-music-view {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.idle-art {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.65), 0 0 1px rgba(255, 255, 255, 0.4);
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.idle-music-view:hover .idle-art {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.idle-music-view .bars {
+  height: 16px;
+  gap: 2.4px;
+}
+
+.idle-music-view .bars i {
+  width: 2.4px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #19b8ff 0%, #00ffc8 100%);
+  box-shadow: 0 0 8px rgba(25, 184, 255, 0.55);
+}
+
 /* Top Header Bar inside expanded Notch */
 .l-hdr {
   z-index: 6;

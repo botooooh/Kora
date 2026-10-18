@@ -19,13 +19,24 @@
         </div>
       </div>
 
-      <!-- 2. COMPACT IDLE: CLOCK + BATTERY RING + EQUALIZER -->
-      <div class="ly l-idle">
-        <span class="a ring c" id="idleRing" style="left:22px;top:17.5px"></span>
-        <span class="a b c js-time" style="left:92px;top:17.5px;font-size:15px">12:00</span>
-        <span class="a bars c paused" id="idleBars" style="left:158px;top:17.5px">
-          <i></i><i></i><i></i><i></i><i></i>
-        </span>
+      <!-- 2. COMPACT IDLE: CLOCK + BATTERY RING OR ALBUM COVER + MUSIC EQUALIZER -->
+      <div class="ly l-idle" id="idleLayer" data-mode="clock">
+        <!-- Vue standard : Horloge + Anneau de batterie -->
+        <div class="idle-clock-view" id="idleClockView">
+          <span class="a ring c" id="idleRing" style="left:22px;top:17.5px"></span>
+          <span class="a b c js-time" style="left:92px;top:17.5px;font-size:15px">12:00</span>
+          <span class="a bars c paused" id="idleBars" style="left:158px;top:17.5px">
+            <i></i><i></i><i></i><i></i><i></i>
+          </span>
+        </div>
+
+        <!-- Vue Musique Apple Style : Cover du son + Pictogramme visualiseur audio -->
+        <div class="idle-music-view" id="idleMusicView" title="Musique en lecture (Cliquer pour ouvrir)">
+          <span class="a idle-art art c" id="idleArt" style="left:22px;top:17.5px;width:22px;height:22px"></span>
+          <span class="a bars c paused" id="idleMusicBars" style="left:158px;top:17.5px">
+            <i></i><i></i><i></i><i></i><i></i>
+          </span>
+        </div>
       </div>
 
       <!-- SHARED TOP HEADER BAR (Expanded Modes) -->
@@ -338,9 +349,23 @@
             </div>
             <div class="st-ctrl">
               <select class="st-select" id="stRestingStyle">
-                <option value="auto">Auto (Yeux Kora / Horloge musique)</option>
+                <option value="auto">Auto (Yeux Kora / Musique active)</option>
                 <option value="mascot">Toujours Yeux Kora</option>
-                <option value="clock">Toujours Horloge + Égaliseur</option>
+                <option value="clock">Toujours Mode Réduit</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dynamic Island en lecture -->
+          <div class="st-row">
+            <div class="st-label">
+              <span>Dynamic Island en lecture</span>
+              <small>Quand de la musique est jouée en mode compact</small>
+            </div>
+            <div class="st-ctrl">
+              <select class="st-select" id="stMusicCompactStyle">
+                <option value="cover">Cover + Visualiseur (Apple Style)</option>
+                <option value="clock">Horloge + Batterie classique</option>
               </select>
             </div>
           </div>
