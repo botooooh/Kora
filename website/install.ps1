@@ -125,6 +125,24 @@ try {
   $Shortcut.Description = "Kora - Dynamic Island pour Windows (par Mr Paul)"
   $Shortcut.Save()
 
+  # Raccourci dans le Menu Demarrer
+  $StartMenuDir = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Kora"
+  New-Item -ItemType Directory -Path $StartMenuDir -Force | Out-Null
+  $StartShortcut = $WshShell.CreateShortcut((Join-Path $StartMenuDir "Kora.lnk"))
+  $StartShortcut.TargetPath = Join-Path $TargetDir "Kora.exe"
+  $StartShortcut.WorkingDirectory = $TargetDir
+  $StartShortcut.IconLocation = Join-Path $TargetDir "kora.ico"
+  $StartShortcut.Description = "Kora - Dynamic Island pour Windows (par Mr Paul)"
+  $StartShortcut.Save()
+
+  $UninstShortcut = $WshShell.CreateShortcut((Join-Path $StartMenuDir "Desinstaller Kora.lnk"))
+  $UninstShortcut.TargetPath = "powershell.exe"
+  $UninstShortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$UninstallDest`""
+  $UninstShortcut.WorkingDirectory = $TargetDir
+  $UninstShortcut.IconLocation = "shell32.dll,31"
+  $UninstShortcut.Description = "Desinstaller Kora de votre ordinateur"
+  $UninstShortcut.Save()
+
   # Enregistrement dans les Applications Installees Windows (Parametres Windows -> Applications -> Kora -> Desinstaller)
   $UninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Kora"
   New-Item -Path $UninstallKey -Force | Out-Null
