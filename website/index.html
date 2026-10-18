@@ -2345,43 +2345,50 @@
       }
     }
 
-    @media (max-width: 720px) {
+    @media (max-width: 768px) {
+      /* Marges latérales aérées pour décoller tout le contenu des bords */
       .wrap {
-        padding: 0 16px;
+        padding: 0 24px;
+        width: 100%;
+        max-width: 100%;
       }
 
       section {
-        padding: 64px 0;
+        padding: 72px 0;
       }
 
       .hero {
-        padding: 108px 0 28px;
+        padding: 116px 0 32px;
       }
 
       h1 {
-        font-size: clamp(30px, 9vw, 46px);
-        margin: 0 auto 18px;
+        font-size: clamp(32px, 8.5vw, 44px);
+        margin: 0 auto 20px;
         letter-spacing: -0.03em;
+        padding: 0 4px;
       }
 
       .lede {
-        font-size: 16px;
-        line-height: 1.5;
-        margin: 0 auto 28px;
-        padding: 0 4px;
+        font-size: 16.5px;
+        line-height: 1.55;
+        margin: 0 auto 32px;
+        padding: 0 8px;
+        max-width: 480px;
       }
 
       .hero-cta-group,
       .cta {
-        gap: 12px;
+        gap: 14px;
+        width: 100%;
       }
 
       .hero-btn-row,
       .cta-row {
         flex-direction: column;
         width: 100%;
-        max-width: 380px;
-        gap: 10px;
+        max-width: 340px;
+        margin: 0 auto;
+        gap: 12px;
       }
 
       .btn-download-pill,
@@ -2389,51 +2396,69 @@
       .btn-learn-pill,
       .sec-btn {
         width: 100%;
-        padding: 14px 20px;
+        padding: 15px 22px;
         font-size: 16px;
       }
 
+      .hero-btn-compat,
+      .sub {
+        font-size: 13.5px;
+        padding: 0 10px;
+      }
+
+      /* Mockup Laptop & Encoche Kora */
       .stage {
-        padding: 24px 0 16px;
+        padding: 32px 0 20px;
+      }
+
+      .stage .wrap {
+        padding: 0 20px;
       }
 
       .laptop {
-        padding: 8px 8px 0;
-        border-radius: 16px 16px 0 0;
+        padding: 10px 10px 0;
+        border-radius: 18px 18px 0 0;
       }
 
       .screen {
-        border-radius: 9px 9px 0 0;
+        border-radius: 11px 11px 0 0;
       }
 
       .try-shell {
-        margin-top: 20px;
+        margin-top: 24px;
+        padding: 0 4px;
       }
 
       .try {
         gap: 6px;
         padding: 6px;
-        border-radius: 16px;
+        border-radius: 18px;
       }
 
       .try button {
-        padding: 7px 12px;
-        font-size: 12px;
+        padding: 8px 13px;
+        font-size: 12.5px;
+      }
+
+      .cap-row {
+        margin-top: 14px;
+        padding: 0 10px;
       }
 
       .cap {
-        font-size: 13.5px;
-        line-height: 1.45;
-        padding: 0 8px;
+        font-size: 14px;
+        line-height: 1.5;
       }
 
+      /* Section Fonctionnalités */
       .features {
         grid-template-columns: 1fr;
-        gap: 16px;
+        gap: 18px;
       }
 
       .card {
-        padding: 24px 20px;
+        padding: 26px 24px;
+        border-radius: 20px;
       }
 
       .card.wide {
@@ -2445,76 +2470,101 @@
       }
 
       .sec-head {
-        margin-bottom: 32px;
+        margin-bottom: 36px;
         text-align: center;
+        padding: 0 6px;
       }
 
       .sec-title {
-        font-size: clamp(26px, 7.5vw, 36px);
-        margin-bottom: 12px;
+        font-size: clamp(28px, 7vw, 36px);
+        margin-bottom: 14px;
       }
 
       .sec-lede {
-        font-size: 15px;
+        font-size: 15.5px;
+        line-height: 1.6;
+        padding: 0 6px;
+      }
+
+      /* Chiffres clés */
+      .stats {
+        border-radius: 20px;
+        overflow: hidden;
       }
 
       .stat {
-        padding: 22px 14px;
+        padding: 24px 18px;
       }
 
       .stat .num {
-        font-size: 32px;
+        font-size: 34px;
       }
 
       .stat span:last-child {
-        font-size: 12px;
+        font-size: 13px;
       }
 
+      /* Carte de Téléchargement */
       .dl-card {
-        padding: 48px 18px 40px;
-        border-radius: 22px;
+        padding: 52px 24px 44px;
+        border-radius: 24px;
       }
 
       .dl-card .icon {
-        width: 72px;
-        height: 72px;
-        border-radius: 18px;
+        width: 76px;
+        height: 76px;
+        border-radius: 20px;
       }
 
       .dl-card>p {
-        font-size: 15px;
-        margin-bottom: 24px;
+        font-size: 15.5px;
+        margin-bottom: 28px;
+        padding: 0 6px;
       }
 
+      /* FAQ & Contacts */
       .ans p {
-        padding-right: 4px;
-        font-size: 14.5px;
+        padding: 0 12px 20px 4px;
+        font-size: 15px;
       }
 
       .contact-card {
-        padding: 18px 16px;
+        padding: 20px 20px;
+        border-radius: 18px;
       }
 
       .foot-top {
         grid-template-columns: 1fr;
-        gap: 32px;
-        padding-bottom: 36px;
+        gap: 36px;
+        padding-bottom: 40px;
+      }
+
+      .foot-bottom {
+        padding-top: 24px;
       }
 
       .foot-word {
-        font-size: 72px;
-        margin-top: 24px;
-        margin-bottom: -12px;
+        font-size: clamp(68px, 18vw, 120px);
+        margin-top: 28px;
+        margin-bottom: -16px;
       }
     }
 
     @media (max-width: 480px) {
+      .wrap {
+        padding: 0 20px;
+      }
+
+      .site-head .wrap {
+        padding: 0 18px;
+      }
+
       .brand span {
-        font-size: 17px;
+        font-size: 17.5px;
       }
 
       .nav-links .nav-cta {
-        padding: 6px 14px;
+        padding: 7px 16px;
         font-size: 13px;
       }
 
@@ -2523,7 +2573,7 @@
         flex-wrap: nowrap;
         overflow-x: auto;
         justify-content: flex-start;
-        padding: 6px;
+        padding: 7px;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
       }
@@ -2535,6 +2585,7 @@
       .try button {
         flex-shrink: 0;
         white-space: nowrap;
+        padding: 8px 14px;
       }
 
       .stats {
