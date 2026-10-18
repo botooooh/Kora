@@ -1,0 +1,21 @@
+{
+  "name": "kora-notch",
+  "productName": "Kora",
+  "version": "1.2.0",
+  "description": "Kora — La Dynamic Island vivante et ultra-optimisée pour Windows",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "kora",
+    "notch",
+    "dynamic-island",
+    "windows"
+  ],
+  "author": "Kora",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^35.0.0"
+  }
+}

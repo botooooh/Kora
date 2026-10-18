@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Kora — Living Notch</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="mn-holder" id="mnHolder">
+    <div class="mn" id="mn" data-s="pet" data-retracted="false" data-fullscreen-hidden="false" data-mic-muted="false">
+
+      <!-- 1. RESTING: KORA CYBER-VISOR EYES (+ MIC MUTE EYE BADGE) -->
+      <div class="ly l-pet">
+        <div class="ambient"></div>
+        <div class="eyes" id="mascotEyes">
+          <i class="eye"></i>
+          <span class="mic-eye-badge" id="micEyeBadge" title="Microphone coupé">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="1" y1="1" x2="23" y2="23"/>
+              <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+              <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+            </svg>
+          </span>
+          <i class="eye"></i>
+        </div>
+      </div>
+
+      <!-- 2. COMPACT IDLE: CLOCK + BATTERY RING + EQUALIZER -->
+      <div class="ly l-idle">
+        <span class="a ring c" id="idleRing" style="left:22px;top:17.5px"></span>
+        <span class="a b c js-time" style="left:92px;top:17.5px;font-size:15px">12:00</span>
+        <span class="a bars c paused" id="idleBars" style="left:158px;top:17.5px">
+          <i></i><i></i><i></i><i></i><i></i>
+        </span>
+      </div>
+
+      <!-- SHARED TOP HEADER BAR (Expanded Modes) -->
+      <div class="ly l-hdr">
+        <div class="hdr-tabs" id="hdrTabs">
+          <button class="hdr-tab active" data-tab="music" title="Musique & Paroles (Alt+M)">
+            <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            <span>Musique</span>
+          </button>
+          <button class="hdr-tab" data-tab="clipboard" title="Presse-papiers (Alt+V)">
+            <svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+            <span>Presse-papiers</span>
+          </button>
+          <button class="hdr-tab" data-tab="shelf" title="Étagère à fichiers & Captures (Alt+S)">
+            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span>Fichiers</span>
+          </button>
+          <button class="hdr-tab" data-tab="todo" title="To-Do & Rappels">
+            <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>To-Do</span>
+          </button>
+          <button class="hdr-tab" data-tab="settings" title="Paramètres de Kora">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+
+        <div class="hdr-right">
+          <button class="pin-btn" id="hdrMicBtn" title="Couper / Activer le Microphone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <rect x="9" y="2" width="6" height="11" rx="3"/>
+              <path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3"/>
+            </svg>
+          </button>
+          <span class="ring" id="hdrRing" title="Batterie"></span>
+          <b class="js-time">12:00</b>
+          <button class="pin-btn" id="pinBtn" title="Épingler Kora ouverte">
+            <svg viewBox="0 0 24 24"><path d="M16 3H8v2l2 2v5l-3 3v2h4v5l1 1 1-1v-5h4v-2l-3-3V7l2-2V3z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- SHARED BOTTOM PAGE DOTS -->
+      <div class="ly l-dots">
+        <div class="dots" id="pageDots">
+          <button data-tab="music" class="active" title="Musique"></button>
+          <button data-tab="clipboard" title="Presse-papiers"></button>
+          <button data-tab="shelf" title="Étagère à fichiers"></button>
+          <button data-tab="todo" title="To-Do List"></button>
+          <button data-tab="settings" title="Paramètres"></button>
+        </div>
+      </div>
+
+      <!-- 3. MUSIC PLAYER (Apple Music, Spotify, YouTube, etc.) -->
+      <div class="ly l-music">
+        <button class="a arw c js-prev-page" style="left:18px;top:84px" title="Onglet précédent">
+          <svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg>
+        </button>
+        <button class="a arw c js-next-page" style="right:6px;top:84px" title="Onglet suivant">
+          <svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg>
+        </button>
+
+        <span class="a art" id="musicArt" style="left:38px;top:40px;width:58px;height:58px"></span>
+        <span class="a vc sb" id="musicTitle" style="left:110px;top:56px;font-size:15px;max-width:255px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">En attente de média…</span>
+        <span class="a vc dim" id="musicArtist" style="left:110px;top:75px;font-size:11.5px;max-width:255px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Apple Music, Spotify, YouTube</span>
+        <span class="a bars c paused" id="musicBars" style="left:392px;top:64px">
+          <i></i><i></i><i></i><i></i><i></i>
+        </span>
+
+        <span class="a vc dim" id="musicPos" style="left:38px;top:110px;font-size:11px">00:00</span>
+        <div class="a prog-wrap vc" id="musicSeekWrap" style="left:78px;top:110px;width:292px" title="Cliquer pour avancer/reculer">
+          <span class="prog"><i id="musicProgBar"></i></span>
+        </div>
+        <span class="a vc dim" id="musicDur" style="right:38px;top:110px;font-size:11px">-00:00</span>
+
+        <!-- Lyrics Button -->
+        <button class="a ctl-btn c" id="openLyricsBtn" style="left:66px;top:135px" title="Afficher les paroles synchronisées">
+          <svg viewBox="0 0 18 16" style="width:16px;height:15px;fill:none">
+            <path d="M4 .8h10a3.2 3.2 0 0 1 3.2 3.2v4.6a3.2 3.2 0 0 1-3.2 3.2H8.4L4.6 15l.5-3.2H4A3.2 3.2 0 0 1 .8 8.6V4A3.2 3.2 0 0 1 4 .8z" stroke="rgba(255,255,255,.85)" stroke-width="1.4"/>
+            <circle cx="6.3" cy="5.4" r="1.2" fill="#a3ff12"/>
+            <circle cx="11.3" cy="5.4" r="1.2" fill="#ffd000"/>
+          </svg>
+        </button>
+
+        <!-- Prev / Play-Pause / Next -->
+        <button class="a ctl-btn c" id="btnPrev" style="left:178px;top:135px" title="Précédent">
+          <svg viewBox="0 0 24 24"><path d="M11 6 3 12l8 6zM21 6l-8 6 8 6z"/></svg>
+        </button>
+        <button class="a ctl-btn c" id="btnPlayPause" style="left:224px;top:135px" title="Lecture / Pause">
+          <svg id="iconPlayPause" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg>
+        </button>
+        <button class="a ctl-btn c" id="btnNext" style="left:270px;top:135px" title="Suivant">
+          <svg viewBox="0 0 24 24"><path d="m13 6 8 6-8 6zM3 6l8 6-8 6z"/></svg>
+        </button>
+
+        <!-- Quick Mute / Volume button -->
+        <button class="a ctl-btn c" id="btnMute" style="left:382px;top:135px" title="Couper/Activer le son (ou molette souris)">
+          <svg viewBox="0 0 24 24"><path d="M3.5 9.5h3.8L12 5.5v13l-4.7-4H3.5z"/><path d="M15.5 9a4 4 0 0 1 0 6" stroke="#a3ff12" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <!-- 4. SYNCED LYRICS SPLIT VIEW -->
+      <div class="ly l-lyrics">
+        <div class="ambient"></div>
+        <span class="a art" id="lyrArt" style="left:24px;top:40px;width:54px;height:54px"></span>
+        <span class="a vc sb" id="lyrTitle" style="left:90px;top:55px;font-size:14px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Titre</span>
+        <span class="a vc dim" id="lyrArtist" style="left:90px;top:73px;font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Artiste</span>
+
+        <span class="a vc dim" id="lyrPos" style="left:24px;top:108px;font-size:10.5px">00:00</span>
+        <div class="a prog-wrap vc" id="lyrSeekWrap" style="left:62px;top:108px;width:132px">
+          <span class="prog"><i id="lyrProgBar"></i></span>
+        </div>
+        <span class="a vc dim" id="lyrDur" style="left:202px;top:108px;font-size:10.5px">-00:00</span>
+
+        <button class="a ctl-btn c" id="closeLyricsBtn" style="left:48px;top:134px" title="Retour au lecteur">
+          <svg viewBox="0 0 18 16" style="width:16px;height:15px">
+            <path d="M4 .8h10a3.2 3.2 0 0 1 3.2 3.2v4.6a3.2 3.2 0 0 1-3.2 3.2H8.4L4.6 15l.5-3.2H4A3.2 3.2 0 0 1 .8 8.6V4A3.2 3.2 0 0 1 4 .8z" fill="#a3ff12"/>
+            <circle cx="6.3" cy="5.4" r="1.3" fill="#04140a"/>
+            <circle cx="11.3" cy="5.4" r="1.3" fill="#04140a"/>
+          </svg>
+        </button>
+        <button class="a ctl-btn c" id="lyrPrev" style="left:104px;top:134px">
+          <svg viewBox="0 0 24 24"><path d="M11 6 3 12l8 6zM21 6l-8 6 8 6z"/></svg>
+        </button>
+        <button class="a ctl-btn c" id="lyrPlayPause" style="left:146px;top:134px">
+          <svg id="lyrIconPlayPause" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg>
+        </button>
+        <button class="a ctl-btn c" id="lyrNext" style="left:188px;top:134px">
+          <svg viewBox="0 0 24 24"><path d="m13 6 8 6-8 6zM3 6l8 6-8 6z"/></svg>
+        </button>
+
+        <span class="a" style="left:254px;top:38px;width:1px;height:106px;background:rgba(255,255,255,.14)"></span>
+        <div class="a lyr" id="lyrScroll">
+          <ol id="lyrList">
+            <li class="on">Paroles synchronisées automatiques</li>
+            <li>Lancez une musique sur Apple Music,</li>
+            <li>Spotify ou YouTube pour voir</li>
+            <li>les paroles s'illuminer ✨</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- 5. PRESSE-PAPIERS (CLIPBOARD MANAGER) -->
+      <div class="ly l-clipboard">
+        <button class="a arw c js-prev-page" style="left:18px;top:88px" title="Onglet précédent">
+          <svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg>
+        </button>
+        <button class="a arw c js-next-page" style="right:6px;top:88px" title="Onglet suivant">
+          <svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg>
+        </button>
+
+        <div class="clip-header">
+          <input type="text" class="clip-search" id="clipSearch" placeholder="Rechercher dans le presse-papiers (Ctrl+C automatique)…">
+          <button class="mini-act-btn" id="clipClearBtn" title="Effacer l'historique non épinglé">Vider</button>
+        </div>
+
+        <div class="clip-list" id="clipList"></div>
+      </div>
+
+      <!-- 6. FILE SHELF (ÉTAGÈRE À FICHIERS & CAPTURES D'ÉCRAN) -->
+      <div class="ly l-shelf" id="shelfLayer">
+        <div class="ambient sh-amb"></div>
+
+        <button class="a arw c js-prev-page" style="left:18px;top:88px" title="Onglet précédent">
+          <svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg>
+        </button>
+        <button class="a arw c js-next-page" style="right:6px;top:88px" title="Onglet suivant">
+          <svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg>
+        </button>
+
+        <div class="sh-cards" id="shelfCards"></div>
+
+        <button class="a mini-act-btn" id="shelfClearBtn" style="right:42px;top:33px;z-index:5;display:none">Vider</button>
+
+        <div class="sh-zone" id="shelfZone">
+          <svg width="28" height="28" viewBox="-15 -22 30 32">
+            <path d="M-10.2-8h20.4l3.2 7.8h-26.8z" fill="rgba(0,230,118,.28)"/>
+            <path d="M-1.7-21h3.4v6.5h3.5L0-8.5l-5.2-6H-1.7z" fill="#a3ff12"/>
+            <path d="M-14 1h8.8l1.6 3.2h7.2L5.2 1H14v8h-28z" fill="#00e676"/>
+          </svg>
+          <span class="sb" style="font-size:12.5px">Glissez vos fichiers ou prenez une capture</span>
+          <span class="dim" style="font-size:10px">Glissez-les vers n'importe quelle appli · clic pour ouvrir</span>
+        </div>
+      </div>
+
+      <!-- 7. TO-DO LIST & RAPPELS -->
+      <div class="ly l-todo">
+        <button class="a arw c js-prev-page" style="left:18px;top:88px" title="Onglet précédent">
+          <svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg>
+        </button>
+        <button class="a arw c js-next-page" style="right:6px;top:88px" title="Onglet suivant">
+          <svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg>
+        </button>
+
+        <div class="todo-left">
+          <div>
+            <div class="b" id="todoCount" style="font-size:28px;line-height:1;color:#a3ff12">1/3</div>
+            <div class="dim" style="font-size:10.5px;margin-top:3px">Tâches terminées</div>
+          </div>
+          <form class="todo-form" id="todoForm">
+            <input type="text" class="todo-input" id="todoInput" placeholder="Nouvelle tâche…" required>
+            <div class="todo-row-inputs">
+              <input type="time" class="todo-time-input" id="todoTime" title="Heure de rappel (optionnel)">
+              <button type="submit" class="todo-add-btn">+ Ajouter</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="todo-list" id="todoList"></div>
+      </div>
+
+      <!-- 8. PARAMÈTRES (SETTINGS) -->
+      <div class="ly l-settings">
+        <button class="a arw c js-prev-page" style="left:18px;top:105px" title="Onglet précédent">
+          <svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg>
+        </button>
+        <button class="a arw c js-next-page" style="right:6px;top:105px" title="Onglet suivant">
+          <svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg>
+        </button>
+
+        <div class="settings-wrap">
+          <!-- Taille (Scale) -->
+          <div class="st-row">
+            <div class="st-label">
+              <span>Taille de Kora</span>
+              <small>Échelle globale de la Dynamic Island</small>
+            </div>
+            <div class="st-ctrl">
+              <input type="range" class="st-range" id="stScale" min="75" max="135" step="5" value="100">
+              <span class="st-val" id="stScaleVal">100%</span>
+            </div>
+          </div>
+
+          <!-- Délai d'ouverture -->
+          <div class="st-row">
+            <div class="st-label">
+              <span>Temps d'ouverture au survol</span>
+              <small>Délai quand la souris passe en haut</small>
+            </div>
+            <div class="st-ctrl">
+              <input type="range" class="st-range" id="stOpenDelay" min="0" max="700" step="20" value="120">
+              <span class="st-val" id="stOpenDelayVal">120 ms</span>
+            </div>
+          </div>
+
+          <!-- Délai de fermeture -->
+          <div class="st-row">
+            <div class="st-label">
+              <span>Temps de fermeture</span>
+              <small>Délai avant rétractation en haut</small>
+            </div>
+            <div class="st-ctrl">
+              <input type="range" class="st-range" id="stCloseDelay" min="100" max="2000" step="50" value="380">
+              <span class="st-val" id="stCloseDelayVal">380 ms</span>
+            </div>
+          </div>
+
+          <!-- Comportement de rétractation -->
+          <div class="st-row">
+            <div class="st-label">
+              <span>Rétractation en haut de l'écran</span>
+              <small>Apparaît en montant la souris tout en haut</small>
+            </div>
+            <div class="st-ctrl">
+              <select class="st-select" id="stRetractMode">
+                <option value="app">Quand une appli est ouverte</option>
+                <option value="always">Toujours rétractée en haut</option>
+                <option value="never">Toujours visible (sauf plein écran)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Masquer en plein écran -->
+          <div class="st-row">
+            <div class="st-label">
+              <span>Disparaître en plein écran / maximisé</span>
+              <small>Masquer sur WhatsApp, vidéos et jeux plein écran</small>
+            </div>
+            <div class="st-ctrl">
+              <button type="button" class="st-toggle on" id="stFullscreen"></button>
+            </div>
+          </div>
+
+          <!-- Invisible dans les captures d'écran -->
+          <div class="st-row">
+            <div class="st-label">
+              <span>Invisible sur les captures d'écran</span>
+              <small>Cache Kora sur Win+Shift+S et range la capture dans Fichiers</small>
+            </div>
+            <div class="st-ctrl">
+              <button type="button" class="st-toggle on" id="stHideInScreenshots"></button>
+            </div>
+          </div>
+
+          <!-- Hauteur de la lueur rétractée -->
+          <div class="st-row">
+            <div class="st-label">
+              <span>Bordure visible quand rétractée</span>
+              <small>Épaisseur tout en haut de l'écran</small>
+            </div>
+            <div class="st-ctrl">
+              <select class="st-select" id="stLip">
+                <option value="0">Invisible (0 px)</option>
+                <option value="2">Ultra-fine (2 px)</option>
+                <option value="4">Lueur fine (4 px)</option>
+                <option value="6">Moyenne (6 px)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Style au repos -->
+          <div class="st-row">
+            <div class="st-label">
+              <span>Affichage au repos</span>
+              <small>Quand Kora est fermée sur le Bureau</small>
+            </div>
+            <div class="st-ctrl">
+              <select class="st-select" id="stRestingStyle">
+                <option value="auto">Auto (Yeux Kora / Horloge musique)</option>
+                <option value="mascot">Toujours Yeux Kora</option>
+                <option value="clock">Toujours Horloge + Égaliseur</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Notifications rapides -->
+          <div class="st-row">
+            <div class="st-label">
+              <span>Animations & Notifications rapides</span>
+              <small>Volume, luminosité, micro, captures, batterie</small>
+            </div>
+            <div class="st-ctrl">
+              <button type="button" class="st-toggle on" id="stPeekEnabled"></button>
+            </div>
+          </div>
+
+          <!-- Lancer avec Windows -->
+          <div class="st-row">
+            <div class="st-label">
+              <span>Démarrer avec Windows</span>
+              <small>Lancer automatiquement au démarrage du PC</small>
+            </div>
+            <div class="st-ctrl">
+              <button type="button" class="st-toggle" id="stAutoStart"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. QUICK PEEK: BLUETOOTH / HEADPHONES -->
+      <div class="ly l-bt">
+        <span class="a pk-ring">
+          <svg viewBox="0 0 30 30">
+            <circle cx="15" cy="15" r="11" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="4.5"/>
+            <circle class="arc" cx="15" cy="15" r="11" fill="none" stroke="#00e676" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="18"/>
+          </svg>
+        </span>
+        <svg class="a c" style="left:34px;top:31px;width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="#a3ff12" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m7 7 10 10-5 4V3l5 4L7 17"/>
+        </svg>
+        <span class="a vc sb" id="btName" style="left:62px;top:23px;font-size:14px;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">AirBuds Pro</span>
+        <span class="a vc dim" id="btSub" style="left:62px;top:41px;font-size:11.5px">Audio connecté</span>
+        <span class="a c" style="right:14px;top:31px;width:32px;height:32px;border-radius:50%;background:#0a2214;display:grid;place-items:center;box-shadow:inset 0 0 0 1.5px rgba(0,230,118,.55)">
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px" fill="none" stroke="#a3ff12" stroke-width="2" stroke-linecap="round">
+            <path d="M4 15v-3a8 8 0 0 1 16 0v3M4 15h3v5H5a1 1 0 0 1-1-1zM20 15h-3v5h2a1 1 0 0 0 1-1z"/>
+          </svg>
+        </span>
+      </div>
+
+      <!-- 10. QUICK PEEK: CHARGING / BATTERY -->
+      <div class="ly l-charge">
+        <span class="a pk-ring">
+          <svg viewBox="0 0 30 30">
+            <circle cx="15" cy="15" r="11" fill="none" stroke="rgba(0,230,118,.28)" stroke-width="4.5"/>
+            <circle class="arc" id="chargeArc" cx="15" cy="15" r="11" fill="none" stroke="#00e676" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="20"/>
+          </svg>
+        </span>
+        <svg class="a c" style="left:34px;top:31px;width:11px;height:13px" viewBox="0 0 10 14">
+          <path d="M6 0 0 8h4l-1 6 6-8H5z" fill="#ffd000"/>
+        </svg>
+        <span class="a vc sb" id="chargeTitle" style="left:62px;top:23px;font-size:14.5px">En charge</span>
+        <span class="a vc dim" id="chargeSub" style="left:62px;top:41px;font-size:11.5px">Chargeur branché</span>
+        <span class="a vc b" id="chargePct" style="right:22px;top:31px;font-size:21px;color:#a3ff12">85%</span>
+      </div>
+
+      <!-- 11. QUICK PEEK: KEYBOARD VOLUME ANIMATION -->
+      <div class="ly l-volume">
+        <span class="a pk-ring">
+          <svg viewBox="0 0 30 30">
+            <circle cx="15" cy="15" r="11" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="4.5"/>
+            <circle class="arc" id="volArc" cx="15" cy="15" r="11" fill="none" stroke="#00e676" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="30"/>
+          </svg>
+        </span>
+        <svg class="a c" style="left:34px;top:31px;width:14px;height:14px" viewBox="0 0 24 24" fill="#a3ff12">
+          <path d="M3.5 9.5h3.8L12 5.5v13l-4.7-4H3.5z"/>
+        </svg>
+        <span class="a vc sb" id="volTitle" style="left:62px;top:22px;font-size:13.5px">Volume système</span>
+        <div class="a vc" style="left:62px;top:41px;width:190px;height:5.5px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden">
+          <div id="volBar" style="height:100%;width:50%;background:linear-gradient(90deg,#00e676,#a3ff12,#ffd000);border-radius:3px;transition:width .14s ease"></div>
+        </div>
+        <span class="a vc b" id="volPct" style="right:20px;top:31px;font-size:18px;color:#a3ff12">50%</span>
+      </div>
+
+      <!-- 12. QUICK PEEK: KEYBOARD BRIGHTNESS ANIMATION -->
+      <div class="ly l-brightness">
+        <span class="a pk-ring">
+          <svg viewBox="0 0 30 30">
+            <circle cx="15" cy="15" r="11" fill="none" stroke="rgba(255,208,0,.22)" stroke-width="4.5"/>
+            <circle class="arc" id="brtArc" cx="15" cy="15" r="11" fill="none" stroke="#ffd000" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="20"/>
+          </svg>
+        </span>
+        <svg class="a c" style="left:34px;top:31px;width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="#ffd000" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+        </svg>
+        <span class="a vc sb" style="left:62px;top:22px;font-size:13.5px">Luminosité écran</span>
+        <div class="a vc" style="left:62px;top:41px;width:190px;height:5.5px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden">
+          <div id="brtBar" style="height:100%;width:80%;background:linear-gradient(90deg,#a3ff12,#ffd000);border-radius:3px;transition:width .14s ease"></div>
+        </div>
+        <span class="a vc b" id="brtPct" style="right:20px;top:31px;font-size:18px;color:#ffd000">80%</span>
+      </div>
+
+      <!-- 13. QUICK PEEK: MICROPHONE MUTE / UNMUTE ANIMATION -->
+      <div class="ly l-mic">
+        <span class="a c" id="micPeekBadge" style="left:34px;top:32px;width:34px;height:34px;border-radius:50%;background:rgba(255,59,71,.22);display:grid;place-items:center;box-shadow:inset 0 0 0 1.5px #ff3b47">
+          <svg id="micPeekIcon" viewBox="0 0 24 24" style="width:16px;height:16px" fill="none" stroke="#ff3b47" stroke-width="2.2" stroke-linecap="round">
+            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+            <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+          </svg>
+        </span>
+        <span class="a vc sb" id="micPeekTitle" style="left:62px;top:23px;font-size:14px">Microphone désactivé</span>
+        <span class="a vc dim" id="micPeekSub" style="left:62px;top:41px;font-size:11px">Témoin lumineux affiché sur les yeux Kora</span>
+        <span class="a vc b" id="micPeekStatus" style="right:18px;top:32px;font-size:12px;color:#ff4b55;background:rgba(255,59,71,.16);padding:4px 9px;border-radius:99px">MUET</span>
+      </div>
+
+      <!-- 14. QUICK PEEK: SCREENSHOT FLY-IN TO FILE SHELF -->
+      <div class="ly l-screenshot">
+        <div class="a c shot-fly" style="left:36px;top:32px">
+          <img id="shotPeekImg" src="" alt="Capture">
+        </div>
+        <span class="a vc sb" style="left:66px;top:23px;font-size:13.5px;color:#a3ff12">Capture ajoutée aux Fichiers !</span>
+        <span class="a vc dim" id="shotPeekSub" style="left:66px;top:41px;font-size:11px">Prête à glisser-déposer · Cliquer pour voir</span>
+      </div>
+
+      <!-- 15. QUICK PEEK: CLIPBOARD COPIED -->
+      <div class="ly l-clip-peek">
+        <span class="a c" style="left:34px;top:31px;width:30px;height:30px;border-radius:50%;background:rgba(0,230,118,.2);display:grid;place-items:center">
+          <svg viewBox="0 0 24 24" style="width:15px;height:15px" fill="none" stroke="#a3ff12" stroke-width="2.4" stroke-linecap="round">
+            <path d="m5 12.5 4.5 4.5L19 7.5"/>
+          </svg>
+        </span>
+        <span class="a vc sb" style="left:60px;top:22px;font-size:13.5px">Copié dans le presse-papiers</span>
+        <span class="a vc dim" id="clipPeekText" style="left:60px;top:41px;font-size:11px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Texte copié</span>
+      </div>
+
+      <!-- 16. QUICK PEEK: CAPS LOCK -->
+      <div class="ly l-capslock">
+        <span class="a c" style="left:34px;top:31px;width:30px;height:30px;border-radius:50%;background:rgba(255,208,0,.18);color:#ffd000;display:grid;place-items:center;font-weight:800;font-size:13px">A</span>
+        <span class="a vc sb" id="capsTitle" style="left:60px;top:22px;font-size:14px">Verr. Maj activé</span>
+        <span class="a vc dim" style="left:60px;top:41px;font-size:11px">Clavier en majuscules</span>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
