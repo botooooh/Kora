@@ -1012,14 +1012,35 @@ let updateCheckInProgress = false;
 async function checkForGitHubUpdates(isManual = false) {
   if (updateCheckInProgress) return;
   updateCheckInProgress = true;
-  const baseUrl = 'https://raw.githubusercontent.com/botooooh/Kora/main';
+  const candidateUrls = [
+    'https://raw.githubusercontent.com/botooooh/Kora/main',
+    'https://raw.githubusercontent.com/botooooh/Kora/master',
+    'https://kora-nine.vercel.app/update',
+    'https://botooooh.github.io/Kora/update'
+  ];
   try {
     const localPkgPath = path.join(__dirname, 'package.json');
     const localPkg = fs.existsSync(localPkgPath)
       ? JSON.parse(fs.readFileSync(localPkgPath, 'utf8'))
       : { version: '2.0.0' };
-    const remoteBuf = await fetchHttpsBuffer(`${baseUrl}/package.json?t=${Date.now()}`);
-    const remotePkg = JSON.parse(remoteBuf.toString('utf8'));
+
+    let baseUrl = null;
+    let remotePkg = null;
+    for (const url of candidateUrls) {
+      try {
+        const remoteBuf = await fetchHttpsBuffer(`${url}/package.json?t=${Date.now()}`);
+        const parsed = JSON.parse(remoteBuf.toString('utf8'));
+        if (parsed && parsed.version) {
+          remotePkg = parsed;
+          baseUrl = url;
+          break;
+        }
+      } catch (err) {}
+    }
+
+    if (!remotePkg || !baseUrl) {
+      throw new Error('Miroir de mise à jour inaccessible');
+    }
 
     if (remotePkg && remotePkg.version && isNewerVersion(remotePkg.version, localPkg.version)) {
       const filesToUpdate = ['index.html', 'styles.css', 'renderer.js', 'preload.js', 'NusaBridge.cs', 'main.js', 'package.json'];

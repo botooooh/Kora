@@ -39,6 +39,18 @@ if (fs.existsSync(zipDocs)) fs.unlinkSync(zipDocs);
 // Zip using PowerShell Compress-Archive command via execSync cleanly
 execSync(`powershell.exe -NoProfile -Command "Compress-Archive -Path '${staging}\\*' -DestinationPath '${zipWeb}' -CompressionLevel Optimal -Force"`);
 fs.copyFileSync(zipWeb, zipDocs);
+
+// Mirror live update files for OTA hosting
+const mirrorDirs = [path.resolve('website/update'), path.resolve('docs/update')];
+mirrorDirs.forEach(dir => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  filesToInclude.forEach(f => {
+    if (fs.existsSync(f)) {
+      fs.copyFileSync(f, path.join(dir, f));
+    }
+  });
+});
+
 fs.rmSync(staging, { recursive: true, force: true });
 
 // Also update the user's Downloads folder
