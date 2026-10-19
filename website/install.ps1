@@ -287,9 +287,16 @@ try {
 
   # Enregistrement dans les Applications Installees Windows
   $UninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Kora"
-  New-Item -Path $UninstallKey -Force | Out-Null
+  $pkgJsonPath = Join-Path $TargetDir "package.json"
+  $currentVer = "2.1.0"
+  if (Test-Path $pkgJsonPath) {
+    try {
+      $parsed = Get-Content $pkgJsonPath -Raw | ConvertFrom-Json
+      if ($parsed.version) { $currentVer = $parsed.version }
+    } catch {}
+  }
   New-ItemProperty -Path $UninstallKey -Name "DisplayName" -Value "Kora - Dynamic Island pour Windows" -PropertyType String -Force | Out-Null
-  New-ItemProperty -Path $UninstallKey -Name "DisplayVersion" -Value "2.0.0" -PropertyType String -Force | Out-Null
+  New-ItemProperty -Path $UninstallKey -Name "DisplayVersion" -Value $currentVer -PropertyType String -Force | Out-Null
   New-ItemProperty -Path $UninstallKey -Name "Publisher" -Value "Mr Paul" -PropertyType String -Force | Out-Null
   New-ItemProperty -Path $UninstallKey -Name "DisplayIcon" -Value (Join-Path $TargetDir "kora.ico") -PropertyType String -Force | Out-Null
   New-ItemProperty -Path $UninstallKey -Name "InstallLocation" -Value $TargetDir -PropertyType String -Force | Out-Null

@@ -51,11 +51,11 @@ Vercel héberge le site officiel `kora-nine.vercel.app`.
 L'empreinte cryptographique SHA-256 permet de garantir qu'aucun pirate n'a pu altérer ou remplacer le fichier téléchargé entre le moment où vous l'avez créé et le moment où l'utilisateur le reçoit.
 
 ### Empreinte Officielle de la Version Actuelle :
-* **Fichier** : `Kora-Windows.zip` (v2.0.0)
+* **Fichier** : `Kora-Windows.zip` (v2.1.0)
 * **Algorithme** : SHA-256 (256 bits)
 * **Empreinte Officielle (Hash)** :
   ```text
-  09b1d67ae0e7733ec39e4d9940c1ac829c6dca6b4cf58bdd81a0c77411aeb41d
+  587BDDD15AA9537AC995A9827EC9076BDDFB25CE54EC28A8F5C3E060F58F1859
   ```
 
 ### Comment l'utilisateur peut vérifier l'intégrité sous Windows :

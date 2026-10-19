@@ -1022,11 +1022,33 @@ async function checkForGitHubUpdates(isManual = false) {
     const remotePkg = JSON.parse(remoteBuf.toString('utf8'));
 
     if (remotePkg && remotePkg.version && isNewerVersion(remotePkg.version, localPkg.version)) {
-      const filesToUpdate = ['index.html', 'styles.css', 'renderer.js', 'preload.js', 'main.js', 'package.json'];
+      const filesToUpdate = ['index.html', 'styles.css', 'renderer.js', 'preload.js', 'NusaBridge.cs', 'main.js', 'package.json'];
       for (const file of filesToUpdate) {
-        const buf = await fetchHttpsBuffer(`${baseUrl}/${file}?t=${Date.now()}`);
-        fs.writeFileSync(path.join(__dirname, file), buf);
+        try {
+          const buf = await fetchHttpsBuffer(`${baseUrl}/${file}?t=${Date.now()}`);
+          fs.writeFileSync(path.join(__dirname, file), buf);
+        } catch (fe) {}
       }
+
+      // Recompilation automatique et transparente du pont C# natif
+      try {
+        if (bridgeProc && !bridgeProc.killed) {
+          bridgeProc.kill();
+          bridgeProc = null;
+        }
+        const fw = fs.existsSync('C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe')
+          ? 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319'
+          : 'C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319';
+        const csc = path.join(fw, 'csc.exe');
+        if (fs.existsSync(csc)) {
+          const targetExe = path.join(__dirname, 'nusa-bridge.exe');
+          const sourceCs = path.join(__dirname, 'NusaBridge.cs');
+          const script = `$fw = '${fw}'; $csc = '${csc}'; $sysRuntime = Get-ChildItem 'C:\\Windows\\Microsoft.NET' -Recurse -Filter 'System.Runtime.dll' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName; $winRuntime = Join-Path $fw 'System.Runtime.WindowsRuntime.dll'; if (-not (Test-Path $winRuntime)) { $winRuntime = Get-ChildItem 'C:\\Windows\\Microsoft.NET' -Recurse -Filter 'System.Runtime.WindowsRuntime.dll' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName; }; $winmds = Get-ChildItem 'C:\\Windows\\System32\\WinMetadata\\*.winmd' -ErrorAction SilentlyContinue | ForEach-Object { "/r:\`"$($_.FullName)\`"" }; if ($winmds -and $winRuntime -and (Test-Path $winRuntime)) { & $csc /nologo /target:exe /platform:anycpu /out:'${targetExe}' /optimize+ /r:"$winRuntime" /r:"$sysRuntime" $winmds '${sourceCs}' 2>$null | Out-Null }`;
+          require('child_process').execSync(`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "${script.replace(/\r?\n/g, ' ')}"`, { stdio: 'ignore' });
+        }
+      } catch (err) {}
+      startWindowsBridge();
+
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('peek-event', {
           type: 'notif',
@@ -1066,9 +1088,18 @@ function createTray() {
   tray = new Tray(getKoraIcon());
   tray.setToolTip('Kora — par Mr Paul');
 
+  const pkgVersion = (() => {
+    try {
+      const p = path.join(__dirname, 'package.json');
+      return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')).version : '2.1.0';
+    } catch (e) {
+      return '2.1.0';
+    }
+  })();
+
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Kora v2.0 — créé par Mr Paul',
+      label: `Kora v${pkgVersion} — créé par Mr Paul`,
       enabled: false
     },
     { type: 'separator' },
