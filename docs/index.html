@@ -552,6 +552,74 @@
       font-weight: 600;
     }
 
+    .dl-guide-badge {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: 18px;
+      padding: 12px 22px;
+      background: rgba(25, 184, 255, 0.05);
+      border: 1px solid rgba(25, 184, 255, 0.22);
+      border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      max-width: 520px;
+      width: calc(100% - 24px);
+      box-sizing: border-box;
+      margin-left: auto;
+      margin-right: auto;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .guide-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      padding: 3px 9px;
+      border-radius: 20px;
+      border: 1px solid rgba(56, 189, 248, 0.28);
+    }
+
+    .guide-text {
+      color: #e2e8f0;
+      font-size: 13.5px;
+      line-height: 1.5;
+      margin: 2px 0 0;
+      text-align: center;
+    }
+
+    .guide-text b {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .highlight-cmd {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 6px;
+      padding: 1px 7px;
+      letter-spacing: -0.01em;
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.15);
+    }
+
+    .guide-sub {
+      color: #94a3b8;
+      font-size: 11.5px;
+      text-align: center;
+    }
+
     .trust {
       display: flex;
       flex-wrap: wrap;
@@ -2774,6 +2842,13 @@
           </a>
         </div>
         <p class="hero-btn-compat">Compatible avec Windows 10 &amp; 11 · 100 % gratuit</p>
+        <div class="dl-guide-badge">
+          <span class="guide-tag">⚡ Installation simple en 2 clics</span>
+          <p class="guide-text">
+            1. Extrayez le ZIP téléchargé &nbsp;•&nbsp; 2. Double-cliquez sur <code class="highlight-cmd">Installer-Kora.cmd</code>
+          </p>
+          <span class="guide-sub">Installation 100% automatique en 4 secondes avec raccourci sur votre Bureau.</span>
+        </div>
       </div>
     </section>
 
@@ -3205,6 +3280,13 @@
             </a>
           </div>
           <p class="hero-btn-compat">Compatible avec Windows 10 &amp; 11 · 100 % gratuit</p>
+        <div class="dl-guide-badge">
+          <span class="guide-tag">⚡ Installation simple en 2 clics</span>
+          <p class="guide-text">
+            1. Extrayez le ZIP téléchargé &nbsp;•&nbsp; 2. Double-cliquez sur <code class="highlight-cmd">Installer-Kora.cmd</code>
+          </p>
+          <span class="guide-sub">Installation 100% automatique en 4 secondes avec raccourci sur votre Bureau.</span>
+        </div>
         </div>
       </div>
     </section>
