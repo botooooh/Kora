@@ -92,8 +92,8 @@ const DEFAULT_TABS = [
 
 const DEFAULT_SETTINGS = {
   scale: 1.0,
-  openDelay: 100,
-  closeDelay: 320,
+  openDelay: 320,
+  closeDelay: 500,
   retractMode: 'none',
   glowMode: 'none', // 'none' (sobre & épuré), 'subtle' (doux), 'vibrant' (lueurs néon)
   hideInFullscreen: true,
@@ -975,17 +975,8 @@ function handleNativeStateUpdate(state) {
   }
 
   if (isInitializedState) {
-    // 1. Top-edge hover wakeup (strict pill zone when closed)
-    if (!isNotchExpanded) {
-      if (state.atTopEdge && !lastState.atTopEdge) {
-        mainWindow.setIgnoreMouseEvents(false);
-        mainWindow.webContents.send('top-edge-hover', { active: true });
-      } else if (!state.atTopEdge && lastState.atTopEdge) {
-        mainWindow.setIgnoreMouseEvents(true, { forward: true });
-        mainWindow.webContents.send('top-edge-hover', { active: false });
-      }
-    } else {
-      // While expanded, ensure mouse events are always enabled for the open drawer
+    // While expanded, ensure mouse events are always enabled for the open drawer
+    if (isNotchExpanded) {
       mainWindow.setIgnoreMouseEvents(false);
     }
 

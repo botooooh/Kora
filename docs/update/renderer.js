@@ -113,15 +113,7 @@ function updateVisibilityAndRetraction() {
     return;
   }
 
-  // 2. Si une fenêtre comme Chrome est active ou maximisée :
-  // Si Kora était dépliée (grande encoche 650x260) et non épinglée, elle se replie avec délai si la souris quitte
-  if (win.hasActiveApp || win.isMaximized) {
-    if (isExpanded && !isPinned && !mouseInsideNotch && !closeTimer) {
-      scheduleClose();
-    }
-  }
-
-  // 3. Rétractation éventuelle dans la bordure supérieure
+  // 2. Rétractation éventuelle dans la bordure supérieure
   if (isExpanded || isPeekActive || isPinned) {
     mn.dataset.retracted = 'false';
   } else {
@@ -151,44 +143,11 @@ function handleMouseLeaveZone() {
   }
   blurSettingsControls();
   if (!isPinned && !isDraggingOut) {
-    scheduleClose();
+    scheduleClose(650);
   }
 }
 
-// Triggered by main.js cursor watcher when user hovers directly over the pill
-window.nusa.onTopEdgeHover(({ active }) => {
-  if (isExpanded) return; // Open drawer handles its own interaction
-  if (!active) {
-    mouseInsideNotch = false;
-    if (openTimer) {
-      clearTimeout(openTimer);
-      openTimer = null;
-    }
-    if (!isPinned) {
-      window.nusa.setIgnoreMouse(true);
-    }
-    return;
-  }
-  if (mn.dataset.fullscreenHidden === 'true') return;
-
-  if (closeTimer) {
-    clearTimeout(closeTimer);
-    closeTimer = null;
-  }
-
-  mn.dataset.retracted = 'false';
-  mouseInsideNotch = true;
-  window.nusa.setIgnoreMouse(false);
-
-  const delay = Number(store.settings?.openDelay ?? 120);
-  if (openTimer) clearTimeout(openTimer);
-  openTimer = setTimeout(() => {
-    if (mouseInsideNotch && !isExpanded) {
-      openNotch(activeTab);
-    }
-  }, delay);
-});
-
+// Window mouse tracking: strictly manages hit-testing and click-through
 window.addEventListener('mousemove', e => {
   if (mn.dataset.fullscreenHidden === 'true') {
     window.nusa.setIgnoreMouse(true);
@@ -200,46 +159,87 @@ window.addEventListener('mousemove', e => {
   const centerX = window.innerWidth / 2;
 
   let inside = false;
-  const lip = Number(store.settings?.retractedLip ?? 4);
 
   if (isExpanded) {
-    // When drawer is open: covers the full open drawer zone (height up to 235px, width up to 520px)
-    // so moving mouse down to click tabs, items, songs, todos never causes accidental collapse
-    inside = (e.clientY <= 235 && Math.abs(e.clientX - centerX) <= 260);
-  } else if (isRetracted) {
-    inside =
-      e.clientY <= Math.max(6, lip + 2) &&
-      Math.abs(e.clientX - centerX) <= 93;
-  } else {
-    // When resting: strictly the compact 186x35 pill, zero bleed to leave browser tabs free
-    inside =
+    // When drawer is open: covers the full visible notch drawer with comfort margins
+    // so user can freely click any card, text, button, song or todo without premature collapse
+    inside = (
+      e.clientX >= rect.left - 20 &&
+      e.clientX <= rect.right + 20 &&
       e.clientY >= 0 &&
-      e.clientY <= 36 &&
-      Math.abs(e.clientX - centerX) <= 93;
+      e.clientY <= rect.bottom + 25
+    );
+  } else if (isRetracted) {
+    // When retracted: strictly the visible top lip
+    inside = (
+      e.clientX >= rect.left &&
+      e.clientX <= rect.right &&
+      e.clientY >= 0 &&
+      e.clientY <= Math.max(rect.bottom, 8)
+    );
+  } else {
+    // When resting: strictly the compact 186x35 pill, leaving 100% of upper tools & tabs free
+    inside = (
+      e.clientX >= rect.left &&
+      e.clientX <= rect.right &&
+      e.clientY >= 0 &&
+      e.clientY <= rect.bottom
+    );
   }
 
-  if (inside !== mouseInsideNotch) {
-    mouseInsideNotch = inside;
-    window.nusa.setIgnoreMouse(!inside);
-
+  if (isExpanded) {
+    // When open, keep mouse events active
+    window.nusa.setIgnoreMouse(false);
     if (inside) {
+      mouseInsideNotch = true;
       if (closeTimer) {
         clearTimeout(closeTimer);
         closeTimer = null;
       }
-      mn.dataset.retracted = 'false';
-      const delay = Number(store.settings?.openDelay ?? 100);
-      if (openTimer) clearTimeout(openTimer);
-      openTimer = setTimeout(() => {
-        if (mouseInsideNotch) {
-          if (mn.dataset.s === 'clip-peek') activeTab = 'clipboard';
-          else if (mn.dataset.s === 'screenshot') activeTab = 'shelf';
-          else if (currentState.media && currentState.media.status === 'Playing') activeTab = 'music';
-          openNotch(activeTab);
-        }
-      }, delay);
     } else {
-      handleMouseLeaveZone();
+      if (mouseInsideNotch) {
+        mouseInsideNotch = false;
+        if (!closeTimer && !isPinned && !isDraggingOut) {
+          scheduleClose(650);
+        }
+      }
+    }
+  } else {
+    // When resting or retracted:
+    if (inside) {
+      if (!mouseInsideNotch) {
+        mouseInsideNotch = true;
+        window.nusa.setIgnoreMouse(false);
+
+        if (closeTimer) {
+          clearTimeout(closeTimer);
+          closeTimer = null;
+        }
+
+        // Hover open delay: minimum 320ms so fast mouse transit towards Affinity/browser tools NEVER triggers Kora!
+        const configuredDelay = Number(store.settings?.openDelay ?? 320);
+        const delay = Math.max(300, configuredDelay);
+
+        if (openTimer) clearTimeout(openTimer);
+        openTimer = setTimeout(() => {
+          if (mouseInsideNotch && !isExpanded) {
+            mn.dataset.retracted = 'false';
+            if (mn.dataset.s === 'clip-peek') activeTab = 'clipboard';
+            else if (mn.dataset.s === 'screenshot') activeTab = 'shelf';
+            else if (currentState.media && currentState.media.status === 'Playing') activeTab = 'music';
+            openNotch(activeTab);
+          }
+        }, delay);
+      }
+    } else {
+      if (mouseInsideNotch) {
+        mouseInsideNotch = false;
+        if (openTimer) {
+          clearTimeout(openTimer);
+          openTimer = null;
+        }
+        window.nusa.setIgnoreMouse(true);
+      }
     }
   }
 
@@ -421,18 +421,7 @@ function formatSec(sec) {
 window.nusa.onSystemState(state => {
   currentState = state;
 
-  // 1. Guarantee retraction when mouse leaves activation zone across OS (only if mouse was previously inside)
-  if (state.inNotchZone === false && !state.mouseDown) {
-    if (mouseInsideNotch) {
-      mouseInsideNotch = false;
-      blurSettingsControls();
-      if (!closeTimer && isExpanded && !isPinned && !isDraggingOut) {
-        scheduleClose();
-      }
-    }
-  }
-
-  // 2. Update window fullscreen & auto-retract state
+  // 1. Update window fullscreen & auto-retract state
   updateVisibilityAndRetraction();
 
   // 3. Battery Ring
@@ -747,10 +736,25 @@ if (idleMusicView) {
   });
 }
 
-// Click anywhere on resting notch opens Kora
-mn.addEventListener('click', e => {
-  if (!isExpanded) {
+// Click or mousedown anywhere on resting/retracted notch opens Kora instantly
+mn.addEventListener('mousedown', e => {
+  if (!isExpanded && e.button === 0) {
     e.stopPropagation();
+    if (openTimer) {
+      clearTimeout(openTimer);
+      openTimer = null;
+    }
+    openNotch(activeTab);
+  }
+});
+
+mn.addEventListener('click', e => {
+  if (!isExpanded && e.button === 0) {
+    e.stopPropagation();
+    if (openTimer) {
+      clearTimeout(openTimer);
+      openTimer = null;
+    }
     openNotch(activeTab);
   }
 });

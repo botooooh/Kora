@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     stCloseDelay.value = String(closeDelay);
     stCloseDelayVal.textContent = `${closeDelay} ms`;
 
-    const openDelay = Number(s.openDelay ?? 100);
+    const openDelay = Number(s.openDelay ?? 320);
     stOpenDelay.value = String(openDelay);
     stOpenDelayVal.textContent = `${openDelay} ms`;
 

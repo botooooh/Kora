@@ -68,6 +68,12 @@ namespace NusaBridge {
     class MMDeviceEnumeratorComObject { }
 
     class Program {
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool SetProcessDpiAwarenessContext(IntPtr dpiFlag);
+
+        [DllImport("user32.dll")]
+        static extern bool SetProcessDPIAware();
+
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(int vKey);
 
@@ -392,10 +398,11 @@ namespace NusaBridge {
             bool zoomed = IsZoomed(hwnd);
 
             // VRAI PLEIN ÉCRAN (F11, YouTube plein écran, VLC, Jeux vidéo)
-            bool isTrueFullscreen = (r.Left <= 0 && r.Top <= 0 && winW >= scrW && winH >= scrH);
+            // Une fenêtre maximisée standard (IsZoomed == true) n'est JAMAIS un vrai plein écran exclusif !
+            bool isTrueFullscreen = !zoomed && (r.Left <= 0 && r.Top <= 0 && winW >= scrW && winH >= scrH);
 
             // MAXIMISÉ STANDARD (Bouton Agrandir, barre des tâches Windows visible)
-            bool isNormalMaximized = zoomed || (r.Top <= 10 && winW >= scrW - 40 && winH >= scrH - 90);
+            bool isNormalMaximized = zoomed || (!isTrueFullscreen && (r.Top <= 10 && winW >= scrW - 40 && winH >= scrH - 90));
 
             hasActiveApp = lastHasActiveApp = true;
             isMaximized = lastIsMaximized = isNormalMaximized;
@@ -423,6 +430,11 @@ namespace NusaBridge {
 
         static void Main() {
             Console.OutputEncoding = Encoding.UTF8;
+            try {
+                SetProcessDpiAwarenessContext((IntPtr)(-4));
+            } catch {
+                try { SetProcessDPIAware(); } catch {}
+            }
             try {
                 Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.BelowNormal;
             } catch {}
