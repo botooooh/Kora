@@ -19,20 +19,27 @@ const filesToInclude = [
   'index.html',
   'styles.css',
   'renderer.js',
+  'settings.html',
+  'settings.css',
+  'settings.js',
   'NusaBridge.cs',
+  'nusa-bridge.exe',
   'KoraLauncher.cs',
   'kora-logo.png',
   'kora.ico'
 ];
 
 filesToInclude.forEach(f => {
-  if (fs.existsSync(f)) {
-    fs.copyFileSync(f, path.join(staging, f));
+  const src = path.join(__dirname, f);
+  if (fs.existsSync(src)) {
+    fs.copyFileSync(src, path.join(staging, f));
   }
 });
 
-const zipWeb = path.resolve('website/downloads/Kora-Windows.zip');
-const zipDocs = path.resolve('docs/downloads/Kora-Windows.zip');
+const zipWeb = path.join(__dirname, 'website/downloads/Kora-Windows.zip');
+const zipDocs = path.join(__dirname, 'docs/downloads/Kora-Windows.zip');
+if (!fs.existsSync(path.dirname(zipWeb))) fs.mkdirSync(path.dirname(zipWeb), { recursive: true });
+if (!fs.existsSync(path.dirname(zipDocs))) fs.mkdirSync(path.dirname(zipDocs), { recursive: true });
 if (fs.existsSync(zipWeb)) fs.unlinkSync(zipWeb);
 if (fs.existsSync(zipDocs)) fs.unlinkSync(zipDocs);
 
@@ -41,12 +48,13 @@ execSync(`powershell.exe -NoProfile -Command "Compress-Archive -Path '${staging}
 fs.copyFileSync(zipWeb, zipDocs);
 
 // Mirror live update files for OTA hosting
-const mirrorDirs = [path.resolve('website/update'), path.resolve('docs/update')];
+const mirrorDirs = [path.join(__dirname, 'website/update'), path.join(__dirname, 'docs/update')];
 mirrorDirs.forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   filesToInclude.forEach(f => {
-    if (fs.existsSync(f)) {
-      fs.copyFileSync(f, path.join(dir, f));
+    const src = path.join(__dirname, f);
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, path.join(dir, f));
     }
   });
 });

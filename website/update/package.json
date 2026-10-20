@@ -1,7 +1,7 @@
 {
   "name": "kora-notch",
   "productName": "Kora",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Kora — La Dynamic Island vivante et ultra-optimisée pour Windows (par Mr Paul)",
   "main": "main.js",
   "scripts": {

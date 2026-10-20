@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kora — Paramètres & Personnalisation</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <!-- Custom Windows Fluent Titlebar -->
+  <header class="titlebar">
+    <div class="titlebar-left">
+      <img src="kora-logo.png" alt="Kora" class="titlebar-icon">
+      <span class="titlebar-title">Kora</span>
+      <span class="titlebar-badge" id="versionBadge">v2.1.0</span>
+      <span class="titlebar-sub">Paramètres & Personnalisation</span>
+    </div>
+    <div class="titlebar-controls">
+      <button class="win-btn win-min" id="winMinBtn" title="Réduire">
+        <svg viewBox="0 0 12 12"><rect y="5.5" width="12" height="1" fill="currentColor"/></svg>
+      </button>
+      <button class="win-btn win-close" id="winCloseBtn" title="Fermer">
+        <svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2L2 10" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-hero">
+        <div class="hero-glow" id="heroGlow"></div>
+        <div class="hero-logo-wrap">
+          <img src="kora-logo.png" alt="Kora Logo" class="hero-logo">
+        </div>
+        <div class="hero-meta">
+          <span class="hero-name">KORA NOTCH</span>
+          <span class="hero-author">par Mr Paul</span>
+        </div>
+      </div>
+
+      <div class="sidebar-menu">
+        <button class="nav-item active" data-tab="appearance">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><path d="M12 22A8 8 0 0 0 12 6v16z"/></svg>
+          </span>
+          <span class="nav-label">Apparence & Couleurs</span>
+        </button>
+
+        <button class="nav-item" data-tab="behavior">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </span>
+          <span class="nav-label">Comportement & Rétraction</span>
+        </button>
+
+        <button class="nav-item" data-tab="music">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </span>
+          <span class="nav-label">Musique & Island</span>
+        </button>
+
+        <button class="nav-item" data-tab="tabs">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          </span>
+          <span class="nav-label">Onglets & Navigation</span>
+        </button>
+
+        <button class="nav-item" data-tab="privacy">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+          <span class="nav-label">Confidentialité & Système</span>
+        </button>
+
+        <button class="nav-item" data-tab="about">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </span>
+          <span class="nav-label">À propos & Communauté</span>
+        </button>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="quick-status-pill" id="btnUpdateCheck">
+          <span class="pulse-dot"></span>
+          <span>Vérifier mise à jour</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="content-panel">
+      <!-- 1. APPARENCE & COULEURS -->
+      <section class="tab-pane active" id="pane-appearance">
+        <div class="pane-header">
+          <h2>Apparence & Couleurs</h2>
+          <p class="pane-desc">Personnalisez le halo lumineux, la taille et le style de Kora à votre goût.</p>
+        </div>
+
+        <!-- Live Preview of Kora Dynamic Island -->
+        <div class="card preview-card">
+          <div class="card-title-row">
+            <span class="card-title">Aperçu en direct de Kora</span>
+            <span class="live-tag">TEMPS RÉEL</span>
+          </div>
+          <div class="live-stage">
+            <div class="preview-notch" id="previewNotch">
+              <div class="pv-ears pv-ear-left"></div>
+              <div class="pv-ears pv-ear-right"></div>
+              <div class="pv-content">
+                <div class="pv-left">
+                  <div class="pv-cover">
+                    <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  </div>
+                  <span class="pv-title">Kora Dynamic Island</span>
+                </div>
+                <div class="pv-center">
+                  <span class="pv-time">12:00</span>
+                </div>
+                <div class="pv-right">
+                  <div class="pv-visualizer">
+                    <span class="pv-bar b1"></span>
+                    <span class="pv-bar b2"></span>
+                    <span class="pv-bar b3"></span>
+                    <span class="pv-bar b4"></span>
+                  </div>
+                  <div class="pv-ring" title="Batterie"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="preview-hint">Cet aperçu reflète immédiatement la couleur et l'échelle appliquées sur votre écran.</p>
+        </div>
+
+        <!-- Mode de couleur -->
+        <div class="card">
+          <span class="card-title">Origine de la Couleur</span>
+          <p class="card-desc">Choisissez si Kora s'harmonise automatiquement avec votre écran ou utilise votre propre teinte.</p>
+          
+          <div class="color-mode-grid">
+            <div class="mode-card" id="modeCardWallpaper" data-mode="wallpaper">
+              <div class="mode-card-header">
+                <span class="mode-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </span>
+                <span class="mode-title">Fond d'écran Windows</span>
+                <span class="mode-badge">AUTO</span>
+              </div>
+              <p class="mode-desc">Kora extrait en direct la teinte dominante et lumineuse de votre arrière-plan d'écran.</p>
+              <div class="mode-status-row">
+                <span class="detected-dot" id="detectedColorDot"></span>
+                <span class="detected-label" id="detectedColorLabel">Couleur détectée</span>
+                <button type="button" class="btn-subtle" id="btnRefreshWallpaper">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  <span>Rafraîchir</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="mode-card" id="modeCardCustom" data-mode="custom">
+              <div class="mode-card-header">
+                <span class="mode-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                </span>
+                <span class="mode-title">Couleur Personnalisée</span>
+                <span class="mode-badge">LIBRE</span>
+              </div>
+              <p class="mode-desc">Définissez vous-même votre teinte néon parmi les palettes exclusives ou le nuancier infini.</p>
+              <div class="mode-status-row">
+                <span class="custom-active-dot" id="customActiveDot"></span>
+                <span class="custom-active-hex" id="customActiveHex">#19b8ff</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Palette de présélections d'accents -->
+        <div class="card" id="paletteCard">
+          <div class="card-title-row">
+            <span class="card-title">Palette d'Accents Kora</span>
+            <span class="palette-sub">8 teintes vibrantes + sélecteur personnalisé</span>
+          </div>
+
+          <div class="swatches-grid">
+            <button class="swatch-btn active" data-color="#19b8ff" data-name="Bleu Kora" style="--c:#19b8ff" title="Bleu Kora (Signature)"></button>
+            <button class="swatch-btn" data-color="#a855f7" data-name="Violet Cyberpunk" style="--c:#a855f7" title="Violet Cyberpunk"></button>
+            <button class="swatch-btn" data-color="#10b981" data-name="Vert Émeraude" style="--c:#10b981" title="Vert Émeraude"></button>
+            <button class="swatch-btn" data-color="#f97316" data-name="Orange Sunset" style="--c:#f97316" title="Orange Sunset"></button>
+            <button class="swatch-btn" data-color="#f43f5e" data-name="Rose Rubis" style="--c:#f43f5e" title="Rose Rubis"></button>
+            <button class="swatch-btn" data-color="#eab308" data-name="Or Lumineux" style="--c:#eab308" title="Or Lumineux"></button>
+            <button class="swatch-btn" data-color="#38bdf8" data-name="Cyan Arctique" style="--c:#38bdf8" title="Cyan Arctique"></button>
+            <button class="swatch-btn" data-color="#f8fafc" data-name="Blanc Givré" style="--c:#f8fafc" title="Blanc Givré"></button>
+          </div>
+
+          <div class="custom-picker-row">
+            <label class="color-picker-label" for="customColorInput">
+              <span class="color-picker-preview" id="pickerPreviewBox"></span>
+              <span>Sélecteur libre de couleur HEX :</span>
+            </label>
+            <div class="color-picker-control">
+              <input type="color" id="customColorInput" value="#19b8ff">
+              <input type="text" id="customColorText" value="#19B8FF" maxlength="7">
+            </div>
+          </div>
+        </div>
+
+        <!-- Taille & Échelle -->
+        <div class="card">
+          <div class="card-title-row">
+            <span class="card-title">Échelle & Taille de Kora</span>
+            <span class="range-val" id="stScaleVal">100%</span>
+          </div>
+          <p class="card-desc">Ajustez la taille globale de l'encoche pour correspondre à la résolution de votre moniteur.</p>
+          <input type="range" class="form-range" id="stScale" min="80" max="130" step="5" value="100">
+          <div class="range-labels">
+            <span>Compact (80%)</span>
+            <span>Standard (100%)</span>
+            <span>Grand (130%)</span>
+          </div>
+        </div>
+
+        <!-- Style au repos -->
+        <div class="card">
+          <span class="card-title">Style d'affichage au repos</span>
+          <p class="card-desc">Ce que Kora affiche quand aucune notification n'est active.</p>
+          <select class="form-select" id="stRestingStyle">
+            <option value="auto">Automatique (Horloge + Mascotte selon contexte)</option>
+            <option value="clock">Horloge seule & Batterie</option>
+            <option value="mascot">Petite mascotte vivante (les yeux qui suivent la souris)</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- 2. COMPORTEMENT & RÉTRACTION -->
+      <section class="tab-pane" id="pane-behavior">
+        <div class="pane-header">
+          <h2>Comportement & Rétraction</h2>
+          <p class="pane-desc">Gérez la fluidité d'apparition et la disparition automatique de l'encoche.</p>
+        </div>
+
+        <!-- Mode de rétraction -->
+        <div class="card">
+          <span class="card-title">Règle de rétraction</span>
+          <p class="card-desc">Contrôle la façon dont Kora se dissimule dans la bordure supérieure de l'écran.</p>
+          <select class="form-select" id="stRetractMode">
+            <option value="app">Automatique : se rétracte dès qu'une application est active (Recommandé)</option>
+            <option value="manual">Manuelle : se rétracte uniquement si vous cliquez en dehors</option>
+            <option value="always">Toujours visible : reste toujours descendue sur l'écran</option>
+          </select>
+        </div>
+
+        <!-- Masquer en plein écran & Jeux -->
+        <div class="card setting-row">
+          <div class="setting-text">
+            <span class="setting-title">Masquer en Plein Écran & Jeux</span>
+            <span class="setting-sub">Dissimule totalement Kora quand une application (jeux, YouTube, F11, VLC) est en plein écran complet.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="stFullscreen">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Épaisseur rétractée -->
+        <div class="card">
+          <div class="card-title-row">
+            <span class="card-title">Bordure visible au repos</span>
+            <span class="range-val" id="stLipVal">4 px</span>
+          </div>
+          <p class="card-desc">L'épaisseur de la petite encoche noire discrète qui reste visible tout en haut.</p>
+          <input type="range" class="form-range" id="stLip" min="1" max="10" step="1" value="4">
+          <div class="range-labels">
+            <span>Ultra discrète (1px)</span>
+            <span>Par défaut (4px)</span>
+            <span>Bien visible (10px)</span>
+          </div>
+        </div>
+
+        <!-- Délai de fermeture -->
+        <div class="card">
+          <div class="card-title-row">
+            <span class="card-title">Délai de fermeture automatique</span>
+            <span class="range-val" id="stCloseDelayVal">320 ms</span>
+          </div>
+          <p class="card-desc">Temps d'attente avant que Kora ne se referme quand la souris quitte l'encoche.</p>
+          <input type="range" class="form-range" id="stCloseDelay" min="100" max="1000" step="50" value="320">
+          <div class="range-labels">
+            <span>Instantané (100ms)</span>
+            <span>Équilibré (320ms)</span>
+            <span>Tranquille (1000ms)</span>
+          </div>
+        </div>
+
+        <!-- Délai d'ouverture -->
+        <div class="card">
+          <div class="card-title-row">
+            <span class="card-title">Délai d'ouverture au survol</span>
+            <span class="range-val" id="stOpenDelayVal">100 ms</span>
+          </div>
+          <p class="card-desc">Évite les ouvertures accidentelles quand vous traversez le haut de l'écran.</p>
+          <input type="range" class="form-range" id="stOpenDelay" min="0" max="500" step="25" value="100">
+        </div>
+      </section>
+
+      <!-- 3. MUSIQUE & DYNAMIC ISLAND -->
+      <section class="tab-pane" id="pane-music">
+        <div class="pane-header">
+          <h2>Musique & Dynamic Island</h2>
+          <p class="pane-desc">L'expérience musicale connectée à Spotify, Apple Music, YouTube et aux lecteurs Windows.</p>
+        </div>
+
+        <!-- Mode d'affichage compact en lecture -->
+        <div class="card">
+          <span class="card-title">Affichage compact en lecture audio</span>
+          <p class="card-desc">Choisissez l'aspect de l'encoche réduite lorsqu'un morceau est en cours de lecture.</p>
+          <select class="form-select" id="stMusicCompactStyle">
+            <option value="cover">Pochette d'album + Visualiseur animé ondulant (Nouveau & Immersif)</option>
+            <option value="clock">Horloge classique + Cercle de batterie</option>
+          </select>
+        </div>
+
+        <div class="card setting-row">
+          <div class="setting-text">
+            <span class="setting-title">Recherche automatique des pochettes HD</span>
+            <span class="setting-sub">Télécharge silencieusement les pochettes d'albums originales lorsque l'application audio ne les fournit pas.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="stAutoArt" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="card setting-row">
+          <div class="setting-text">
+            <span class="setting-title">Paroles synchronisées en direct</span>
+            <span class="setting-sub">Recherche instantanée des paroles LRC défilantes pour chaque chanson écoutée.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="stLyrics" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 4. ONGLETS & NAVIGATION -->
+      <section class="tab-pane" id="pane-tabs">
+        <div class="pane-header">
+          <h2>Onglets & Navigation de Kora</h2>
+          <p class="pane-desc">Personnalisez l'ordre des onglets ou désactivez ceux dont vous n'avez pas besoin au quotidien.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title-row">
+            <span class="card-title">Organisation des Onglets</span>
+            <button type="button" class="btn-subtle" id="btnResetTabs">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              <span>Ordre par défaut</span>
+            </button>
+          </div>
+          <p class="card-desc">Utilisez les flèches haut/bas pour réorganiser la position de chaque vue dans l'encoche, ou désactivez le commutateur pour masquer l'onglet.</p>
+
+          <div class="tabs-manage-list" id="tabsManageList">
+            <!-- Dynamically populated by settings.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. CONFIDENTIALITÉ & SYSTÈME -->
+      <section class="tab-pane" id="pane-privacy">
+        <div class="pane-header">
+          <h2>Confidentialité & Système</h2>
+          <p class="pane-desc">Contrôle de visibilité sur les captures, démarrage automatique et alertes Peek.</p>
+        </div>
+
+        <!-- Protection captures -->
+        <div class="card setting-row">
+          <div class="setting-text">
+            <span class="setting-title">Visibilité dans les Captures d'écran</span>
+            <span class="setting-sub">Si désactivé, Kora est automatiquement <strong>invisible</strong> sur vos captures d'écran (Win+Shift+S), streams OBS et partages Discord.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="stShowInScreenshots">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Lancement auto -->
+        <div class="card setting-row">
+          <div class="setting-text">
+            <span class="setting-title">Lancer Kora au démarrage de Windows</span>
+            <span class="setting-sub">Démarre automatiquement l'application sans ralentir l'ouverture de session.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="stAutoStart">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Alertes Peek -->
+        <div class="card setting-row">
+          <div class="setting-text">
+            <span class="setting-title">Alertes compactes Peek</span>
+            <span class="setting-sub">Affiche les petites animations fluides lors des changements de volume, chargeur branché, copier-coller et notifications Windows.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="stPeekEnabled" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Durée Peek -->
+        <div class="card">
+          <div class="card-title-row">
+            <span class="card-title">Durée d'affichage des alertes Peek</span>
+            <span class="range-val" id="stPeekDurVal">2.2 s</span>
+          </div>
+          <p class="card-desc">Durée pendant laquelle l'encoche reste agrandie pour vous montrer l'information.</p>
+          <input type="range" class="form-range" id="stPeekDur" min="1000" max="5000" step="200" value="2200">
+        </div>
+
+        <!-- Bouton Test Peek -->
+        <div class="card test-action-card">
+          <div>
+            <span class="card-title">Tester l'animation maintenant</span>
+            <p class="card-desc">Envoie une notification d'exemple sur votre écran pour observer le rendu.</p>
+          </div>
+          <button class="btn-primary" id="btnTestNotif">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span>Déclencher le test</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 6. À PROPOS & COMMUNAUTÉ -->
+      <section class="tab-pane" id="pane-about">
+        <div class="pane-header">
+          <h2>À propos & Communauté</h2>
+          <p class="pane-desc">Informations officielles sur votre application Kora et assistance directe.</p>
+        </div>
+
+        <!-- Official Profile Card -->
+        <div class="card about-profile-card">
+          <div class="about-logo-wrap">
+            <img src="kora-logo.png" alt="Kora Logo" class="about-logo">
+          </div>
+          <div class="about-info">
+            <div class="about-title-row">
+              <h3 class="about-app-title">Kora Notch</h3>
+              <span class="version-pill" id="aboutVersionPill">v2.1.0</span>
+            </div>
+            <p class="about-tagline">La Dynamic Island vivante, fluide et ultra-légère conçue spécialement pour Windows.</p>
+            <p class="about-signature">Conçu et développé avec passion par <strong>Mr Paul</strong>.</p>
+          </div>
+        </div>
+
+        <!-- Canaux Officiels -->
+        <div class="card">
+          <span class="card-title">Canaux Officiels & Contact Direct</span>
+          <p class="card-desc">Rejoignez la communauté des utilisateurs ou écrivez directement au créateur en cas de question ou suggestion.</p>
+
+          <div class="contacts-grid">
+            <button class="contact-card js-ext-link" data-url="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k">
+              <span class="contact-icon wa-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+              </span>
+              <div class="contact-details">
+                <span class="contact-name">Canal WhatsApp Mr Paul</span>
+                <span class="contact-meta">Nouveautés, astuces et communauté</span>
+              </div>
+              <span class="contact-arrow">→</span>
+            </button>
+
+            <button class="contact-card js-ext-link" data-url="https://wa.me/2250151191073">
+              <span class="contact-icon wa-direct">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </span>
+              <div class="contact-details">
+                <span class="contact-name">WhatsApp Direct : +225 01 51 19 10 73</span>
+                <span class="contact-meta">Discussion et retours d'expérience</span>
+              </div>
+              <span class="contact-arrow">→</span>
+            </button>
+
+            <button class="contact-card js-ext-link" data-url="mailto:ivannguessan09@gmail.com">
+              <span class="contact-icon mail-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </span>
+              <div class="contact-details">
+                <span class="contact-name">Email : ivannguessan09@gmail.com</span>
+                <span class="contact-meta">Support technique officiel</span>
+              </div>
+              <span class="contact-arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Zone de désinstallation -->
+        <div class="card danger-card">
+          <div class="danger-header">
+            <div>
+              <span class="danger-title">Désinstaller Kora</span>
+              <p class="danger-desc">Supprime les raccourcis Bureau, Menu Démarrer et l'ensemble des fichiers de votre ordinateur.</p>
+            </div>
+            <button class="btn-danger" id="btnUninstall">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span>Désinstaller Kora</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

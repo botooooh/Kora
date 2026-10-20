@@ -35,6 +35,17 @@ contextBridge.exposeInMainWorld('nusa', {
   deleteTodo: id => ipcRenderer.send('todo-delete', id),
   openExternal: url => ipcRenderer.send('open-external-url', url),
 
+  // Dedicated Settings Window & Theme
+  openSettingsWindow: () => ipcRenderer.send('open-settings-window'),
+  closeSettingsWindow: () => ipcRenderer.send('settings-window-close'),
+  minimizeSettingsWindow: () => ipcRenderer.send('settings-window-minimize'),
+  getWallpaperColor: () => ipcRenderer.invoke('get-wallpaper-color'),
+  testPeekNotification: () => ipcRenderer.send('test-peek-notification'),
+  triggerUpdateCheck: () => ipcRenderer.send('trigger-update-check'),
+  triggerUninstall: () => ipcRenderer.send('trigger-uninstall'),
+
+
+
   // Listeners from main process
   onSystemState: cb => ipcRenderer.on('system-state', (_e, state) => cb(state)),
   onStoreUpdated: cb => ipcRenderer.on('store-updated', (_e, store) => cb(store)),

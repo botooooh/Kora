@@ -3,3 +3,6 @@ captures/
 *.log
 .DS_Store
 Thumbs.db
+
+Kora.exe
+*.exe~

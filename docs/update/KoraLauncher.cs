@@ -55,10 +55,14 @@ namespace KoraLauncher
 
                         try
                         {
+                            string[] cmdArgs = Environment.GetCommandLineArgs();
+                            string forwardArgs = cmdArgs.Length > 1 ? string.Join(" ", cmdArgs, 1, cmdArgs.Length - 1) : "";
+                            string launchArgs = string.IsNullOrEmpty(forwardArgs) ? "." : ". " + forwardArgs;
+
                             ProcessStartInfo psi = new ProcessStartInfo
                             {
                                 FileName = candidateElectron,
-                                Arguments = ".",
+                                Arguments = launchArgs,
                                 WorkingDirectory = dir,
                                 UseShellExecute = false,
                                 CreateNoWindow = true,

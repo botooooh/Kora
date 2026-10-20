@@ -84,7 +84,11 @@ $Files = @(
   "index.html",
   "styles.css",
   "renderer.js",
+  "settings.html",
+  "settings.css",
+  "settings.js",
   "NusaBridge.cs",
+  "nusa-bridge.exe",
   "KoraLauncher.cs",
   "kora-logo.png",
   "kora.ico",
@@ -130,28 +134,11 @@ if (Test-Path $LocalUninstall) {
 }
 Unblock-File -Path $UninstallDest -ErrorAction SilentlyContinue
 
-Write-Host "  [2/4] Compilation locale securisee (Microsoft .NET AnyCPU)..." -ForegroundColor Cyan
-$fw = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319"
-if (-not (Test-Path (Join-Path $fw "csc.exe"))) {
-  $fw = "C:\Windows\Microsoft.NET\Framework\v4.0.30319"
+Write-Host "  [2/4] Verification des composants natifs..." -ForegroundColor Cyan
+# NusaBridge est directement pre-compile et livre avec Kora pour 0 temps d'attente et 0 faux-positif
+if (Test-Path (Join-Path $ScriptDir "nusa-bridge.exe")) {
+  Copy-Item (Join-Path $ScriptDir "nusa-bridge.exe") (Join-Path $TargetDir "nusa-bridge.exe") -Force
 }
-$csc = Join-Path $fw "csc.exe"
-$sysRuntime = Get-ChildItem "C:\Windows\Microsoft.NET" -Recurse -Filter "System.Runtime.dll" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-$winRuntime = Join-Path $fw "System.Runtime.WindowsRuntime.dll"
-if (-not (Test-Path $winRuntime)) {
-  $winRuntime = Get-ChildItem "C:\Windows\Microsoft.NET" -Recurse -Filter "System.Runtime.WindowsRuntime.dll" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-}
-$winmds = Get-ChildItem "C:\Windows\System32\WinMetadata\*.winmd" -ErrorAction SilentlyContinue | ForEach-Object { "/r:`"$($_.FullName)`"" }
-
-# KoraLauncher universel
-& $csc /nologo /target:winexe /platform:anycpu /out:"$(Join-Path $TargetDir 'Kora.exe')" /win32icon:"$(Join-Path $TargetDir 'kora.ico')" /optimize+ "$(Join-Path $TargetDir 'KoraLauncher.cs')" | Out-Null
-
-# NusaBridge si WinRT supporte
-try {
-  if ($winmds -and $winRuntime -and (Test-Path $winRuntime)) {
-    & $csc /nologo /target:exe /platform:anycpu /out:"$(Join-Path $TargetDir 'nusa-bridge.exe')" /optimize+ /r:"$winRuntime" /r:"$sysRuntime" $winmds "$(Join-Path $TargetDir 'NusaBridge.cs')" 2>$null | Out-Null
-  }
-} catch {}
 
 $ElectronExe = Join-Path $DistDir "electron.exe"
 $archMarker  = Join-Path $DistDir ".runtime_ver"
@@ -261,7 +248,8 @@ try {
   $WshShell = New-Object -ComObject WScript.Shell
   $DesktopPath = [Environment]::GetFolderPath("Desktop")
   $Shortcut = $WshShell.CreateShortcut((Join-Path $DesktopPath "Kora.lnk"))
-  $Shortcut.TargetPath = Join-Path $TargetDir "Kora.exe"
+  $Shortcut.TargetPath = $ElectronExe
+  $Shortcut.Arguments = "."
   $Shortcut.WorkingDirectory = $TargetDir
   $Shortcut.IconLocation = Join-Path $TargetDir "kora.ico"
   $Shortcut.Description = "Kora - Dynamic Island pour Windows (par Mr Paul)"
@@ -271,11 +259,15 @@ try {
   $StartMenuDir = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Kora"
   New-Item -ItemType Directory -Path $StartMenuDir -Force | Out-Null
   $StartShortcut = $WshShell.CreateShortcut((Join-Path $StartMenuDir "Kora.lnk"))
-  $StartShortcut.TargetPath = Join-Path $TargetDir "Kora.exe"
+  $StartShortcut.TargetPath = $ElectronExe
+  $StartShortcut.Arguments = "."
   $StartShortcut.WorkingDirectory = $TargetDir
   $StartShortcut.IconLocation = Join-Path $TargetDir "kora.ico"
   $StartShortcut.Description = "Kora - Dynamic Island pour Windows (par Mr Paul)"
   $StartShortcut.Save()
+
+  # Lancement automatique au demarrage de Windows
+  Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "Kora" -Value "`"$ElectronExe`" `"$TargetDir`"" -Force | Out-Null
 
   $UninstShortcut = $WshShell.CreateShortcut((Join-Path $StartMenuDir "Desinstaller Kora.lnk"))
   $UninstShortcut.TargetPath = "powershell.exe"
@@ -288,7 +280,7 @@ try {
   # Enregistrement dans les Applications Installees Windows
   $UninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Kora"
   $pkgJsonPath = Join-Path $TargetDir "package.json"
-  $currentVer = "2.1.0"
+  $currentVer = "2.2.0"
   if (Test-Path $pkgJsonPath) {
     try {
       $parsed = Get-Content $pkgJsonPath -Raw | ConvertFrom-Json
@@ -305,7 +297,7 @@ try {
   New-ItemProperty -Path $UninstallKey -Name "NoRepair" -Value 1 -PropertyType DWord -Force | Out-Null
 } catch {}
 
-Start-Process -FilePath (Join-Path $TargetDir "Kora.exe") -WorkingDirectory $TargetDir
+Start-Process -FilePath $ElectronExe -ArgumentList "." -WorkingDirectory $TargetDir
 Write-Host ""
 Write-Host "  ======================================================" -ForegroundColor Green
 Write-Host "   [OK] Kora est installee et lancee avec succes !" -ForegroundColor Green

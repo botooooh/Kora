@@ -59,9 +59,7 @@
             <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             <span>To-Do</span>
           </button>
-          <button class="hdr-tab" data-tab="settings" title="Paramètres de Kora">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          </button>
+
         </div>
 
         <div class="hdr-right">
@@ -80,7 +78,7 @@
           <button data-tab="clipboard" title="Presse-papiers"></button>
           <button data-tab="shelf" title="Étagère à fichiers"></button>
           <button data-tab="todo" title="To-Do List"></button>
-          <button data-tab="settings" title="Paramètres"></button>
+
         </div>
       </div>
 
@@ -168,7 +166,7 @@
             <li class="on">Paroles synchronisées automatiques</li>
             <li>Lancez une musique sur Apple Music,</li>
             <li>Spotify ou YouTube pour voir</li>
-            <li>les paroles s'illuminer ✨</li>
+            <li>les paroles s'illuminer en direct</li>
           </ol>
         </div>
       </div>
@@ -242,174 +240,7 @@
         <div class="todo-list" id="todoList"></div>
       </div>
 
-      <!-- 8. PARAMÈTRES (SETTINGS) -->
-      <div class="ly l-settings">
-        <button class="a arw c js-prev-page" style="left:18px;top:105px" title="Onglet précédent">
-          <svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg>
-        </button>
-        <button class="a arw c js-next-page" style="right:6px;top:105px" title="Onglet suivant">
-          <svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg>
-        </button>
 
-        <div class="settings-wrap">
-          <!-- Taille (Scale) -->
-          <div class="st-row">
-            <div class="st-label">
-              <span>Taille de Kora</span>
-              <small>Échelle globale de la Dynamic Island</small>
-            </div>
-            <div class="st-ctrl">
-              <input type="range" class="st-range" id="stScale" min="75" max="135" step="5" value="100">
-              <span class="st-val" id="stScaleVal">100%</span>
-            </div>
-          </div>
-
-          <!-- Délai d'ouverture -->
-          <div class="st-row">
-            <div class="st-label">
-              <span>Temps d'ouverture au survol</span>
-              <small>Délai quand la souris passe en haut</small>
-            </div>
-            <div class="st-ctrl">
-              <input type="range" class="st-range" id="stOpenDelay" min="0" max="700" step="20" value="100">
-              <span class="st-val" id="stOpenDelayVal">100 ms</span>
-            </div>
-          </div>
-
-          <!-- Délai de fermeture -->
-          <div class="st-row">
-            <div class="st-label">
-              <span>Temps de fermeture</span>
-              <small>Délai avant rétractation quand vous quittez la zone</small>
-            </div>
-            <div class="st-ctrl">
-              <input type="range" class="st-range" id="stCloseDelay" min="100" max="2000" step="50" value="320">
-              <span class="st-val" id="stCloseDelayVal">320 ms</span>
-            </div>
-          </div>
-
-          <!-- Comportement de rétractation -->
-          <div class="st-row">
-            <div class="st-label">
-              <span>Rétractation en haut de l'écran</span>
-              <small>Apparaît en montant la souris tout en haut</small>
-            </div>
-            <div class="st-ctrl">
-              <select class="st-select" id="stRetractMode">
-                <option value="app">Quand une appli est ouverte</option>
-                <option value="always">Toujours rétractée en haut</option>
-                <option value="never">Toujours visible (sauf plein écran)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Masquer en plein écran -->
-          <div class="st-row">
-            <div class="st-label">
-              <span>Disparaître en plein écran / maximisé</span>
-              <small>Masquer sur WhatsApp, vidéos et jeux plein écran</small>
-            </div>
-            <div class="st-ctrl">
-              <button type="button" class="st-toggle on" id="stFullscreen"></button>
-            </div>
-          </div>
-
-          <!-- Afficher Kora sur les captures d'écran / enregistrements -->
-          <div class="st-row">
-            <div class="st-label">
-              <span>Afficher Kora sur mes captures / vidéos</span>
-              <small>Activé = visible sur capture · Désactivé = masqué</small>
-            </div>
-            <div class="st-ctrl">
-              <button type="button" class="st-toggle" id="stShowInScreenshots"></button>
-            </div>
-          </div>
-
-          <!-- Hauteur de la lueur rétractée -->
-          <div class="st-row">
-            <div class="st-label">
-              <span>Bordure visible quand rétractée</span>
-              <small>Épaisseur tout en haut de l'écran</small>
-            </div>
-            <div class="st-ctrl">
-              <select class="st-select" id="stLip">
-                <option value="0">Invisible (0 px)</option>
-                <option value="2">Ultra-fine (2 px)</option>
-                <option value="4">Lueur fine (4 px)</option>
-                <option value="6">Moyenne (6 px)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Style au repos -->
-          <div class="st-row">
-            <div class="st-label">
-              <span>Affichage au repos</span>
-              <small>Quand Kora est fermée sur le Bureau</small>
-            </div>
-            <div class="st-ctrl">
-              <select class="st-select" id="stRestingStyle">
-                <option value="auto">Auto (Yeux Kora / Musique active)</option>
-                <option value="mascot">Toujours Yeux Kora</option>
-                <option value="clock">Toujours Mode Réduit</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Dynamic Island en lecture -->
-          <div class="st-row">
-            <div class="st-label">
-              <span>Dynamic Island en lecture</span>
-              <small>Quand de la musique est jouée en mode compact</small>
-            </div>
-            <div class="st-ctrl">
-              <select class="st-select" id="stMusicCompactStyle">
-                <option value="cover">Cover + Visualiseur (Apple Style)</option>
-                <option value="clock">Horloge + Batterie classique</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Notifications rapides -->
-          <div class="st-row">
-            <div class="st-label">
-              <span>Notifications PC & Animations rapides</span>
-              <small>Remplace les grandes notifs Windows en bas par Kora</small>
-            </div>
-            <div class="st-ctrl">
-              <button type="button" class="mini-act-btn" id="stTestNotifBtn" title="Tester une notification compacte dans Kora">Tester</button>
-              <button type="button" class="st-toggle on" id="stPeekEnabled"></button>
-            </div>
-          </div>
-
-          <!-- Lancer avec Windows -->
-          <div class="st-row">
-            <div class="st-label">
-              <span>Démarrer avec Windows</span>
-              <small>Lancer automatiquement au démarrage du PC</small>
-            </div>
-            <div class="st-ctrl">
-              <button type="button" class="st-toggle" id="stAutoStart"></button>
-            </div>
-          </div>
-
-          <!-- Créateur : Mr Paul & Communauté -->
-          <div class="st-row" style="background:rgba(25,184,255,0.09);border-color:rgba(25,184,255,0.28)">
-            <div class="st-label" style="flex-direction:row;align-items:center;gap:8px">
-              <img src="kora-logo.png" alt="Kora" style="width:24px;height:24px;border-radius:6px">
-              <div>
-                <span style="color:#70d6ff">Kora · par Mr Paul</span>
-                <small style="display:block">ivannguessan09@gmail.com · +225 01 51 19 10 73</small>
-              </div>
-            </div>
-            <div class="st-ctrl" style="gap:4px">
-              <button type="button" class="mini-act-btn js-ext-link" data-url="https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k" style="background:#19b8ff;color:#020814;font-weight:700" title="Rejoindre la Communauté WhatsApp">Communauté</button>
-              <button type="button" class="mini-act-btn js-ext-link" data-url="https://wa.me/2250151191073" title="WhatsApp : +225 01 51 19 10 73">WhatsApp</button>
-              <button type="button" class="mini-act-btn js-ext-link" data-url="mailto:ivannguessan09@gmail.com" title="Email : ivannguessan09@gmail.com">Mail</button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- 9. QUICK PEEK: BLUETOOTH / HEADPHONES -->
       <div class="ly l-bt">

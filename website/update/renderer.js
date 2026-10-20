@@ -2,7 +2,8 @@ const mnHolder = document.getElementById('mnHolder');
 const mn = document.getElementById('mn');
 const pinBtn = document.getElementById('pinBtn');
 
-const TABS = ['music', 'clipboard', 'shelf', 'todo', 'settings'];
+const DEFAULT_TAB_IDS = ['music', 'clipboard', 'shelf', 'todo'];
+let activeTabs = ['music', 'clipboard', 'shelf', 'todo'];
 let activeTab = 'music';
 let isExpanded = false;
 let isPinned = false;
@@ -256,6 +257,11 @@ function getRestingState() {
 }
 
 function openNotch(tab = activeTab) {
+  if (tab === 'settings') {
+    window.nusa.openSettingsWindow();
+    closeNotch();
+    return;
+  }
   if (peekTimer) {
     clearTimeout(peekTimer);
     peekTimer = null;
@@ -266,11 +272,12 @@ function openNotch(tab = activeTab) {
   }
   isPeekActive = false;
   isExpanded = true;
-  if (tab && TABS.includes(tab)) {
+  if (tab && activeTabs.includes(tab)) {
     activeTab = tab;
   }
   mn.dataset.retracted = 'false';
   mn.dataset.s = activeTab;
+  window.nusa.setIgnoreMouse(false);
   updateNavUI();
 
   if (activeTab === 'clipboard') {
@@ -303,6 +310,11 @@ function updateNavUI() {
 document.querySelectorAll('#hdrTabs .hdr-tab').forEach(btn => {
   btn.addEventListener('click', e => {
     e.stopPropagation();
+    if (btn.dataset.tab === 'settings') {
+      window.nusa.openSettingsWindow();
+      closeNotch();
+      return;
+    }
     openNotch(btn.dataset.tab);
   });
 });
@@ -310,6 +322,11 @@ document.querySelectorAll('#hdrTabs .hdr-tab').forEach(btn => {
 document.querySelectorAll('#pageDots button').forEach(dot => {
   dot.addEventListener('click', e => {
     e.stopPropagation();
+    if (dot.dataset.tab === 'settings') {
+      window.nusa.openSettingsWindow();
+      closeNotch();
+      return;
+    }
     openNotch(dot.dataset.tab);
   });
 });
@@ -318,8 +335,8 @@ document.querySelectorAll('#pageDots button').forEach(dot => {
 document.querySelectorAll('.js-prev-page').forEach(btn => {
   btn.addEventListener('click', e => {
     e.stopPropagation();
-    const idx = TABS.indexOf(activeTab);
-    const prev = TABS[(idx - 1 + TABS.length) % TABS.length];
+    const idx = activeTabs.indexOf(activeTab);
+    const prev = activeTabs[(idx - 1 + activeTabs.length) % activeTabs.length];
     openNotch(prev);
   });
 });
@@ -327,8 +344,8 @@ document.querySelectorAll('.js-prev-page').forEach(btn => {
 document.querySelectorAll('.js-next-page').forEach(btn => {
   btn.addEventListener('click', e => {
     e.stopPropagation();
-    const idx = TABS.indexOf(activeTab);
-    const next = TABS[(idx + 1) % TABS.length];
+    const idx = activeTabs.indexOf(activeTab);
+    const next = activeTabs[(idx + 1) % activeTabs.length];
     openNotch(next);
   });
 });
@@ -397,7 +414,7 @@ window.nusa.onSystemState(state => {
     document.getElementById('idleRing').style.setProperty('--p', pct + '%');
     document.getElementById('hdrRing').style.setProperty('--p', pct + '%');
     document.getElementById('hdrRing').title = `Batterie : ${pct}%${
-      state.battery.charging ? ' (En charge ⚡)' : ''
+      state.battery.charging ? ' (En charge)' : ''
     }`;
   }
 
@@ -530,7 +547,7 @@ async function loadSyncedLyrics(title, artist) {
   if (currentLyrics.length === 0) {
     listEl.innerHTML = `<li class="on">${escapeHtml(title)}</li><li>${escapeHtml(
       artist || 'Aucune parole synchronisée trouvée'
-    )}</li><li>Profitez de la musique 🎵</li>`;
+    )}</li><li>Profitez de votre musique</li>`;
     return;
   }
   listEl.innerHTML = '';
@@ -595,121 +612,100 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// ==================== SETTINGS PANEL LOGIC ====================
-const stScale = document.getElementById('stScale');
-const stScaleVal = document.getElementById('stScaleVal');
-const stOpenDelay = document.getElementById('stOpenDelay');
-const stOpenDelayVal = document.getElementById('stOpenDelayVal');
-const stCloseDelay = document.getElementById('stCloseDelay');
-const stCloseDelayVal = document.getElementById('stCloseDelayVal');
-const stRetractMode = document.getElementById('stRetractMode');
-const stFullscreen = document.getElementById('stFullscreen');
-const stShowInScreenshots = document.getElementById('stShowInScreenshots');
-const stLip = document.getElementById('stLip');
-const stRestingStyle = document.getElementById('stRestingStyle');
-const stMusicCompactStyle = document.getElementById('stMusicCompactStyle');
-const stPeekEnabled = document.getElementById('stPeekEnabled');
-const stTestNotifBtn = document.getElementById('stTestNotifBtn');
-const stAutoStart = document.getElementById('stAutoStart');
+// ==================== THEME, SETTINGS & DYNAMIC TABS SYNC ====================
+function applyAccentColor(hex, rgb) {
+  if (!hex) return;
+  const root = document.documentElement;
+  root.style.setProperty('--cyan', hex);
+
+  const r = parseInt(hex.slice(1, 3), 16) || 25;
+  const g = parseInt(hex.slice(3, 5), 16) || 184;
+  const b = parseInt(hex.slice(5, 7), 16) || 255;
+  const rgbStr = rgb || `${r}, ${g}, ${b}`;
+
+  const skyHex = `rgb(${Math.min(255, r + 55)}, ${Math.min(255, g + 45)}, ${Math.min(255, b + 25)})`;
+  const blueHex = `rgb(${Math.max(0, r - 45)}, ${Math.max(0, g - 45)}, ${Math.max(0, b - 35)})`;
+
+  root.style.setProperty('--sky', skyHex);
+  root.style.setProperty('--blue', blueHex);
+  root.style.setProperty('--accent-rgb', rgbStr);
+  root.style.setProperty('--glow', `linear-gradient(90deg, ${blueHex}, ${hex} 55%, ${skyHex})`);
+}
+
+function syncTabsFromStore(tabConfigs) {
+  if (Array.isArray(tabConfigs) && tabConfigs.length > 0) {
+    const enabled = tabConfigs.filter(t => t.enabled !== false).map(t => t.id);
+    activeTabs = enabled.length > 0 ? enabled : [...DEFAULT_TAB_IDS];
+  } else {
+    activeTabs = [...DEFAULT_TAB_IDS];
+  }
+
+  // Update DOM order & visibility in #hdrTabs and #pageDots
+  const hdrContainer = document.getElementById('hdrTabs');
+  const dotsContainer = document.getElementById('pageDots');
+
+  if (hdrContainer) {
+    const tabBtns = Array.from(hdrContainer.querySelectorAll('.hdr-tab'));
+    const btnMap = new Map();
+    tabBtns.forEach(btn => btnMap.set(btn.dataset.tab, btn));
+
+    tabBtns.forEach(btn => {
+      btn.style.display = activeTabs.includes(btn.dataset.tab) ? '' : 'none';
+    });
+
+    activeTabs.forEach(id => {
+      const btn = btnMap.get(id);
+      if (btn) hdrContainer.appendChild(btn);
+    });
+  }
+
+  if (dotsContainer) {
+    const dotBtns = Array.from(dotsContainer.querySelectorAll('button'));
+    const dotMap = new Map();
+    dotBtns.forEach(dot => dotMap.set(dot.dataset.tab, dot));
+
+    dotBtns.forEach(dot => {
+      dot.style.display = activeTabs.includes(dot.dataset.tab) ? '' : 'none';
+    });
+
+    activeTabs.forEach(id => {
+      const dot = dotMap.get(id);
+      if (dot) dotsContainer.appendChild(dot);
+    });
+  }
+
+  if (!activeTabs.includes(activeTab)) {
+    activeTab = activeTabs[0] || 'music';
+    if (isExpanded) {
+      openNotch(activeTab);
+    }
+  }
+}
 
 function applySettingsToDOM() {
   const s = store.settings || {};
+  if (s.activeAccentHex) {
+    applyAccentColor(s.activeAccentHex, s.activeAccentRgb);
+  }
   const scale = Number(s.scale || 1.0);
   const lip = Number(s.retractedLip ?? 4);
 
   document.documentElement.style.setProperty('--scale', String(scale));
   document.documentElement.style.setProperty('--lip', `${lip}px`);
 
-  const pct = Math.round(scale * 100);
-  stScale.value = String(pct);
-  stScaleVal.textContent = `${pct}%`;
-
-  stOpenDelay.value = String(s.openDelay ?? 100);
-  stOpenDelayVal.textContent = `${s.openDelay ?? 100} ms`;
-
-  stCloseDelay.value = String(s.closeDelay ?? 320);
-  stCloseDelayVal.textContent = `${s.closeDelay ?? 320} ms`;
-
-  stRetractMode.value = s.retractMode || 'app';
-  stFullscreen.classList.toggle('on', s.hideInFullscreen !== false);
-  if (stShowInScreenshots) {
-    // ON = Kora is visible on screenshots/recordings; OFF = Kora is hidden
-    stShowInScreenshots.classList.toggle('on', Boolean(s.showInScreenshots));
+  if (s.tabs) {
+    syncTabsFromStore(s.tabs);
   }
-  stLip.value = String(lip);
-  stRestingStyle.value = s.restingStyle || 'auto';
-  if (stMusicCompactStyle) {
-    stMusicCompactStyle.value = s.musicCompactStyle || 'cover';
+
+  if (currentState) {
+    const isPlaying = currentState.media && currentState.media.status === 'Playing';
+    const idleEl = document.getElementById('idleLayer');
+    if (idleEl) {
+      idleEl.dataset.mode = (isPlaying && s.musicCompactStyle === 'cover') ? 'music' : 'clock';
+    }
   }
-  stPeekEnabled.classList.toggle('on', s.peekEnabled !== false);
-  stAutoStart.classList.toggle('on', Boolean(s.autoStart));
 
   updateVisibilityAndRetraction();
-}
-
-stScale.addEventListener('input', () => {
-  const pct = Number(stScale.value);
-  stScaleVal.textContent = `${pct}%`;
-  const scale = +(pct / 100).toFixed(2);
-  document.documentElement.style.setProperty('--scale', String(scale));
-  window.nusa.updateSettings({ scale });
-});
-
-stOpenDelay.addEventListener('input', () => {
-  const openDelay = Number(stOpenDelay.value);
-  stOpenDelayVal.textContent = `${openDelay} ms`;
-  window.nusa.updateSettings({ openDelay });
-});
-
-stCloseDelay.addEventListener('input', () => {
-  const closeDelay = Number(stCloseDelay.value);
-  stCloseDelayVal.textContent = `${closeDelay} ms`;
-  window.nusa.updateSettings({ closeDelay });
-});
-
-stRetractMode.addEventListener('change', () => {
-  window.nusa.updateSettings({ retractMode: stRetractMode.value });
-  stRetractMode.blur();
-});
-
-stFullscreen.addEventListener('click', () => {
-  const next = !stFullscreen.classList.contains('on');
-  stFullscreen.classList.toggle('on', next);
-  window.nusa.updateSettings({ hideInFullscreen: next });
-});
-
-if (stShowInScreenshots) {
-  stShowInScreenshots.addEventListener('click', () => {
-    const next = !stShowInScreenshots.classList.contains('on');
-    stShowInScreenshots.classList.toggle('on', next);
-    window.nusa.updateSettings({ showInScreenshots: next });
-  });
-}
-
-stLip.addEventListener('change', () => {
-  const retractedLip = Number(stLip.value);
-  document.documentElement.style.setProperty('--lip', `${retractedLip}px`);
-  window.nusa.updateSettings({ retractedLip });
-  stLip.blur();
-});
-
-stRestingStyle.addEventListener('change', () => {
-  window.nusa.updateSettings({ restingStyle: stRestingStyle.value });
-  stRestingStyle.blur();
-});
-
-if (stMusicCompactStyle) {
-  stMusicCompactStyle.addEventListener('change', () => {
-    window.nusa.updateSettings({ musicCompactStyle: stMusicCompactStyle.value });
-    stMusicCompactStyle.blur();
-    if (currentState) {
-      const isPlaying = currentState.media && currentState.media.status === 'Playing';
-      const idleEl = document.getElementById('idleLayer');
-      if (idleEl) {
-        idleEl.dataset.mode = (isPlaying && stMusicCompactStyle.value === 'cover') ? 'music' : 'clock';
-      }
-    }
-  });
 }
 
 const idleMusicView = document.getElementById('idleMusicView');
@@ -719,31 +715,6 @@ if (idleMusicView) {
     openNotch('music');
   });
 }
-
-stPeekEnabled.addEventListener('click', () => {
-  const next = !stPeekEnabled.classList.contains('on');
-  stPeekEnabled.classList.toggle('on', next);
-  window.nusa.updateSettings({ peekEnabled: next });
-});
-
-if (stTestNotifBtn) {
-  stTestNotifBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    isExpanded = false;
-    showPeekNotification({
-      type: 'notif',
-      app: 'whatsapp',
-      title: 'WhatsApp · Mr Paul',
-      snippet: 'Nouveau message reçu sur Kora…'
-    });
-  });
-}
-
-stAutoStart.addEventListener('click', () => {
-  const next = !stAutoStart.classList.contains('on');
-  stAutoStart.classList.toggle('on', next);
-  window.nusa.updateSettings({ autoStart: next });
-});
 
 document.querySelectorAll('.js-ext-link').forEach(btn => {
   btn.addEventListener('click', e => {
@@ -807,7 +778,9 @@ function renderClipboard() {
       <span class="clip-text">${escapeHtml(item.preview || item.text)}</span>
       <span class="clip-time">${escapeHtml(item.time || '')}</span>
       <div class="clip-actions">
-        <button class="clip-act ${item.pinned ? 'pinned' : ''}" data-act="pin" title="Épingler">📌</button>
+        <button class="clip-act ${item.pinned ? 'pinned' : ''}" data-act="pin" title="Épingler">
+          <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor"><path d="M16 3H8v2l2 2v5l-3 3v2h4v5l1 1 1-1v-5h4v-2l-3-3V7l2-2V3z"/></svg>
+        </button>
         <button class="clip-act" data-act="del" title="Supprimer">×</button>
       </div>
     `;
@@ -825,7 +798,7 @@ function renderClipboard() {
       row.classList.add('copied');
       const txtEl = row.querySelector('.clip-text');
       const orig = txtEl.textContent;
-      txtEl.textContent = '✓ Copié dans le presse-papiers !';
+      txtEl.textContent = 'Copié dans le presse-papiers !';
       setTimeout(() => {
         row.classList.remove('copied');
         txtEl.textContent = orig;
@@ -991,7 +964,7 @@ function renderTodos() {
     row.innerHTML = `
       <span class="chk"><svg viewBox="0 0 10 10"><path d="m2 5.2 2 2 4-4.4"/></svg></span>
       <span class="trow-txt">${escapeHtml(t.text)}</span>
-      ${t.time ? `<span class="trow-time">⏰ ${escapeHtml(t.time)}</span>` : ''}
+      ${t.time ? `<span class="trow-time"><svg viewBox="0 0 24 24" style="width:10px;height:10px;display:inline-block;vertical-align:middle;margin-right:2px;fill:none;stroke:currentColor;stroke-width:2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${escapeHtml(t.time)}</span>` : ''}
       <button class="trow-del" title="Supprimer">×</button>
     `;
 
@@ -1137,3 +1110,5 @@ window.nusa.onNotchBlur(() => {
     closeNotch();
   }
 });
+
+

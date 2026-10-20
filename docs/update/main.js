@@ -16,6 +16,12 @@ const fs = require('fs');
 const https = require('https');
 const { spawn } = require('child_process');
 
+process.on('uncaughtException', err => {
+  try {
+    fs.appendFileSync(path.join(process.env.TEMP || '', 'kora-error.log'), `[${new Date().toISOString()}] Uncaught: ${err && err.stack}\n`);
+  } catch (e) {}
+});
+
 // ==================== ULTRA-LOW RAM & CPU CHROMIUM FLAGS ====================
 app.commandLine.appendSwitch('js-flags', '--max-old-space-size=64 --optimize-for-size');
 app.commandLine.appendSwitch('renderer-process-limit', '1');
@@ -36,7 +42,23 @@ if (!gotTheLock) {
   process.exit(0);
 }
 
+app.on('second-instance', (_event, commandLine) => {
+  if (commandLine && commandLine.some(arg => arg.includes('--settings'))) {
+    openSettingsWindow();
+    return;
+  }
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('toggle-notch');
+  }
+});
+
+app.on('window-all-closed', (e) => {
+  // Keep Kora alive in tray/overlay even if secondary windows close
+  if (e && e.preventDefault) e.preventDefault();
+});
+
 let mainWindow = null;
+let settingsWindow = null;
 let tray = null;
 let bridgeProc = null;
 
@@ -51,6 +73,13 @@ try {
   }
 } catch (e) {}
 
+const DEFAULT_TABS = [
+  { id: 'music', name: 'Musique', enabled: true },
+  { id: 'clipboard', name: 'Presse-papiers', enabled: true },
+  { id: 'shelf', name: 'Fichiers', enabled: true },
+  { id: 'todo', name: 'To-Do', enabled: true }
+];
+
 const DEFAULT_SETTINGS = {
   scale: 1.0,
   openDelay: 100,
@@ -63,7 +92,12 @@ const DEFAULT_SETTINGS = {
   peekEnabled: true,
   peekDuration: 2200,
   showInScreenshots: false, // false = invisible on screenshots/recordings, true = visible
-  autoStart: false
+  autoStart: true,
+  colorMode: 'wallpaper', // 'wallpaper' ou 'custom'
+  customColor: '#19b8ff',
+  activeAccentHex: '#19b8ff',
+  activeAccentRgb: '25, 184, 255',
+  tabs: DEFAULT_TABS
 };
 
 let appStore = {
@@ -83,6 +117,18 @@ function loadStore() {
       const raw = JSON.parse(fs.readFileSync(storePath, 'utf8'));
       if (raw.settings) {
         appStore.settings = { ...DEFAULT_SETTINGS, ...raw.settings };
+        if (!Array.isArray(appStore.settings.tabs) || appStore.settings.tabs.length === 0) {
+          appStore.settings.tabs = DEFAULT_TABS;
+        } else {
+          const validIds = new Set(DEFAULT_TABS.map(t => t.id));
+          appStore.settings.tabs = appStore.settings.tabs.filter(t => t && validIds.has(t.id));
+          const existingIds = new Set(appStore.settings.tabs.map(t => t.id));
+          DEFAULT_TABS.forEach(dt => {
+            if (!existingIds.has(dt.id)) {
+              appStore.settings.tabs.push({ ...dt });
+            }
+          });
+        }
         // Migrate old setting keys if present
         if (typeof raw.settings.showInScreenshots !== 'boolean') {
           if (typeof raw.settings.hideInScreenshots === 'boolean') {
@@ -99,6 +145,9 @@ function loadStore() {
       if (raw.clipboard) appStore.clipboard = raw.clipboard.slice(0, 25);
     }
   } catch (e) {}
+  refreshThemeColors();
+  saveStore();
+  configureWindowsStartup(appStore.settings.autoStart !== false);
 }
 
 let saveTimer = null;
@@ -178,6 +227,280 @@ function positionWindowAtTopCenter() {
   const { width } = primaryDisplay.bounds;
   const x = Math.round((width - WIN_WIDTH) / 2);
   mainWindow.setBounds({ x, y: 0, width: WIN_WIDTH, height: WIN_HEIGHT });
+}
+
+function getWallpaperPath() {
+  const tw = path.join(process.env.APPDATA || '', 'Microsoft', 'Windows', 'Themes', 'TranscodedWallpaper');
+  if (fs.existsSync(tw)) return tw;
+
+  try {
+    const out = execSync('reg query "HKCU\\Control Panel\\Desktop" /v Wallpaper', { encoding: 'utf8' });
+    const m = out.match(/Wallpaper\s+REG_SZ\s+(.*)/i);
+    if (m && m[1]) {
+      const p = m[1].trim();
+      if (fs.existsSync(p)) return p;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function hslToRgb(h, s, l) {
+  let r, g, b;
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
+  }
+  return {
+    r: Math.round(r * 255),
+    g: Math.round(g * 255),
+    b: Math.round(b * 255)
+  };
+}
+
+function extractDominantColor(imgPath) {
+  if (!imgPath || !fs.existsSync(imgPath)) return null;
+  try {
+    const img = nativeImage.createFromPath(imgPath);
+    if (img.isEmpty()) return null;
+    const thumb = img.resize({ width: 32, height: 32 });
+    const bmp = thumb.toBitmap();
+
+    const hueBins = new Float32Array(24);
+    for (let i = 0; i < bmp.length; i += 4) {
+      const b = bmp[i];
+      const g = bmp[i + 1];
+      const r = bmp[i + 2];
+
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const l = (max + min) / 510;
+      const d = max - min;
+      const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1)) / 255;
+
+      if (s > 0.08 && l > 0.10 && l < 0.94) {
+        let h = 0;
+        if (d !== 0) {
+          if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+          else if (max === g) h = ((b - r) / d + 2) / 6;
+          else h = ((r - g) / d + 4) / 6;
+        }
+        const bin = Math.min(23, Math.floor(h * 24));
+        hueBins[bin] += s * 1.6;
+      }
+    }
+
+    let bestBin = -1;
+    let bestWeight = -1;
+    for (let bin = 0; bin < 24; bin++) {
+      if (hueBins[bin] > bestWeight) {
+        bestWeight = hueBins[bin];
+        bestBin = bin;
+      }
+    }
+
+    if (bestBin !== -1) {
+      const bestHue = (bestBin + 0.5) / 24;
+      const vibrant = hslToRgb(bestHue, 0.88, 0.54);
+      const hex = '#' + [vibrant.r, vibrant.g, vibrant.b].map(x => x.toString(16).padStart(2, '0')).join('');
+      return { hex, rgb: `${vibrant.r}, ${vibrant.g}, ${vibrant.b}` };
+    }
+  } catch (e) {}
+  return null;
+}
+
+function detectWallpaperColor() {
+  const p = getWallpaperPath();
+  const extracted = extractDominantColor(p);
+  if (extracted) return extracted;
+
+  try {
+    const dwmOut = execSync('reg query "HKCU\\Software\\Microsoft\\Windows\\DWM" /v AccentColor', { encoding: 'utf8' });
+    const m = dwmOut.match(/AccentColor\s+REG_DWORD\s+0x([0-9a-f]{8})/i);
+    if (m && m[1]) {
+      const hexVal = m[1];
+      const b = parseInt(hexVal.slice(2, 4), 16);
+      const g = parseInt(hexVal.slice(4, 6), 16);
+      const r = parseInt(hexVal.slice(6, 8), 16);
+      if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+        return {
+          hex: '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join(''),
+          rgb: `${r}, ${g}, ${b}`
+        };
+      }
+    }
+  } catch (e) {}
+
+  return { hex: '#19b8ff', rgb: '25, 184, 255' };
+}
+
+function refreshThemeColors() {
+  const s = appStore.settings;
+  if (s.colorMode === 'custom' && s.customColor) {
+    const hex = s.customColor;
+    const r = parseInt(hex.slice(1, 3), 16) || 25;
+    const g = parseInt(hex.slice(3, 5), 16) || 184;
+    const b = parseInt(hex.slice(5, 7), 16) || 255;
+    s.activeAccentHex = hex;
+    s.activeAccentRgb = `${r}, ${g}, ${b}`;
+  } else {
+    const detected = detectWallpaperColor();
+    s.activeAccentHex = detected.hex;
+    s.activeAccentRgb = detected.rgb;
+  }
+}
+
+
+
+
+
+function configureWindowsStartup(enable) {
+  try {
+    const electronExe = path.join(process.env.LOCALAPPDATA || '', 'Kora', 'node_modules', 'electron', 'dist', 'electron.exe');
+    const targetDir = path.join(process.env.LOCALAPPDATA || '', 'Kora');
+    if (enable) {
+      if (fs.existsSync(electronExe)) {
+        const runCmd = `\\"${electronExe}\\" \\"${targetDir}\\"`;
+        execSync(`reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "Kora" /t REG_SZ /d "${runCmd}" /f`, { stdio: 'ignore' });
+      } else {
+        app.setLoginItemSettings({ openAtLogin: true });
+      }
+    } else {
+      execSync('reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "Kora" /f', { stdio: 'ignore' });
+      app.setLoginItemSettings({ openAtLogin: false });
+    }
+  } catch (e) {}
+}
+
+let lastWallpaperMtime = 0;
+function setupWallpaperWatcher() {
+  const tw = getWallpaperPath();
+  if (tw && fs.existsSync(tw)) {
+    try {
+      lastWallpaperMtime = fs.statSync(tw).mtimeMs;
+    } catch (e) {}
+  }
+
+  const twDir = path.join(process.env.APPDATA || '', 'Microsoft', 'Windows', 'Themes');
+  if (fs.existsSync(twDir)) {
+    try {
+      fs.watch(twDir, { persistent: false }, () => {
+        checkWallpaperChange();
+      });
+    } catch (e) {}
+  }
+
+  setInterval(checkWallpaperChange, 4000);
+}
+
+function checkWallpaperChange() {
+  if (appStore.settings.colorMode === 'custom') return;
+  const p = getWallpaperPath();
+  if (!p || !fs.existsSync(p)) return;
+  try {
+    const mtime = fs.statSync(p).mtimeMs;
+    if (mtime !== lastWallpaperMtime) {
+      lastWallpaperMtime = mtime;
+      const prevHex = appStore.settings.activeAccentHex;
+      refreshThemeColors();
+      if (appStore.settings.activeAccentHex !== prevHex) {
+        saveStore();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('store-updated', appStore);
+        }
+        if (settingsWindow && !settingsWindow.isDestroyed()) {
+          settingsWindow.webContents.send('store-updated', appStore);
+        }
+      }
+    }
+  } catch (e) {}
+}
+
+function openSettingsWindow() {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.show();
+    settingsWindow.focus();
+    return;
+  }
+
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.workAreaSize;
+  const winW = 880;
+  const winH = 620;
+  const x = Math.round((width - winW) / 2);
+  const y = Math.round((height - winH) / 2);
+
+  settingsWindow = new BrowserWindow({
+    x,
+    y,
+    width: winW,
+    height: winH,
+    minWidth: 780,
+    minHeight: 520,
+    title: 'Kora — Paramètres & Personnalisation',
+    icon: getKoraIcon(),
+    frame: false,
+    transparent: false,
+    backgroundColor: '#0a0c10',
+    resizable: true,
+    movable: true,
+    minimizable: true,
+    maximizable: false,
+    skipTaskbar: false,
+    alwaysOnTop: false,
+    hasShadow: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      spellcheck: false
+    }
+  });
+
+  settingsWindow.loadFile(path.join(__dirname, 'settings.html'));
+
+  settingsWindow.on('closed', () => {
+    settingsWindow = null;
+  });
+}
+
+async function promptUninstall() {
+  const res = await dialog.showMessageBox({
+    type: 'warning',
+    buttons: ['Annuler', 'Désinstaller Kora'],
+    defaultId: 0,
+    cancelId: 0,
+    title: 'Désinstaller Kora',
+    message: 'Voulez-vous vraiment désinstaller Kora de cet ordinateur ?',
+    detail: 'Cela supprimera les raccourcis (Bureau, Menu Démarrer), le lancement automatique et les fichiers de Kora.'
+  });
+  if (res.response === 1) {
+    const candidates = [
+      path.join(__dirname, 'uninstall.ps1'),
+      path.join(__dirname, 'website', 'uninstall.ps1')
+    ];
+    const scriptPath = candidates.find(p => fs.existsSync(p));
+    if (scriptPath) {
+      spawn('powershell.exe', ['-ExecutionPolicy', 'Bypass', '-File', scriptPath], {
+        detached: true,
+        stdio: 'ignore'
+      }).unref();
+    }
+    app.isQuitting = true;
+    app.quit();
+  }
 }
 
 function createWindow() {
@@ -787,10 +1110,11 @@ function setupIpc() {
 
   ipcMain.on('settings-update', (_event, partialSettings) => {
     appStore.settings = { ...appStore.settings, ...partialSettings };
+    if (partialSettings.colorMode !== undefined || partialSettings.customColor !== undefined) {
+      refreshThemeColors();
+    }
     if (typeof partialSettings.autoStart === 'boolean') {
-      try {
-        app.setLoginItemSettings({ openAtLogin: partialSettings.autoStart });
-      } catch (e) {}
+      configureWindowsStartup(partialSettings.autoStart);
     }
     if (
       typeof partialSettings.showInScreenshots === 'boolean' ||
@@ -809,6 +1133,9 @@ function setupIpc() {
     saveStore();
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('store-updated', appStore);
+    }
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.webContents.send('store-updated', appStore);
     }
   });
 
@@ -970,6 +1297,47 @@ function setupIpc() {
       shell.openExternal(url);
     }
   });
+
+  ipcMain.on('open-settings-window', () => {
+    openSettingsWindow();
+  });
+
+  ipcMain.on('settings-window-close', () => {
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.close();
+    }
+  });
+
+  ipcMain.on('settings-window-minimize', () => {
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.minimize();
+    }
+  });
+
+  ipcMain.handle('get-wallpaper-color', () => {
+    return detectWallpaperColor();
+  });
+
+  ipcMain.on('test-peek-notification', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('peek-event', {
+        type: 'notif',
+        app: 'system',
+        title: 'Kora Dynamic Island',
+        snippet: 'Aperçu du nouveau style personnalisé !'
+      });
+    }
+  });
+
+  ipcMain.on('trigger-update-check', () => {
+    checkForGitHubUpdates(true);
+  });
+
+  ipcMain.on('trigger-uninstall', () => {
+    promptUninstall();
+  });
+
+
 }
 
 function formatBytes(bytes) {
@@ -1043,7 +1411,7 @@ async function checkForGitHubUpdates(isManual = false) {
     }
 
     if (remotePkg && remotePkg.version && isNewerVersion(remotePkg.version, localPkg.version)) {
-      const filesToUpdate = ['index.html', 'styles.css', 'renderer.js', 'preload.js', 'NusaBridge.cs', 'main.js', 'package.json'];
+      const filesToUpdate = ['index.html', 'styles.css', 'renderer.js', 'preload.js', 'settings.html', 'settings.css', 'settings.js', 'NusaBridge.cs', 'main.js', 'package.json'];
       for (const file of filesToUpdate) {
         try {
           const buf = await fetchHttpsBuffer(`${baseUrl}/${file}?t=${Date.now()}`);
@@ -1088,7 +1456,7 @@ async function checkForGitHubUpdates(isManual = false) {
         type: 'notif',
         app: 'system',
         title: `Kora v${localPkg.version}`,
-        snippet: 'Vous avez déjà la dernière version ✓'
+        snippet: 'Vous avez déjà la dernière version à jour.'
       });
     }
   } catch (e) {
@@ -1125,71 +1493,47 @@ function createTray() {
     },
     { type: 'separator' },
     {
-      label: '🎵 Ouvrir Musique (Alt+M)',
+      label: 'Musique (Alt+M)',
       click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'music')
     },
     {
-      label: '📋 Ouvrir Presse-papiers (Alt+V)',
+      label: 'Presse-papiers (Alt+V)',
       click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'clipboard')
     },
     {
-      label: '📁 Ouvrir Fichiers Drag & Drop (Alt+S)',
+      label: 'Fichiers & Captures (Alt+S)',
       click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'shelf')
     },
     {
-      label: '✅ Ouvrir To-Do List',
+      label: 'To-Do List',
       click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'todo')
-    },
-    {
-      label: '⚙️ Ouvrir Paramètres & Contacts',
-      click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'settings')
     },
     { type: 'separator' },
     {
-      label: '🔄 Vérifier les mises à jour (GitHub)',
-      click: () => checkForGitHubUpdates(true)
+      label: 'Paramètres & Personnalisation (Alt+,)',
+      click: () => openSettingsWindow()
     },
     {
-      label: '📢 Rejoindre la Communauté WhatsApp (Mr Paul)',
+      label: 'Vérifier les mises à jour',
+      click: () => checkForGitHubUpdates(true)
+    },
+    { type: 'separator' },
+    {
+      label: 'Canal WhatsApp Communauté (Mr Paul)',
       click: () => shell.openExternal('https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k')
     },
     {
-      label: '💬 WhatsApp Direct : +225 01 51 19 10 73',
+      label: 'WhatsApp Direct (+225 01 51 19 10 73)',
       click: () => shell.openExternal('https://wa.me/2250151191073')
     },
     {
-      label: '✉️ Email : ivannguessan09@gmail.com',
+      label: 'Email (ivannguessan09@gmail.com)',
       click: () => shell.openExternal('mailto:ivannguessan09@gmail.com')
     },
     { type: 'separator' },
     {
-      label: '🗑️ Désinstaller Kora',
-      click: async () => {
-        const res = await dialog.showMessageBox({
-          type: 'warning',
-          buttons: ['Annuler', 'Désinstaller Kora'],
-          defaultId: 0,
-          cancelId: 0,
-          title: 'Désinstaller Kora',
-          message: 'Voulez-vous vraiment désinstaller Kora de cet ordinateur ?',
-          detail: 'Cela supprimera les raccourcis (Bureau, Menu Démarrer), le lancement automatique et les fichiers de Kora.'
-        });
-        if (res.response === 1) {
-          const candidates = [
-            path.join(__dirname, 'uninstall.ps1'),
-            path.join(__dirname, 'website', 'uninstall.ps1')
-          ];
-          const scriptPath = candidates.find(p => fs.existsSync(p));
-          if (scriptPath) {
-            spawn('powershell.exe', ['-ExecutionPolicy', 'Bypass', '-File', scriptPath], {
-              detached: true,
-              stdio: 'ignore'
-            }).unref();
-          }
-          app.isQuitting = true;
-          app.quit();
-        }
-      }
+      label: 'Désinstaller Kora',
+      click: () => promptUninstall()
     },
     {
       label: 'Quitter Kora',
@@ -1210,7 +1554,14 @@ function createTray() {
 
 function registerShortcuts() {
   globalShortcut.register('Alt+N', () => {
-    if (mainWindow) mainWindow.webContents.send('toggle-notch');
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.setAlwaysOnTop(true, 'screen-saver');
+      mainWindow.webContents.send('toggle-notch');
+    }
+  });
+  globalShortcut.register('Alt+,', () => {
+    openSettingsWindow();
   });
   globalShortcut.register('Alt+V', () => {
     if (mainWindow) mainWindow.webContents.send('switch-tab', 'clipboard');
@@ -1231,6 +1582,7 @@ app.whenReady().then(() => {
   createTray();
   registerShortcuts();
   startWindowsBridge();
+  setupWallpaperWatcher();
 
   // Direct lightweight clipboard watcher (guarantees Ctrl+C text/images are never missed)
   setInterval(checkClipboardNow, 380);
@@ -1242,6 +1594,10 @@ app.whenReady().then(() => {
   // Automatic OTA update check on startup (after 6s) and every 3 hours
   setTimeout(() => checkForGitHubUpdates(false), 6000);
   setInterval(() => checkForGitHubUpdates(false), 3 * 60 * 60 * 1000);
+
+  if (process.argv.some(arg => arg.includes('--settings'))) {
+    setTimeout(openSettingsWindow, 400);
+  }
 });
 
 app.on('will-quit', () => {
