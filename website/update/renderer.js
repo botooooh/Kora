@@ -87,9 +87,10 @@ let mouseInsideNotch = false;
 
 function shouldRetractWhenClosed() {
   const mode = (store.settings && store.settings.retractMode) || 'app';
-  if (mode === 'always') return true;
+  if (mode === 'always') return false; // "Toujours visible sur le bureau"
   if (mode === 'never') return false;
-  return Boolean(currentState.window && currentState.window.hasActiveApp);
+  const win = currentState.window || {};
+  return Boolean(win.hasActiveApp || win.isMaximized || win.isFullscreen);
 }
 
 function updateVisibilityAndRetraction() {
@@ -97,7 +98,7 @@ function updateVisibilityAndRetraction() {
   const hideFsSetting = store.settings ? store.settings.hideInFullscreen !== false : true;
 
   // 1. True Fullscreen (vidéos YouTube F11, VLC plein écran, jeux vidéo)
-  // Ne disparaît complètement que si l'appli est en VRAI plein écran
+  // Se masque totalement si l'application est en vrai plein écran
   const shouldHideFullscreen = Boolean(win.isFullscreen && hideFsSetting);
 
   mn.dataset.fullscreenHidden = shouldHideFullscreen ? 'true' : 'false';
@@ -110,7 +111,7 @@ function updateVisibilityAndRetraction() {
     return;
   }
 
-  // 2. Rétractation automatique : se rétracte si une application est ouverte, sinon descend sur le Bureau
+  // 2. Rétractation automatique : se replie / réduit dans la bordure supérieure si Chrome ou une fenêtre est active
   if (isExpanded || isPeekActive || isPinned) {
     mn.dataset.retracted = 'false';
   } else {

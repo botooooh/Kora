@@ -107,6 +107,18 @@ namespace NusaBridge {
         [DllImport("user32.dll")]
         static extern bool IsIconic(IntPtr hWnd);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr OpenWindowStation(string name, bool inherit, uint access);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool SetProcessWindowStation(IntPtr hWinSta);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr OpenDesktop(string name, uint flags, bool inherit, uint access);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool SetThreadDesktop(IntPtr hDesktop);
+
         [DllImport("user32.dll")]
         static extern int GetSystemMetrics(int nIndex);
 
@@ -304,13 +316,33 @@ namespace NusaBridge {
         static bool lastIsMaximized = false;
         static bool lastIsFullscreen = false;
         static StringBuilder sbBuf = new StringBuilder(256);
+        static bool desktopAttached = false;
+
+        static void EnsureDesktopAttached() {
+            try {
+                IntPtr hwinsta = OpenWindowStation("WinSta0", false, 0x0000037F);
+                if (hwinsta != IntPtr.Zero) SetProcessWindowStation(hwinsta);
+                IntPtr hdesk = OpenDesktop("Default", 0, false, 0x000001FF);
+                if (hdesk != IntPtr.Zero) SetThreadDesktop(hdesk);
+                desktopAttached = true;
+            } catch {}
+        }
 
         static void GetWindowEnv(out bool hasActiveApp, out bool isMaximized, out bool isFullscreen) {
+            if (!desktopAttached) {
+                EnsureDesktopAttached();
+            }
+
             IntPtr hwnd = GetForegroundWindow();
             if (hwnd == IntPtr.Zero) {
-                hasActiveApp = lastHasActiveApp = false;
-                isMaximized = lastIsMaximized = false;
-                isFullscreen = lastIsFullscreen = false;
+                EnsureDesktopAttached();
+                hwnd = GetForegroundWindow();
+            }
+
+            if (hwnd == IntPtr.Zero) {
+                hasActiveApp = lastHasActiveApp;
+                isMaximized = lastIsMaximized;
+                isFullscreen = lastIsFullscreen;
                 return;
             }
 
@@ -363,7 +395,7 @@ namespace NusaBridge {
             bool isTrueFullscreen = (r.Left <= 0 && r.Top <= 0 && winW >= scrW && winH >= scrH);
 
             // MAXIMISÉ STANDARD (Bouton Agrandir, barre des tâches Windows visible)
-            bool isNormalMaximized = zoomed || (r.Top <= 10 && winW >= scrW - 20 && winH >= scrH - 60);
+            bool isNormalMaximized = zoomed || (r.Top <= 10 && winW >= scrW - 40 && winH >= scrH - 90);
 
             hasActiveApp = lastHasActiveApp = true;
             isMaximized = lastIsMaximized = isNormalMaximized;

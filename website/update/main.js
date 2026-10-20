@@ -36,6 +36,11 @@ app.commandLine.appendSwitch('disable-sync');
 app.commandLine.appendSwitch('disable-extensions');
 app.commandLine.appendSwitch('disable-pdf-extension');
 
+app.setName('Kora');
+try {
+  app.setPath('userData', path.join(app.getPath('appData'), 'Kora'));
+} catch (e) {}
+
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
   app.quit();
@@ -118,16 +123,21 @@ function loadStore() {
       if (raw.settings) {
         appStore.settings = { ...DEFAULT_SETTINGS, ...raw.settings };
         if (!Array.isArray(appStore.settings.tabs) || appStore.settings.tabs.length === 0) {
-          appStore.settings.tabs = DEFAULT_TABS;
+          appStore.settings.tabs = DEFAULT_TABS.map(t => ({ ...t, enabled: true }));
         } else {
           const validIds = new Set(DEFAULT_TABS.map(t => t.id));
           appStore.settings.tabs = appStore.settings.tabs.filter(t => t && validIds.has(t.id));
           const existingIds = new Set(appStore.settings.tabs.map(t => t.id));
           DEFAULT_TABS.forEach(dt => {
             if (!existingIds.has(dt.id)) {
-              appStore.settings.tabs.push({ ...dt });
+              appStore.settings.tabs.push({ ...dt, enabled: true });
             }
           });
+          // Ensure at least music and clipboard are enabled so the user never gets an empty notch
+          const clipTab = appStore.settings.tabs.find(t => t.id === 'clipboard');
+          if (clipTab && clipTab.enabled === false) {
+            clipTab.enabled = true;
+          }
         }
         // Migrate old setting keys if present
         if (typeof raw.settings.showInScreenshots !== 'boolean') {
@@ -675,43 +685,76 @@ function getImageSignature(img) {
   return `${size.width}x${size.height}_${sample}`;
 }
 
-function initClipboardBaseline() {
+async function getSafeClipboardText() {
   try {
-    const initialText = (clipboard.readText() || '').trim();
+    const res = clipboard.readText();
+    const str = res && typeof res.then === 'function' ? await res : res;
+    return typeof str === 'string' ? str : '';
+  } catch (e) {
+    return '';
+  }
+}
+
+async function getSafeClipboardImage() {
+  try {
+    const res = clipboard.readImage();
+    const img = res && typeof res.then === 'function' ? await res : res;
+    return img;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function getSafeAvailableFormats() {
+  try {
+    const res = clipboard.availableFormats();
+    const formats = res && typeof res.then === 'function' ? await res : res;
+    return Array.isArray(formats) ? formats : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function initClipboardBaseline() {
+  try {
+    const raw = await getSafeClipboardText();
+    const initialText = raw.trim();
     lastClipText = initialText;
-    // If clipboard store is empty and user already has text on their clipboard, add it silently
-    if (initialText && appStore.clipboard.length === 0) {
-      appStore.clipboard.unshift({
-        id: Date.now().toString(),
-        kind: detectTextKind(initialText),
-        text: initialText.slice(0, 2000),
-        preview: initialText.replace(/\s+/g, ' ').slice(0, 90),
-        time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-        pinned: false
-      });
-      saveStore();
+    if (initialText) {
+      addClipboardItem(
+        {
+          id: Date.now().toString(),
+          kind: detectTextKind(initialText),
+          text: initialText.slice(0, 3000),
+          preview: initialText.replace(/\s+/g, ' ').slice(0, 90),
+          time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+          pinned: false
+        },
+        false
+      );
     }
-    const formats = clipboard.availableFormats();
+    const formats = await getSafeAvailableFormats();
     if (formats.some(f => f.toLowerCase().includes('image') || f.toLowerCase().includes('bitmap'))) {
-      lastClipImgSig = getImageSignature(clipboard.readImage());
+      const img = await getSafeClipboardImage();
+      lastClipImgSig = getImageSignature(img);
     }
   } catch (e) {}
   clipboardReady = true;
 }
 
-function checkClipboardNow() {
+async function checkClipboardNow(force = false) {
   if (!clipboardReady || !mainWindow || mainWindow.isDestroyed()) return;
   try {
     // 1. Always check text first (Ctrl+C text, links, hex colors, code)
-    const rawText = clipboard.readText() || '';
+    const rawText = await getSafeClipboardText();
     const text = rawText.trim();
-    if (text && text !== lastClipText) {
+    if (text && (text !== lastClipText || force)) {
       lastClipText = text;
       addClipboardItem(
         {
           id: Date.now().toString() + '_' + Math.random().toString(36).slice(2, 5),
           kind: detectTextKind(text),
-          text: text.slice(0, 2000),
+          text: text.slice(0, 3000),
           preview: text.replace(/\s+/g, ' ').slice(0, 90),
           time: new Date().toLocaleTimeString('fr-FR', {
             hour: '2-digit',
@@ -721,14 +764,15 @@ function checkClipboardNow() {
         },
         false
       );
+      return;
     }
 
     // 2. Check if an image / screenshot was copied (Win+Shift+S, PrtScn, Copy Image)
-    const formats = clipboard.availableFormats();
+    const formats = await getSafeAvailableFormats();
     if (formats.some(f => f.toLowerCase().includes('image') || f.toLowerCase().includes('bitmap'))) {
-      const img = clipboard.readImage();
+      const img = await getSafeClipboardImage();
       const sig = getImageSignature(img);
-      if (sig && sig !== lastClipImgSig) {
+      if (sig && (sig !== lastClipImgSig || force)) {
         lastClipImgSig = sig;
         const size = img.getSize();
         const thumbImg = size.width > 180 ? img.resize({ width: 180 }) : img;
@@ -758,7 +802,7 @@ function checkClipboardNow() {
             ext: 'png',
             thumbDataUrl
           });
-          appStore.shelf = appStore.shelf.slice(0, 12);
+          appStore.shelf = appStore.shelf.slice(0, 15);
         } catch (err) {}
 
         addClipboardItem(
@@ -780,9 +824,10 @@ function checkClipboardNow() {
 }
 
 function triggerClipboardCheckWithRetry() {
-  checkClipboardNow();
-  setTimeout(checkClipboardNow, 80);
-  setTimeout(checkClipboardNow, 260);
+  checkClipboardNow(true);
+  setTimeout(() => checkClipboardNow(true), 60);
+  setTimeout(() => checkClipboardNow(true), 180);
+  setTimeout(() => checkClipboardNow(true), 420);
 }
 
 // ==================== WINDOWS NOTIFICATION INTERCEPTOR ====================
@@ -815,6 +860,8 @@ function detectNotifApp(xmlBlock, title, body) {
   return 'system';
 }
 
+let lastWalMtimeMs = 0;
+
 function scanWindowsNotifications() {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   try {
@@ -825,6 +872,11 @@ function scanWindowsNotifications() {
     let rawContent = '';
     if (fs.existsSync(walPath)) {
       const stat = fs.statSync(walPath);
+      // Skip reading if file hasn't changed since last scan
+      if (notifBaselineDone && stat.mtimeMs === lastWalMtimeMs) {
+        return;
+      }
+      lastWalMtimeMs = stat.mtimeMs;
       if (stat.size > 0 && stat.size < 8 * 1024 * 1024) {
         rawContent += fs.readFileSync(walPath, 'utf8');
       }
@@ -991,12 +1043,20 @@ function detectTextKind(t) {
 }
 
 function addClipboardItem(item, isScreenshot = false) {
-  appStore.clipboard = appStore.clipboard.filter(
-    c => !(c.kind === item.kind && c.text === item.text)
+  const existingIdx = appStore.clipboard.findIndex(
+    c => c.kind === item.kind && c.text === item.text
   );
-  appStore.clipboard.unshift(item);
-  if (appStore.clipboard.length > 25) {
-    appStore.clipboard = appStore.clipboard.slice(0, 25);
+  if (existingIdx !== -1) {
+    const existing = appStore.clipboard.splice(existingIdx, 1)[0];
+    existing.time = item.time;
+    if (item.preview) existing.preview = item.preview;
+    appStore.clipboard.unshift(existing);
+  } else {
+    appStore.clipboard.unshift(item);
+  }
+
+  if (appStore.clipboard.length > 30) {
+    appStore.clipboard = appStore.clipboard.slice(0, 30);
   }
   saveStore();
   if (mainWindow && !mainWindow.isDestroyed()) {
@@ -1574,18 +1634,20 @@ function registerShortcuts() {
   });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   loadStore();
-  initClipboardBaseline();
-  setupIpc();
   createWindow();
+  setupIpc();
   createTray();
   registerShortcuts();
+  await initClipboardBaseline();
   startWindowsBridge();
   setupWallpaperWatcher();
 
   // Direct lightweight clipboard watcher (guarantees Ctrl+C text/images are never missed)
-  setInterval(checkClipboardNow, 380);
+  setInterval(() => {
+    checkClipboardNow(false);
+  }, 380);
 
   // Direct Windows notification interceptor (compact notification inside Kora)
   scanWindowsNotifications();

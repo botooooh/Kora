@@ -15,7 +15,8 @@
     "mr-paul"
   ],
   "author": "Mr Paul <ivannguessan09@gmail.com> (https://wa.me/2250151191073)",
-  "license": "MIT",
+  "license": "Proprietary",
+  "private": true,
   "devDependencies": {
     "electron": "^35.0.0"
   }

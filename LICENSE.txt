@@ -1,0 +1,20 @@
+KORA SOFTWARE LICENSE AGREEMENT
+================================
+Copyright (c) 2026 Mr Paul. Tous droits réservés.
+Créateur & Développeur : Mr Paul (Ivan N'Guessan)
+Contact : ivannguessan09@gmail.com | WhatsApp : +225 01 51 19 10 73
+
+AVIS DE PROPRIÉTÉ INTELLECTUELLE :
+Le logiciel Kora (code source, architecture, design, logo, sons, binaires natifs et documentation) est la propriété exclusive de Mr Paul.
+
+1. USAGE PERSONNEL :
+Vous êtes autorisé à installer et exécuter Kora gratuitement sur vos ordinateurs pour un usage personnel et professionnel direct.
+
+2. RESTRICTIONS STRICTES :
+Il est formellement interdit, sans accord écrit préalable de l'auteur :
+- De copier, reproduire, redistribuer ou vendre tout ou partie du code source de Kora ;
+- De modifier, décompiler, désassembler ou procéder à l'ingénierie inverse des composants de Kora ;
+- De re-packager Kora sous une autre marque, un autre nom ou prétendre en être l'auteur ;
+- D'héberger des versions modifiées non officielles de Kora.
+
+TOUTE VIOLATION EST PASSIBLE DE POURSUITES CONFORMÉMENT AUX LOIS SUR LA PROPRIÉTÉ INTELLECTUELLE ET LE DROIT D'AUTEUR.
