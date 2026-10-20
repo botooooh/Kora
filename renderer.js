@@ -114,10 +114,10 @@ function updateVisibilityAndRetraction() {
   }
 
   // 2. Si une fenêtre comme Chrome est active ou maximisée :
-  // Si Kora était dépliée (grande encoche 650x260) et non épinglée, elle se replie en pilule compacte
+  // Si Kora était dépliée (grande encoche 650x260) et non épinglée, elle se replie avec délai si la souris quitte
   if (win.hasActiveApp || win.isMaximized) {
-    if (isExpanded && !isPinned && !mouseInsideNotch) {
-      closeNotch();
+    if (isExpanded && !isPinned && !mouseInsideNotch && !closeTimer) {
+      scheduleClose();
     }
   }
 
@@ -150,7 +150,6 @@ function handleMouseLeaveZone() {
     openTimer = null;
   }
   blurSettingsControls();
-  window.nusa.setIgnoreMouse(true);
   if (!isPinned && !isDraggingOut) {
     scheduleClose();
   }
@@ -158,13 +157,14 @@ function handleMouseLeaveZone() {
 
 // Triggered by main.js cursor watcher when user hovers directly over the pill
 window.nusa.onTopEdgeHover(({ active }) => {
+  if (isExpanded) return; // Open drawer handles its own interaction
   if (!active) {
     mouseInsideNotch = false;
     if (openTimer) {
       clearTimeout(openTimer);
       openTimer = null;
     }
-    if (!isExpanded && !isPinned) {
+    if (!isPinned) {
       window.nusa.setIgnoreMouse(true);
     }
     return;
@@ -197,21 +197,25 @@ window.addEventListener('mousemove', e => {
 
   const rect = mn.getBoundingClientRect();
   const isRetracted = mn.dataset.retracted === 'true';
+  const centerX = window.innerWidth / 2;
 
   let inside = false;
   const lip = Number(store.settings?.retractedLip ?? 4);
-  if (isRetracted && !isExpanded) {
+
+  if (isExpanded) {
+    // When drawer is open: covers the full open drawer zone (height up to 235px, width up to 520px)
+    // so moving mouse down to click tabs, items, songs, todos never causes accidental collapse
+    inside = (e.clientY <= 235 && Math.abs(e.clientX - centerX) <= 260);
+  } else if (isRetracted) {
     inside =
       e.clientY <= Math.max(6, lip + 2) &&
-      e.clientX >= rect.left &&
-      e.clientX <= rect.right;
+      Math.abs(e.clientX - centerX) <= 93;
   } else {
-    // Strict bounding box: zero bleed to allow clicks to browser tabs right next to Kora
+    // When resting: strictly the compact 186x35 pill, zero bleed to leave browser tabs free
     inside =
-      e.clientX >= rect.left &&
-      e.clientX <= rect.right &&
-      e.clientY >= rect.top &&
-      e.clientY <= rect.bottom;
+      e.clientY >= 0 &&
+      e.clientY <= 36 &&
+      Math.abs(e.clientX - centerX) <= 93;
   }
 
   if (inside !== mouseInsideNotch) {

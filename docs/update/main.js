@@ -975,15 +975,18 @@ function handleNativeStateUpdate(state) {
   }
 
   if (isInitializedState) {
-    // 1. Top-edge hover wakeup (strict pill zone)
-    if (state.atTopEdge && !lastState.atTopEdge) {
-      mainWindow.setIgnoreMouseEvents(false);
-      mainWindow.webContents.send('top-edge-hover', { active: true });
-    } else if (!state.atTopEdge && lastState.atTopEdge) {
-      if (!isNotchExpanded) {
+    // 1. Top-edge hover wakeup (strict pill zone when closed)
+    if (!isNotchExpanded) {
+      if (state.atTopEdge && !lastState.atTopEdge) {
+        mainWindow.setIgnoreMouseEvents(false);
+        mainWindow.webContents.send('top-edge-hover', { active: true });
+      } else if (!state.atTopEdge && lastState.atTopEdge) {
         mainWindow.setIgnoreMouseEvents(true, { forward: true });
+        mainWindow.webContents.send('top-edge-hover', { active: false });
       }
-      mainWindow.webContents.send('top-edge-hover', { active: false });
+    } else {
+      // While expanded, ensure mouse events are always enabled for the open drawer
+      mainWindow.setIgnoreMouseEvents(false);
     }
 
     // 2. OS file drag near top center
