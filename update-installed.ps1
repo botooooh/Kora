@@ -11,6 +11,8 @@ Copy-Item (Join-Path $src 'renderer.js') $dst -Force
 Copy-Item (Join-Path $src 'styles.css') $dst -Force
 Copy-Item (Join-Path $src 'index.html') $dst -Force
 Copy-Item (Join-Path $src 'settings.html') $dst -Force
+Copy-Item (Join-Path $src 'settings.js') $dst -Force
+Copy-Item (Join-Path $src 'settings.css') $dst -Force
 Copy-Item (Join-Path $src 'nusa-bridge.exe') $dst -Force
 Copy-Item (Join-Path $src 'NusaBridge.cs') $dst -Force
 Copy-Item (Join-Path $src 'package.json') $dst -Force

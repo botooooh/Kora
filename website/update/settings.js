@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const stScale = document.getElementById('stScale');
   const stScaleVal = document.getElementById('stScaleVal');
   const stRestingStyle = document.getElementById('stRestingStyle');
+  const stGlowMode = document.getElementById('stGlowMode');
   const stRetractMode = document.getElementById('stRetractMode');
   const stFullscreen = document.getElementById('stFullscreen');
   const stLip = document.getElementById('stLip');
@@ -76,7 +77,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Update live preview notch
     if (previewNotch) {
-      previewNotch.style.boxShadow = `0 10px 28px -6px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(${rgbStr}, 0.35), 0 0 22px rgba(${rgbStr}, 0.28)`;
+      if (currentSettings.glowMode === 'vibrant') {
+        previewNotch.style.boxShadow = `0 10px 28px -6px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(${rgbStr}, 0.35), 0 0 20px rgba(${rgbStr}, 0.25)`;
+      } else if (currentSettings.glowMode === 'subtle') {
+        previewNotch.style.boxShadow = `0 10px 28px -6px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(${rgbStr}, 0.25)`;
+      } else {
+        previewNotch.style.boxShadow = `0 10px 28px -6px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.12)`;
+      }
     }
     if (pickerPreviewBox) {
       pickerPreviewBox.style.background = hex;
@@ -127,8 +134,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       previewNotch.style.transform = `scale(${scale})`;
     }
 
-    // 3. Resting style
+    // 3. Resting style & Glow
     stRestingStyle.value = s.restingStyle || 'auto';
+    if (stGlowMode) stGlowMode.value = s.glowMode || 'none';
 
     // 4. Behavior
     stRetractMode.value = s.retractMode || 'app';
@@ -262,6 +270,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Resting Style
   stRestingStyle.addEventListener('change', () => {
     window.nusa.updateSettings({ restingStyle: stRestingStyle.value });
+  });
+
+  // Glow Mode
+  stGlowMode?.addEventListener('change', () => {
+    window.nusa.updateSettings({ glowMode: stGlowMode.value });
   });
 
   // Retract Mode

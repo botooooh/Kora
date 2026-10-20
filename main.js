@@ -94,6 +94,7 @@ const DEFAULT_SETTINGS = {
   openDelay: 100,
   closeDelay: 320,
   retractMode: 'none',
+  glowMode: 'none', // 'none' (sobre & épuré), 'subtle' (doux), 'vibrant' (lueurs néon)
   hideInFullscreen: true,
   retractedLip: 4,
   restingStyle: 'auto',
@@ -145,6 +146,9 @@ function loadStore() {
         }
         if (appStore.settings.retractMode === 'app' || !appStore.settings.retractMode) {
           appStore.settings.retractMode = 'none';
+        }
+        if (!appStore.settings.glowMode) {
+          appStore.settings.glowMode = 'none';
         }
         // Migrate old setting keys if present
         if (typeof raw.settings.showInScreenshots !== 'boolean') {

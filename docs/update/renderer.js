@@ -703,6 +703,10 @@ function applySettingsToDOM() {
   document.documentElement.style.setProperty('--scale', String(scale));
   document.documentElement.style.setProperty('--lip', `${lip}px`);
 
+  const glowMode = s.glowMode || 'none';
+  mn.dataset.glow = glowMode;
+  document.documentElement.dataset.glow = glowMode;
+
   if (s.tabs) {
     syncTabsFromStore(s.tabs);
   }
