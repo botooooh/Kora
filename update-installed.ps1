@@ -7,6 +7,7 @@ $src = 'C:\Users\DELL\Desktop\Progammation\Kora'
 $dst = 'C:\Users\DELL\AppData\Local\Kora'
 
 Copy-Item (Join-Path $src 'main.js') $dst -Force
+Copy-Item (Join-Path $src 'preload.js') $dst -Force
 Copy-Item (Join-Path $src 'renderer.js') $dst -Force
 Copy-Item (Join-Path $src 'styles.css') $dst -Force
 Copy-Item (Join-Path $src 'index.html') $dst -Force

@@ -70,6 +70,7 @@ let mainWindow = null;
 let settingsWindow = null;
 let tray = null;
 let bridgeProc = null;
+let isNotchExpanded = false;
 
 const WIN_WIDTH = 650;
 const WIN_HEIGHT = 260;
@@ -974,10 +975,15 @@ function handleNativeStateUpdate(state) {
   }
 
   if (isInitializedState) {
-    // 1. Top-edge hover wakeup
+    // 1. Top-edge hover wakeup (strict pill zone)
     if (state.atTopEdge && !lastState.atTopEdge) {
       mainWindow.setIgnoreMouseEvents(false);
       mainWindow.webContents.send('top-edge-hover', { active: true });
+    } else if (!state.atTopEdge && lastState.atTopEdge) {
+      if (!isNotchExpanded) {
+        mainWindow.setIgnoreMouseEvents(true, { forward: true });
+      }
+      mainWindow.webContents.send('top-edge-hover', { active: false });
     }
 
     // 2. OS file drag near top center
@@ -1175,6 +1181,16 @@ function setupIpc() {
     if (ignore) {
       mainWindow.setIgnoreMouseEvents(true, { forward: true });
       sendBridgeCommand('TRIM_MEM');
+    } else {
+      mainWindow.setIgnoreMouseEvents(false);
+    }
+  });
+
+  ipcMain.on('notch-expansion-changed', (_event, expanded) => {
+    isNotchExpanded = Boolean(expanded);
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    if (!isNotchExpanded) {
+      mainWindow.setIgnoreMouseEvents(true, { forward: true });
     } else {
       mainWindow.setIgnoreMouseEvents(false);
     }

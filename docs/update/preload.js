@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 contextBridge.exposeInMainWorld('nusa', {
   setIgnoreMouse: ignore => ipcRenderer.send('set-ignore-mouse', ignore),
+  setNotchExpanded: expanded => ipcRenderer.send('notch-expansion-changed', expanded),
   getStore: () => ipcRenderer.invoke('get-store'),
   updateSettings: partial => ipcRenderer.send('settings-update', partial),
   sendMediaCmd: cmd => ipcRenderer.send('media-cmd', cmd),

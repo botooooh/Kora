@@ -156,9 +156,19 @@ function handleMouseLeaveZone() {
   }
 }
 
-// Triggered by main.js cursor watcher when user pushes cursor to very top edge (y <= 6px)
+// Triggered by main.js cursor watcher when user hovers directly over the pill
 window.nusa.onTopEdgeHover(({ active }) => {
-  if (!active) return;
+  if (!active) {
+    mouseInsideNotch = false;
+    if (openTimer) {
+      clearTimeout(openTimer);
+      openTimer = null;
+    }
+    if (!isExpanded && !isPinned) {
+      window.nusa.setIgnoreMouse(true);
+    }
+    return;
+  }
   if (mn.dataset.fullscreenHidden === 'true') return;
 
   if (closeTimer) {
@@ -170,10 +180,10 @@ window.nusa.onTopEdgeHover(({ active }) => {
   mouseInsideNotch = true;
   window.nusa.setIgnoreMouse(false);
 
-  const delay = Number(store.settings?.openDelay ?? 100);
+  const delay = Number(store.settings?.openDelay ?? 120);
   if (openTimer) clearTimeout(openTimer);
   openTimer = setTimeout(() => {
-    if (mouseInsideNotch) {
+    if (mouseInsideNotch && !isExpanded) {
       openNotch(activeTab);
     }
   }, delay);
@@ -192,15 +202,16 @@ window.addEventListener('mousemove', e => {
   const lip = Number(store.settings?.retractedLip ?? 4);
   if (isRetracted && !isExpanded) {
     inside =
-      e.clientY <= Math.max(8, lip + 3) &&
-      e.clientX >= rect.left - 16 &&
-      e.clientX <= rect.right + 16;
+      e.clientY <= Math.max(6, lip + 2) &&
+      e.clientX >= rect.left &&
+      e.clientX <= rect.right;
   } else {
+    // Strict bounding box: zero bleed to allow clicks to browser tabs right next to Kora
     inside =
-      e.clientX >= rect.left - 12 &&
-      e.clientX <= rect.right + 12 &&
+      e.clientX >= rect.left &&
+      e.clientX <= rect.right &&
       e.clientY >= rect.top &&
-      e.clientY <= rect.bottom + 14;
+      e.clientY <= rect.bottom;
   }
 
   if (inside !== mouseInsideNotch) {
@@ -283,6 +294,7 @@ function openNotch(tab = activeTab) {
   }
   isPeekActive = false;
   isExpanded = true;
+  if (window.nusa.setNotchExpanded) window.nusa.setNotchExpanded(true);
   if (tab && activeTabs.includes(tab)) {
     activeTab = tab;
   }
@@ -302,6 +314,7 @@ function openNotch(tab = activeTab) {
 function closeNotch() {
   isExpanded = false;
   isPeekActive = false;
+  if (window.nusa.setNotchExpanded) window.nusa.setNotchExpanded(false);
   blurSettingsControls();
   mn.dataset.s = getRestingState();
   updateVisibilityAndRetraction();

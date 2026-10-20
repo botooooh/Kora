@@ -493,9 +493,9 @@ namespace NusaBridge {
                 int scrW = GetSystemMetrics(0);
                 int centerX = scrW / 2;
                 bool mouseDown = (GetAsyncKeyState(0x01) & 0x8000) != 0;
-                bool inPillZone = (pt.Y <= 40 && Math.Abs(pt.X - centerX) <= 120);
-                bool atTopEdge = inPillZone || (pt.Y <= 6 && Math.Abs(pt.X - centerX) <= 240);
-                bool inNotchZone = (pt.Y <= 245 && Math.Abs(pt.X - centerX) <= 290);
+                bool inPillZone = (pt.Y >= 0 && pt.Y <= 36 && Math.Abs(pt.X - centerX) <= 93);
+                bool atTopEdge = inPillZone;
+                bool inNotchZone = (pt.Y >= 0 && pt.Y <= 220 && Math.Abs(pt.X - centerX) <= 240);
                 bool dragNearTop = (mouseDown && pt.Y <= 95 && Math.Abs(pt.X - centerX) <= 240);
                 uint clipSeq = GetClipboardSequenceNumber();
                 int vol = GetVolume();
