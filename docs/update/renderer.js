@@ -87,8 +87,7 @@ let mouseInsideNotch = false;
 
 function shouldRetractWhenClosed() {
   const mode = (store.settings && store.settings.retractMode) || 'app';
-  if (mode === 'always') return false; // "Toujours visible sur le bureau"
-  if (mode === 'never') return false;
+  if (mode === 'always' || mode === 'never' || mode === 'manual') return false;
   const win = currentState.window || {};
   return Boolean(win.hasActiveApp || win.isMaximized || win.isFullscreen);
 }
@@ -394,12 +393,11 @@ function formatSec(sec) {
 window.nusa.onSystemState(state => {
   currentState = state;
 
-  // 1. Guarantee retraction when mouse leaves activation zone across OS (even in Settings!)
+  // 1. Guarantee retraction when mouse leaves activation zone across OS (only if mouse was previously inside)
   if (state.inNotchZone === false && !state.mouseDown) {
-    if (mouseInsideNotch || (isExpanded && !isPinned && !isDraggingOut)) {
+    if (mouseInsideNotch) {
       mouseInsideNotch = false;
       blurSettingsControls();
-      window.nusa.setIgnoreMouse(true);
       if (!closeTimer && isExpanded && !isPinned && !isDraggingOut) {
         scheduleClose();
       }
@@ -1102,6 +1100,8 @@ window.nusa.onToggleNotch(() => {
     pinBtn.classList.remove('pinned');
     closeNotch();
   } else {
+    isPinned = true;
+    pinBtn.classList.add('pinned');
     openNotch(activeTab);
   }
 });

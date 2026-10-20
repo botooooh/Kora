@@ -53,6 +53,8 @@ app.on('second-instance', (_event, commandLine) => {
     return;
   }
   if (mainWindow && !mainWindow.isDestroyed()) {
+    if (!mainWindow.isVisible()) mainWindow.show();
+    mainWindow.focus();
     mainWindow.webContents.send('toggle-notch');
   }
 });
