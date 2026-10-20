@@ -86,10 +86,13 @@ function playChime(type = 'soft') {
 let mouseInsideNotch = false;
 
 function shouldRetractWhenClosed() {
-  const mode = (store.settings && store.settings.retractMode) || 'app';
-  if (mode === 'always' || mode === 'never' || mode === 'manual') return false;
-  const win = currentState.window || {};
-  return Boolean(win.hasActiveApp || win.isMaximized || win.isFullscreen);
+  const mode = (store.settings && store.settings.retractMode) || 'none';
+  if (mode === 'always') return true;
+  if (mode === 'app') {
+    const win = currentState.window || {};
+    return Boolean(win.hasActiveApp || win.isMaximized || win.isFullscreen);
+  }
+  return false;
 }
 
 function updateVisibilityAndRetraction() {
@@ -97,7 +100,7 @@ function updateVisibilityAndRetraction() {
   const hideFsSetting = store.settings ? store.settings.hideInFullscreen !== false : true;
 
   // 1. True Fullscreen (vidéos YouTube F11, VLC plein écran, jeux vidéo)
-  // Se masque totalement si l'application est en vrai plein écran
+  // Se masque totalement seulement si l'application est en vrai plein écran complet
   const shouldHideFullscreen = Boolean(win.isFullscreen && hideFsSetting);
 
   mn.dataset.fullscreenHidden = shouldHideFullscreen ? 'true' : 'false';
@@ -110,7 +113,15 @@ function updateVisibilityAndRetraction() {
     return;
   }
 
-  // 2. Rétractation automatique : se replie / réduit dans la bordure supérieure si Chrome ou une fenêtre est active
+  // 2. Si une fenêtre comme Chrome est active ou maximisée :
+  // Si Kora était dépliée (grande encoche 650x260) et non épinglée, elle se replie en pilule compacte
+  if (win.hasActiveApp || win.isMaximized) {
+    if (isExpanded && !isPinned && !mouseInsideNotch) {
+      closeNotch();
+    }
+  }
+
+  // 3. Rétractation éventuelle dans la bordure supérieure
   if (isExpanded || isPeekActive || isPinned) {
     mn.dataset.retracted = 'false';
   } else {
@@ -714,6 +725,14 @@ if (idleMusicView) {
     openNotch('music');
   });
 }
+
+// Click anywhere on resting notch opens Kora
+mn.addEventListener('click', e => {
+  if (!isExpanded) {
+    e.stopPropagation();
+    openNotch(activeTab);
+  }
+});
 
 document.querySelectorAll('.js-ext-link').forEach(btn => {
   btn.addEventListener('click', e => {

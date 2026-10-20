@@ -493,8 +493,9 @@ namespace NusaBridge {
                 int scrW = GetSystemMetrics(0);
                 int centerX = scrW / 2;
                 bool mouseDown = (GetAsyncKeyState(0x01) & 0x8000) != 0;
-                bool atTopEdge = (pt.Y <= 6 && Math.Abs(pt.X - centerX) <= 185);
-                bool inNotchZone = (pt.Y <= 238 && Math.Abs(pt.X - centerX) <= 285);
+                bool inPillZone = (pt.Y <= 40 && Math.Abs(pt.X - centerX) <= 120);
+                bool atTopEdge = inPillZone || (pt.Y <= 6 && Math.Abs(pt.X - centerX) <= 240);
+                bool inNotchZone = (pt.Y <= 245 && Math.Abs(pt.X - centerX) <= 290);
                 bool dragNearTop = (mouseDown && pt.Y <= 95 && Math.Abs(pt.X - centerX) <= 240);
                 uint clipSeq = GetClipboardSequenceNumber();
                 int vol = GetVolume();
@@ -503,7 +504,7 @@ namespace NusaBridge {
 
                 GetWindowEnv(out hasActiveApp, out isMaximized, out isFullscreen);
 
-                if (tick % 6 == 0 || hadCmd) {
+                if (tick % 16 == 0 || hadCmd) {
                     SYSTEM_POWER_STATUS sps;
                     if (GetSystemPowerStatus(out sps)) {
                         batPct = sps.BatteryLifePercent <= 100 ? sps.BatteryLifePercent : 100;
@@ -608,7 +609,7 @@ namespace NusaBridge {
                     }
                 }
 
-                Thread.Sleep(110);
+                Thread.Sleep(40);
             }
         }
     }

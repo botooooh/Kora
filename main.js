@@ -54,6 +54,8 @@ app.on('second-instance', (_event, commandLine) => {
   }
   if (mainWindow && !mainWindow.isDestroyed()) {
     if (!mainWindow.isVisible()) mainWindow.show();
+    mainWindow.setAlwaysOnTop(true);
+    mainWindow.setIgnoreMouseEvents(false);
     mainWindow.focus();
     mainWindow.webContents.send('toggle-notch');
   }
@@ -91,7 +93,7 @@ const DEFAULT_SETTINGS = {
   scale: 1.0,
   openDelay: 100,
   closeDelay: 320,
-  retractMode: 'app',
+  retractMode: 'none',
   hideInFullscreen: true,
   retractedLip: 4,
   restingStyle: 'auto',
@@ -141,6 +143,9 @@ function loadStore() {
             clipTab.enabled = true;
           }
         }
+        if (appStore.settings.retractMode === 'app' || !appStore.settings.retractMode) {
+          appStore.settings.retractMode = 'none';
+        }
         // Migrate old setting keys if present
         if (typeof raw.settings.showInScreenshots !== 'boolean') {
           if (typeof raw.settings.hideInScreenshots === 'boolean') {
@@ -182,6 +187,13 @@ function applyScreenshotVisibility() {
 
 // Official Kora Logo Icon
 function getKoraIcon() {
+  const icoPath = path.join(__dirname, 'kora.ico');
+  if (fs.existsSync(icoPath)) {
+    try {
+      const ico = nativeImage.createFromPath(icoPath);
+      if (!ico.isEmpty()) return ico;
+    } catch (e) {}
+  }
   const logoPath = path.join(__dirname, 'kora-logo.png');
   if (fs.existsSync(logoPath)) {
     try {
@@ -548,7 +560,7 @@ function createWindow() {
     }
   });
 
-  mainWindow.setAlwaysOnTop(true, 'screen-saver');
+  mainWindow.setAlwaysOnTop(true);
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   mainWindow.setIgnoreMouseEvents(true, { forward: true });
 
@@ -826,10 +838,9 @@ async function checkClipboardNow(force = false) {
 }
 
 function triggerClipboardCheckWithRetry() {
-  checkClipboardNow(true);
-  setTimeout(() => checkClipboardNow(true), 60);
-  setTimeout(() => checkClipboardNow(true), 180);
-  setTimeout(() => checkClipboardNow(true), 420);
+  checkClipboardNow(false);
+  setTimeout(() => checkClipboardNow(false), 70);
+  setTimeout(() => checkClipboardNow(false), 220);
 }
 
 // ==================== WINDOWS NOTIFICATION INTERCEPTOR ====================
@@ -1536,89 +1547,93 @@ async function checkForGitHubUpdates(isManual = false) {
 }
 
 function createTray() {
-  tray = new Tray(getKoraIcon());
-  tray.setToolTip('Kora — par Mr Paul');
+  try {
+    tray = new Tray(getKoraIcon());
+    tray.setToolTip('Kora — par Mr Paul');
 
-  const pkgVersion = (() => {
-    try {
-      const p = path.join(__dirname, 'package.json');
-      return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')).version : '2.1.0';
-    } catch (e) {
-      return '2.1.0';
-    }
-  })();
-
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: `Kora v${pkgVersion} — créé par Mr Paul`,
-      enabled: false
-    },
-    { type: 'separator' },
-    {
-      label: 'Musique (Alt+M)',
-      click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'music')
-    },
-    {
-      label: 'Presse-papiers (Alt+V)',
-      click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'clipboard')
-    },
-    {
-      label: 'Fichiers & Captures (Alt+S)',
-      click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'shelf')
-    },
-    {
-      label: 'To-Do List',
-      click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'todo')
-    },
-    { type: 'separator' },
-    {
-      label: 'Paramètres & Personnalisation (Alt+,)',
-      click: () => openSettingsWindow()
-    },
-    {
-      label: 'Vérifier les mises à jour',
-      click: () => checkForGitHubUpdates(true)
-    },
-    { type: 'separator' },
-    {
-      label: 'Canal WhatsApp Communauté (Mr Paul)',
-      click: () => shell.openExternal('https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k')
-    },
-    {
-      label: 'WhatsApp Direct (+225 01 51 19 10 73)',
-      click: () => shell.openExternal('https://wa.me/2250151191073')
-    },
-    {
-      label: 'Email (ivannguessan09@gmail.com)',
-      click: () => shell.openExternal('mailto:ivannguessan09@gmail.com')
-    },
-    { type: 'separator' },
-    {
-      label: 'Désinstaller Kora',
-      click: () => promptUninstall()
-    },
-    {
-      label: 'Quitter Kora',
-      click: () => {
-        app.isQuitting = true;
-        app.quit();
+    const pkgVersion = (() => {
+      try {
+        const p = path.join(__dirname, 'package.json');
+        return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')).version : '2.1.0';
+      } catch (e) {
+        return '2.1.0';
       }
-    }
-  ]);
+    })();
 
-  tray.setContextMenu(contextMenu);
-  tray.on('click', () => {
-    if (mainWindow) {
-      mainWindow.webContents.send('toggle-notch');
-    }
-  });
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: `Kora v${pkgVersion} — créé par Mr Paul`,
+        enabled: false
+      },
+      { type: 'separator' },
+      {
+        label: 'Musique (Alt+M)',
+        click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'music')
+      },
+      {
+        label: 'Presse-papiers (Alt+V)',
+        click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'clipboard')
+      },
+      {
+        label: 'Fichiers & Captures (Alt+S)',
+        click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'shelf')
+      },
+      {
+        label: 'To-Do List',
+        click: () => mainWindow && mainWindow.webContents.send('switch-tab', 'todo')
+      },
+      { type: 'separator' },
+      {
+        label: 'Paramètres & Personnalisation (Alt+,)',
+        click: () => openSettingsWindow()
+      },
+      {
+        label: 'Vérifier les mises à jour',
+        click: () => checkForGitHubUpdates(true)
+      },
+      { type: 'separator' },
+      {
+        label: 'Canal WhatsApp Communauté (Mr Paul)',
+        click: () => shell.openExternal('https://whatsapp.com/channel/0029Vb6avN0InlqWut6HV70k')
+      },
+      {
+        label: 'WhatsApp Direct (+225 01 51 19 10 73)',
+        click: () => shell.openExternal('https://wa.me/2250151191073')
+      },
+      {
+        label: 'Email (ivannguessan09@gmail.com)',
+        click: () => shell.openExternal('mailto:ivannguessan09@gmail.com')
+      },
+      { type: 'separator' },
+      {
+        label: 'Désinstaller Kora',
+        click: () => promptUninstall()
+      },
+      {
+        label: 'Quitter Kora',
+        click: () => {
+          app.isQuitting = true;
+          app.quit();
+        }
+      }
+    ]);
+
+    tray.setContextMenu(contextMenu);
+    tray.on('click', () => {
+      if (mainWindow) {
+        mainWindow.setIgnoreMouseEvents(false);
+        mainWindow.webContents.send('toggle-notch');
+      }
+    });
+  } catch (err) {}
 }
 
 function registerShortcuts() {
   globalShortcut.register('Alt+N', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.show();
-      mainWindow.setAlwaysOnTop(true, 'screen-saver');
+      mainWindow.setAlwaysOnTop(true);
+      mainWindow.setIgnoreMouseEvents(false);
       mainWindow.webContents.send('toggle-notch');
     }
   });
@@ -1626,13 +1641,22 @@ function registerShortcuts() {
     openSettingsWindow();
   });
   globalShortcut.register('Alt+V', () => {
-    if (mainWindow) mainWindow.webContents.send('switch-tab', 'clipboard');
+    if (mainWindow) {
+      mainWindow.setIgnoreMouseEvents(false);
+      mainWindow.webContents.send('switch-tab', 'clipboard');
+    }
   });
   globalShortcut.register('Alt+S', () => {
-    if (mainWindow) mainWindow.webContents.send('switch-tab', 'shelf');
+    if (mainWindow) {
+      mainWindow.setIgnoreMouseEvents(false);
+      mainWindow.webContents.send('switch-tab', 'shelf');
+    }
   });
   globalShortcut.register('Alt+M', () => {
-    if (mainWindow) mainWindow.webContents.send('switch-tab', 'music');
+    if (mainWindow) {
+      mainWindow.setIgnoreMouseEvents(false);
+      mainWindow.webContents.send('switch-tab', 'music');
+    }
   });
 }
 
