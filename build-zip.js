@@ -24,7 +24,6 @@ const filesToInclude = [
   'settings.js',
   'NusaBridge.cs',
   'nusa-bridge.exe',
-  'KoraLauncher.cs',
   'kora-logo.png',
   'kora.ico'
 ];
