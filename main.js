@@ -401,8 +401,13 @@ function configureWindowsStartup(enable) {
     const targetDir = path.join(process.env.LOCALAPPDATA || '', 'Kora');
     if (enable) {
       if (fs.existsSync(electronExe)) {
-        const runCmd = `\\"${electronExe}\\" \\"${targetDir}\\"`;
-        execSync(`reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "Kora" /t REG_SZ /d "${runCmd}" /f`, { stdio: 'ignore' });
+        const regFile = path.join(process.env.TEMP || '', 'kora-run.reg');
+        const escapedExe = electronExe.replace(/\\/g, '\\\\');
+        const escapedDir = targetDir.replace(/\\/g, '\\\\');
+        const regContent = `Windows Registry Editor Version 5.00\r\n\r\n[HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run]\r\n"Kora"="\\"${escapedExe}\\" \\"${escapedDir}\\""\r\n`;
+        fs.writeFileSync(regFile, regContent, 'utf8');
+        execSync(`reg import "${regFile}"`, { stdio: 'ignore' });
+        try { fs.unlinkSync(regFile); } catch (e) {}
       } else {
         app.setLoginItemSettings({ openAtLogin: true });
       }
